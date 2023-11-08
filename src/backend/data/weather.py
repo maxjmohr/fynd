@@ -3,13 +3,50 @@ import requests_cache
 import pandas as pd
 from retry_requests import retry
 from geopy.geocoders import Nominatim
+from datetime import date, timedelta
 
-def get_weather(location: str):
+params = {
+	# Parameters for all APIs
+	"daily": ["temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "sunrise", "sunset",
+		   "precipitation_sum", "rain_sum", "snowfall_sum", "wind_speed_10m_max"],
+	"timezone": "auto",
+	"models": "best_match",
+	# Parameters for historical API
+	"start_date": "2010-01-01",
+	"end_date": date.today() - timedelta(days = 1), # ecluding yesterday
+	# Parameters for current and forecast API
+	"past_days": 0, # as the historical data of the past 5 days is not available via the other url (TBD)
+	"forecast_days": 14
+	}
+
+def process_daily(response: openmeteo_requests, params: dict):
+	"""
+	Input:  - API response (openmeteo_requests)
+			- Requested dimensions (dict)
+	Output: API output (pandas dataframe)
+	"""
+	# Process daily data
+	daily = response.Daily()
+
+	# Setup daily output
+	daily_data = {"date": pd.date_range(
+		start = pd.to_datetime(daily.Time(), unit = "s"),
+		end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
+		freq = pd.Timedelta(seconds = daily.Interval()),
+		inclusive = "left"
+	).date}
+
+	# The order of variables is the same as requested
+	for i,var in enumerate(params["daily"]): 
+		daily_data[var] = daily.Variables(i).ValuesAsNumpy()
+
+	return pd.DataFrame(data = daily_data)
+
+def get_weather(location: str, params: dict):
 	"""
 	Input: location (string)
 	Output: weather data (pandas dataframe)
 	"""
-
 	# Get location coordinates
 	geolocator = Nominatim(user_agent="Max Mohr")
 	coor = geolocator.geocode(location)
@@ -19,30 +56,37 @@ def get_weather(location: str):
 	retry_session = retry(cache_session, retries=5, backoff_factor=0.2)
 	openmeteo = openmeteo_requests.Client(session=retry_session)
 
-	# Make sure all required weather variables are listed here
-	url = "https://api.open-meteo.com/v1/forecast"
-	params = {
+	###--- Get historical weather data since 2010-01-01 ---###
+	url = "https://archive-api.open-meteo.com/v1/archive"
+	params_api = {
 		"latitude": coor.latitude,
 		"longitude": coor.longitude,
-		"daily": ["temperature_2m_max", "temperature_2m_min"],
-		"timezone": "auto",
-		"past_days": 5, # as the historical data of the past 5 days is not available via the other url
-		"forecast_days": 14,
-		"models": "best_match"
+		"daily": params["daily"],
+		"timezone": params["timezone"],
+		"models": params["models"],
+		"start_date": params["start_date"],
+		"end_date": params["end_date"]
 	}
-	response = openmeteo.weather_api(url, params=params)[0]
+	response = openmeteo.weather_api(url, params=params_api)[0]
 
-	url_hist = "https://archive-api.open-meteo.com/v1/archive"
-	params = {
+	# Process daily data
+	daily_df = process_daily(response, params)
+
+	###--- Get current weather data - 5 days history + 14 days forecast ---###
+	url = "https://api.open-meteo.com/v1/forecast"
+	params_api = {
 		"latitude": coor.latitude,
 		"longitude": coor.longitude,
-		"start_date": "2010-01-01",
-		"end_date": "2023-11-01",
-		"daily": ["temperature_2m_max", "temperature_2m_min"],
-		"timezone": "auto",
-		"models": "best_match"
+		"daily": params["daily"],
+		"timezone": params["timezone"],
+		"models": params["models"],
+		"past_days": params["past_days"], # as the historical data of the past 5 days is not available via the other url
+		"forecast_days": params["forecast_days"]
 	}
-	response_hist = openmeteo.weather_api(url_hist, params=params)[0]
+	response = openmeteo.weather_api(url, params=params_api)[0]
+
+	# Process daily data
+	daily_df = pd.concat([daily_df, process_daily(response, params)], ignore_index=True)
 
 	# Output key information
 	"""print(f"Location: {location}")
@@ -50,26 +94,8 @@ def get_weather(location: str):
 	print(f"Elevation: {response.Elevation()} m asl")
 	print(f"Timezone: {response.Timezone()} {response.TimezoneAbbreviation()}")
 	print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()} s")"""
+	print(daily_df)
+   
+	return daily_df
 
-	# Process daily and monthly data
-	daily = response.Daily()
-	print(daily)
-
-	# Setup daily output
-	daily_data = {"date": pd.date_range(
-		start = pd.to_datetime(daily.Time(), unit = "s"),
-		end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
-		freq = pd.Timedelta(seconds = daily.Interval()),
-		inclusive = "left"
-	)}
-
-	# The order of variables is the same as requested
-	for i,var in enumerate(params["daily"]): 
-		daily_data[var] = daily.Variables(i).ValuesAsNumpy()
-
-	daily_dataframe = pd.DataFrame(data = daily_data)
-	print(daily_dataframe)
-    
-	return daily_dataframe
-
-get_weather("Tuebingen")
+get_weather("Tuebingen", params)
