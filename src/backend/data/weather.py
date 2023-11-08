@@ -19,7 +19,7 @@ params = {
 	"forecast_days": 14
 	}
 
-def process_daily(response: openmeteo_requests, params: dict):
+def process_daily(response: openmeteo_requests, params: dict) -> pd.DataFrame:
 	"""
 	Input:  - API response (openmeteo_requests)
 			- Requested dimensions (dict)
@@ -42,7 +42,7 @@ def process_daily(response: openmeteo_requests, params: dict):
 
 	return pd.DataFrame(data = daily_data)
 
-def get_weather(location: str, params: dict):
+def get_weather(location: str, params: dict) -> pd.DataFrame:
 	"""
 	Input: location (string)
 	Output: weather data (pandas dataframe)
@@ -72,7 +72,7 @@ def get_weather(location: str, params: dict):
 	# Process daily data
 	daily_df = process_daily(response, params)
 
-	###--- Get current weather data - 5 days history + 14 days forecast ---###
+	###--- Get current, future and (perhaps) historical weather data ---###
 	url = "https://api.open-meteo.com/v1/forecast"
 	params_api = {
 		"latitude": coor.latitude,
