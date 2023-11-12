@@ -6,20 +6,6 @@ import pandas as pd
 import requests_cache
 from retry_requests import retry
 
-params = {
-	# Parameters for all APIs
-	"daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "sunrise", "sunset",
-		   "precipitation_sum", "rain_sum", "snowfall_sum", "wind_speed_10m_max"],
-	"timezone": "auto",
-	"models": "best_match",
-	# Parameters for historical API
-	"start_date": "2010-01-02", # Start in the beginning of 2010
-	"end_date": date.today() - timedelta(days = 1), # excluding yesterday
-	# Parameters for current and forecast API
-	"past_days": 0,
-	"forecast_days": 14
-	}
-
 def read_weather_codes(path: str) -> pd.DataFrame:
 	""" Reads in the official WMO weather interpretation codes (https://codes.wmo.int/bufr4/codeflag/_0-20-003)
 	Input:  path
@@ -57,14 +43,14 @@ def process_daily(response: openmeteo_requests, params: dict) -> pd.DataFrame:
 
 	return pd.DataFrame(data = daily_data)
 
-def main(location: str, params: dict) -> pd.DataFrame:
+def main(params: dict) -> pd.DataFrame:
 	""" Unites historical, current and future weather data
-	Input: location (string)
+	Input: 	parameters (dict)
 	Output: weather data (pandas dataframe)
 	"""
 	# Get location coordinates
 	geolocator = Nominatim(user_agent="Max Mohr")
-	coor = geolocator.geocode(location)
+	coor = geolocator.geocode(params["location"])
 
 	# Setup the Open-Meteo API client with cache and retry on error
 	cache_session = requests_cache.CachedSession('.cache', expire_after=-1)
@@ -95,7 +81,7 @@ def main(location: str, params: dict) -> pd.DataFrame:
 		"daily": params["daily"],
 		"timezone": params["timezone"],
 		"models": params["models"],
-		"past_days": params["past_days"], # as the historical data of the past 5 days is not available via the other url
+		"past_days": params["past_days"],
 		"forecast_days": params["forecast_days"]
 	}
 	response = openmeteo.weather_api(url, params=params_api)[0]
@@ -121,5 +107,21 @@ def main(location: str, params: dict) -> pd.DataFrame:
    
 	return daily_df
 
+params = {
+	# Parameter for location
+	"location": "Tuebingen",
+	# Parameters for all APIs
+	"daily": ["weather_code", "temperature_2m_max", "temperature_2m_min", "apparent_temperature_max", "apparent_temperature_min", "sunrise", "sunset",
+		   "precipitation_sum", "rain_sum", "snowfall_sum", "wind_speed_10m_max"],
+	"timezone": "auto",
+	"models": "best_match",
+	# Parameters for historical API
+	"start_date": "2010-01-02", # Start in the beginning of 2010
+	"end_date": date.today() - timedelta(days = 1), # excluding yesterday
+	# Parameters for current and forecast API
+	"past_days": 0,
+	"forecast_days": 14
+	}
+
 if __name__ == "__main__":
-    main("Tuebingen", params)
+    main(params)
