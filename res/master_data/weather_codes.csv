@@ -1,0 +1,261 @@
+<http://codes.wmo.int/def/bufr4/fxy>,@id,@notation,@status,rdf:type,rdfs:label,skos:notation,skos:note
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/0>,0,stable,skos:Concept,'Cloud development not observed or not observable'@en,0,'Characteristic change of the state of sky during the past hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/1>,1,stable,skos:Concept,'Clouds generally dissolving or becoming less developed'@en,1,'Characteristic change of the state of sky during the past hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/2>,2,stable,skos:Concept,'State of sky on the whole unchanged'@en,2,'Characteristic change of the state of sky during the past hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/3>,3,stable,skos:Concept,'Clouds generally forming or developing'@en,3,'Characteristic change of the state of sky during the past hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/4>,4,stable,skos:Concept,"'Visibility reduced by smoke, e.g. veldt or forest fires, industrial smoke or volcanic ashes'@en",4,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/5>,5,stable,skos:Concept,'Haze'@en,5,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/6>,6,stable,skos:Concept,"'Widespread dust in suspension in the air, not raised by wind at or near the station at the time of observation'@en",6,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/7>,7,stable,skos:Concept,"'Dust or sand raised by wind at or near the station at the time of observation, but no well-developed dust whirl(s) or sand whirl(s), and no duststorm or sandstorm seen; or, in the case of sea stations and coastal stations, blowing spray at the station'@en",7,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/8>,8,stable,skos:Concept,"'Well-developed dust whirl(s) or sand whirl(s) seen at or near the station during the preceding hour or at the same time of observation, but no duststorm or sandstorm'@en",8,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/9>,9,stable,skos:Concept,"'Duststorm or sandstorm within sight at the time of observation, or at the station during the preceding hour'@en",9,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/10>,10,stable,skos:Concept,'Mist'@en,10,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/11>,11,stable,skos:Concept,'Patches'@en,11,"'shallow fog or ice fog at the station, whether on land or sea, not deeper than about 2 metres on land or 10 metres at sea'@en"
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/12>,12,stable,skos:Concept,'More or less continuous'@en,12,"'shallow fog or ice fog at the station, whether on land or sea, not deeper than about 2 metres on land or 10 metres at sea'@en"
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/13>,13,stable,skos:Concept,"'Lightning visible, no thunder heard'@en",13,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/14>,14,stable,skos:Concept,"'Precipitation within sight, not reaching the ground or the surface of the sea'@en",14,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/15>,15,stable,skos:Concept,"'Precipitation within sight, reaching the ground or the surface of the sea, but distant, i.e. estimated to be more than 5 km from the station'@en",15,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/16>,16,stable,skos:Concept,"'Precipitation within sight, reaching the ground or the surface of the sea, near to, but not at the station'@en",16,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/17>,17,stable,skos:Concept,"'Thunderstorm, but no precipitation at the time of observation'@en",17,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/18>,18,stable,skos:Concept,'Squalls'@en,18,'at or within sight of the station during the preceding hour or at the time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/19>,19,stable,skos:Concept,'Funnel cloud(s)'@en,19,'**'@en|'at or within sight of the station during the preceding hour or at the time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/20>,20,stable,skos:Concept,'Drizzle (not freezing) or snow grains'@en,20,'not falling as shower(s)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/21>,21,stable,skos:Concept,'Rain (not freezing)'@en,21,'not falling as shower(s)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/22>,22,stable,skos:Concept,'Snow'@en,22,'not falling as shower(s)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/23>,23,stable,skos:Concept,'Rain and snow or ice pellets'@en,23,'not falling as shower(s)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/24>,24,stable,skos:Concept,'Freezing drizzle or freezing rain'@en,24,'not falling as shower(s)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/25>,25,stable,skos:Concept,'Shower(s) of rain'@en,25,'not falling as shower(s)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/26>,26,stable,skos:Concept,"'Shower(s) of snow, or of rain and snow'@en",26,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/27>,27,stable,skos:Concept,"'Shower(s) of hail*, or of rain and hail*'@en",27,'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/28>,28,stable,skos:Concept,'Fog or ice fog'@en,28,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/29>,29,stable,skos:Concept,'Thunderstorm (with or without precipitation)'@en,29,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/30>,30,stable,skos:Concept,'Slight or moderate duststorm or sandstorm'@en,30,'has decreased during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/31>,31,stable,skos:Concept,'Slight or moderate duststorm or sandstorm'@en,31,'no appreciable change during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/32>,32,stable,skos:Concept,'Slight or moderate duststorm or sandstorm'@en,32,'has begun or has increased during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/33>,33,stable,skos:Concept,'Severe duststorm or sandstorm'@en,33,'has decreased during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/34>,34,stable,skos:Concept,'Severe duststorm or sandstorm'@en,34,'no appreciable change during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/35>,35,stable,skos:Concept,'Severe duststorm or sandstorm'@en,35,'has begun or has increased during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/36>,36,stable,skos:Concept,'Slight or moderate drifting snow'@en,36,'generally low (below eye level)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/37>,37,stable,skos:Concept,'Heavy drifting snow'@en,37,'generally low (below eye level)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/38>,38,stable,skos:Concept,'Slight or moderate blowing snow'@en,38,'generally high (above eye level)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/39>,39,stable,skos:Concept,'Heavy blowing snow'@en,39,'generally high (above eye level)'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/40>,40,stable,skos:Concept,"'Fog or ice fog at a distance at the time of observation, but not at the station during the preceding hour, the fog or ice fog extending to a level above that of the observer'@en",40,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/41>,41,stable,skos:Concept,'Fog or ice fog in patches'@en,41,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/42>,42,stable,skos:Concept,"'Fog or ice fog, sky visible'@en",42,'has become thinner during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/43>,43,stable,skos:Concept,"'Fog or ice fog, sky invisible'@en",43,'has become thinner during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/44>,44,stable,skos:Concept,"'Fog or ice fog, sky visible'@en",44,'no appreciable change during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/45>,45,stable,skos:Concept,"'Fog or ice fog, sky invisible'@en",45,'no appreciable change during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/46>,46,stable,skos:Concept,"'Fog or ice fog, sky visible'@en",46,'has begun or has become thicker during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/47>,47,stable,skos:Concept,"'Fog or ice fog, sky invisible'@en",47,'has begun or has become thicker during the preceding hour'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/48>,48,stable,skos:Concept,"'Fog, depositing rime, sky visible'@en",48,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/49>,49,stable,skos:Concept,"'Fog, depositing rime, sky invisible'@en",49,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/50>,50,stable,skos:Concept,"'Drizzle, not freezing, intermittent'@en",50,'slight at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/51>,51,stable,skos:Concept,"'Drizzle, not freezing, continuous'@en",51,'slight at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/52>,52,stable,skos:Concept,"'Drizzle, not freezing, intermittent'@en",52,'moderate at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/53>,53,stable,skos:Concept,"'Drizzle, not freezing, continuous'@en",53,'moderate at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/54>,54,stable,skos:Concept,"'Drizzle, not freezing, intermittent'@en",54,'heavy (dense) at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/55>,55,stable,skos:Concept,"'Drizzle, not freezing, continuous'@en",55,'heavy (dense) at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/56>,56,stable,skos:Concept,"'Drizzle, freezing, slight'@en",56,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/57>,57,stable,skos:Concept,"'Drizzle, freezing, moderate or heavy (dense)'@en",57,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/58>,58,stable,skos:Concept,"'Drizzle and rain, slight'@en",58,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/59>,59,stable,skos:Concept,"'Drizzle and rain, moderate or heavy'@en",59,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/60>,60,stable,skos:Concept,"'Rain, not freezing, intermittent'@en",60,'slight at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/61>,61,stable,skos:Concept,"'Rain, not freezing, continuous'@en",61,'slight at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/62>,62,stable,skos:Concept,"'Rain, not freezing, intermittent'@en",62,'moderate at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/63>,63,stable,skos:Concept,"'Rain, not freezing, continuous'@en",63,'moderate at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/64>,64,stable,skos:Concept,"'Rain, not freezing, intermittent'@en",64,'heavy at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/65>,65,stable,skos:Concept,"'Rain, not freezing, continuous'@en",65,'heavy at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/66>,66,stable,skos:Concept,"'Rain, freezing, slight'@en",66,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/67>,67,stable,skos:Concept,"'Rain, freezing, moderate or heavy'@en",67,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/68>,68,stable,skos:Concept,"'Rain or drizzle and snow, slight'@en",68,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/69>,69,stable,skos:Concept,"'Rain or drizzle and snow, moderate or heavy'@en",69,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/70>,70,stable,skos:Concept,'Intermittent fall of snowflakes'@en,70,'slight at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/71>,71,stable,skos:Concept,'Continuous fall of snowflakes'@en,71,'slight at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/72>,72,stable,skos:Concept,'Intermittent fall of snowflakes'@en,72,'moderate at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/73>,73,stable,skos:Concept,'Continuous fall of snowflakes'@en,73,'moderate at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/74>,74,stable,skos:Concept,'Intermittent fall of snowflakes'@en,74,'heavy at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/75>,75,stable,skos:Concept,'Continuous fall of snowflakes'@en,75,'heavy at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/76>,76,stable,skos:Concept,'Diamond dust (with or without fog)'@en,76,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/77>,77,stable,skos:Concept,'Snow grains (with or without fog)'@en,77,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/78>,78,stable,skos:Concept,'Isolated star-like snow crystals (with or without fog)'@en,78,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/79>,79,stable,skos:Concept,'Ice pellets'@en,79,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/80>,80,stable,skos:Concept,"'Rain shower(s), slight'@en",80,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/81>,81,stable,skos:Concept,"'Rain shower(s), moderate or heavy'@en",81,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/82>,82,stable,skos:Concept,"'Rain shower(s), violent'@en",82,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/83>,83,stable,skos:Concept,"'Shower(s) of rain and snow mixed, slight'@en",83,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/84>,84,stable,skos:Concept,"'Shower(s) of rain and snow mixed, moderate or heavy'@en",84,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/85>,85,stable,skos:Concept,"'Snow shower(s), slight'@en",85,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/86>,86,stable,skos:Concept,"'Snow shower(s), moderate or heavy'@en",86,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/87>,87,stable,skos:Concept,"'Shower(s) of snow pellets or small hail, with or without rain or rain and snow mixed'@en",87,'slight'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/88>,88,stable,skos:Concept,"'Shower(s) of snow pellets or small hail, with or without rain or rain and snow mixed'@en",88,'moderate or heavy'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/89>,89,stable,skos:Concept,"'Shower(s) of hail, with or without rain or rain and snow mixed, not associated with thunder'@en",89,'slight'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/90>,90,stable,skos:Concept,"'Shower(s) of hail, with or without rain or rain and snow mixed, not associated with thunder'@en",90,'moderate or heavy'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/91>,91,stable,skos:Concept,'Slight rain at time of observation'@en,91,'Thunderstorm during the preceding hour but not at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/92>,92,stable,skos:Concept,'Moderate or heavy rain at time of observation'@en,92,'Thunderstorm during the preceding hour but not at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/93>,93,stable,skos:Concept,"'Slight snow, or rain and snow mixed or hail* at time of observation'@en",93,'Thunderstorm during the preceding hour but not at time of observation'@en|'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/94>,94,stable,skos:Concept,"'Moderate or heavy snow, or rain and snow mixed or hail* at time of observation'@en",94,'Thunderstorm during the preceding hour but not at time of observation'@en|'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/95>,95,stable,skos:Concept,"'Thunderstorm, slight or moderate, without hail*, but with rain and/or snow at time of observation'@en",95,'Thunderstorm at time of observation'@en|'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/96>,96,stable,skos:Concept,"'Thunderstorm, slight or moderate, with hail* at time of observation'@en",96,'Thunderstorm at time of observation'@en|'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/97>,97,stable,skos:Concept,"'Thunderstorm, heavy, without hail*, but with rain and/or snow at time of observation'@en",97,'Thunderstorm at time of observation'@en|'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/98>,98,stable,skos:Concept,'Thunderstorm combined with duststorm or sandstorm at time of observation'@en,98,'Thunderstorm at time of observation'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/99>,99,stable,skos:Concept,"'Thunderstorm, heavy, with hail* at time of observation'@en",99,'Thunderstorm at time of observation'@en|'<*>'@en
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/100>,100,stable,skos:Concept,'No significant weather observed'@en,100,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/101>,101,stable,skos:Concept,'Clouds generally dissolving or becoming less developed during the past hour'@en,101,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/102>,102,stable,skos:Concept,'State of sky on the whole unchanged during the past hour'@en,102,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/103>,103,stable,skos:Concept,'Clouds generally forming or developing during the past hour'@en,103,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/104>,104,stable,skos:Concept,"'Haze or smoke, or dust in suspension in the air, visibility equal to, or greater than, 1 km'@en",104,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/105>,105,stable,skos:Concept,"'Haze or smoke, or dust in suspension in the air, visibility less than 1 km'@en",105,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/110>,110,stable,skos:Concept,'Mist'@en,110,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/111>,111,stable,skos:Concept,'Diamond dust'@en,111,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/112>,112,stable,skos:Concept,'Distant lightning'@en,112,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/118>,118,stable,skos:Concept,'Squalls'@en,118,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/120>,120,stable,skos:Concept,'Fog'@en,120,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/121>,121,stable,skos:Concept,'PRECIPITATION'@en,121,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/122>,122,stable,skos:Concept,'Drizzle (not freezing) or snow grains'@en,122,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/123>,123,stable,skos:Concept,'Rain (not freezing)'@en,123,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/124>,124,stable,skos:Concept,'Snow'@en,124,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/125>,125,stable,skos:Concept,'Freezing drizzle or freezing rain'@en,125,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/126>,126,stable,skos:Concept,'Thunderstorm (with or without precipitation)'@en,126,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/127>,127,stable,skos:Concept,'BLOWING OR DRIFTING SNOW OR SAND'@en,127,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/128>,128,stable,skos:Concept,"'Blowing or drifting snow or sand, visibility equal to, or greater than, 1 km'@en",128,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/129>,129,stable,skos:Concept,"'Blowing or drifting snow or sand, visibility less than 1 km'@en",129,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/130>,130,stable,skos:Concept,'FOG'@en,130,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/131>,131,stable,skos:Concept,'Fog or ice fog in patches'@en,131,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/132>,132,stable,skos:Concept,"'Fog or ice fog, has become thinner during the past hour'@en",132,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/133>,133,stable,skos:Concept,"'Fog or ice fog, no appreciable change during the past hour'@en",133,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/134>,134,stable,skos:Concept,"'Fog or ice fog, has begun or become thicker during the past hour'@en",134,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/135>,135,stable,skos:Concept,"'Fog, depositing rime'@en",135,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/140>,140,stable,skos:Concept,'PRECIPITATION'@en,140,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/141>,141,stable,skos:Concept,"'Precipitation, slight or moderate'@en",141,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/142>,142,stable,skos:Concept,"'Precipitation, heavy'@en",142,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/143>,143,stable,skos:Concept,"'Liquid precipitation, slight or moderate'@en",143,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/144>,144,stable,skos:Concept,"'Liquid precipitation, heavy'@en",144,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/145>,145,stable,skos:Concept,"'Solid precipitation, slight or moderate'@en",145,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/146>,146,stable,skos:Concept,"'Solid precipitation, heavy'@en",146,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/147>,147,stable,skos:Concept,"'Freezing precipitation, slight or moderate'@en",147,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/148>,148,stable,skos:Concept,"'Freezing precipitation, heavy'@en",148,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/150>,150,stable,skos:Concept,'DRIZZLE'@en,150,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/151>,151,stable,skos:Concept,"'Drizzle, not freezing, slight'@en",151,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/152>,152,stable,skos:Concept,"'Drizzle, not freezing, moderate'@en",152,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/153>,153,stable,skos:Concept,"'Drizzle, not freezing, heavy'@en",153,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/154>,154,stable,skos:Concept,"'Drizzle, freezing, slight'@en",154,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/155>,155,stable,skos:Concept,"'Drizzle, freezing, moderate'@en",155,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/156>,156,stable,skos:Concept,"'Drizzle, freezing, heavy'@en",156,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/157>,157,stable,skos:Concept,"'Drizzle and rain, slight'@en",157,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/158>,158,stable,skos:Concept,"'Drizzle and rain, moderate or heavy'@en",158,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/160>,160,stable,skos:Concept,'RAIN'@en,160,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/161>,161,stable,skos:Concept,"'Rain, not freezing, slight'@en",161,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/162>,162,stable,skos:Concept,"'Rain, not freezing, moderate'@en",162,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/163>,163,stable,skos:Concept,"'Rain, not freezing, heavy'@en",163,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/164>,164,stable,skos:Concept,"'Rain, freezing, slight'@en",164,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/165>,165,stable,skos:Concept,"'Rain, freezing, moderate'@en",165,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/166>,166,stable,skos:Concept,"'Rain, freezing, heavy'@en",166,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/167>,167,stable,skos:Concept,"'Rain (or drizzle) and snow, slight'@en",167,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/168>,168,stable,skos:Concept,"'Rain (or drizzle) and snow, moderate or heavy'@en",168,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/170>,170,stable,skos:Concept,'SNOW'@en,170,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/171>,171,stable,skos:Concept,"'Snow, slight'@en",171,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/172>,172,stable,skos:Concept,"'Snow, moderate'@en",172,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/173>,173,stable,skos:Concept,"'Snow, heavy'@en",173,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/174>,174,stable,skos:Concept,"'Ice pellets, slight'@en",174,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/175>,175,stable,skos:Concept,"'Ice pellets, moderate'@en",175,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/176>,176,stable,skos:Concept,"'Ice pellets, heavy'@en",176,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/177>,177,stable,skos:Concept,'Snow grains'@en,177,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/178>,178,stable,skos:Concept,'Ice crystals'@en,178,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/180>,180,stable,skos:Concept,'SHOWER(S) OR INTERMITTENT PRECIPITATION'@en,180,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/181>,181,stable,skos:Concept,"'Rain shower(s) or intermittent rain, slight'@en",181,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/182>,182,stable,skos:Concept,"'Rain shower(s) or intermittent rain, moderate'@en",182,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/183>,183,stable,skos:Concept,"'Rain shower(s) or intermittent rain, heavy'@en",183,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/184>,184,stable,skos:Concept,"'Rain shower(s) or intermittent rain, violent'@en",184,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/185>,185,stable,skos:Concept,"'Snow shower(s) or intermittent snow, slight'@en",185,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/186>,186,stable,skos:Concept,"'Snow shower(s) or intermittent snow, moderate'@en",186,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/187>,187,stable,skos:Concept,"'Snow shower(s) or intermittent snow, heavy'@en",187,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/189>,189,stable,skos:Concept,'Hail'@en,189,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/190>,190,stable,skos:Concept,'THUNDERSTORM'@en,190,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/191>,191,stable,skos:Concept,"'Thunderstorm, slight or moderate, with no precipitation'@en",191,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/192>,192,stable,skos:Concept,"'Thunderstorm, slight or moderate, with rain showers and/or snow showers'@en",192,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/193>,193,stable,skos:Concept,"'Thunderstorm, slight or moderate, with hail'@en",193,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/194>,194,stable,skos:Concept,"'Thunderstorm, heavy, with no precipitation'@en",194,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/195>,195,stable,skos:Concept,"'Thunderstorm, heavy, with rain showers and/or snow showers'@en",195,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/196>,196,stable,skos:Concept,"'Thunderstorm, heavy, with hail'@en",196,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/199>,199,stable,skos:Concept,'Tornado'@en,199,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/204>,204,stable,skos:Concept,'Volcanic ash suspended in the air aloft'@en,204,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/205>,205,stable,skos:Concept,'Not used'@en,205,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/206>,206,stable,skos:Concept,"'Thick dust haze, visibility less than 1 km'@en",206,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/207>,207,stable,skos:Concept,'Blowing spray at the station'@en,207,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/208>,208,stable,skos:Concept,'Drifting dust (sand)'@en,208,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/209>,209,stable,skos:Concept,'Wall of dust or sand in distance (like haboob)'@en,209,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/210>,210,stable,skos:Concept,'Snow haze'@en,210,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/211>,211,stable,skos:Concept,'Whiteout'@en,211,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/212>,212,stable,skos:Concept,'Not used'@en,212,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/213>,213,stable,skos:Concept,"'Lightning, cloud to surface'@en",213,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/217>,217,stable,skos:Concept,'Dry thunderstorm'@en,217,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/218>,218,stable,skos:Concept,'Not used'@en,218,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/219>,219,stable,skos:Concept,'Tornado cloud (destructive) at or within sight of the station during preceding hour or at the time of observation'@en,219,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/220>,220,stable,skos:Concept,'Deposition of volcanic ash'@en,220,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/221>,221,stable,skos:Concept,'Deposition of dust or sand'@en,221,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/222>,222,stable,skos:Concept,'Deposition of dew'@en,222,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/223>,223,stable,skos:Concept,'Deposition of wet snow'@en,223,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/224>,224,stable,skos:Concept,'Deposition of soft rime'@en,224,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/225>,225,stable,skos:Concept,'Deposition of hard rime'@en,225,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/226>,226,stable,skos:Concept,'Deposition of hoar frost'@en,226,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/227>,227,stable,skos:Concept,'Deposition of glaze'@en,227,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/228>,228,stable,skos:Concept,'Deposition of ice crust (ice slick)'@en,228,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/229>,229,stable,skos:Concept,'Not used'@en,229,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/230>,230,stable,skos:Concept,'Duststorm or sandstorm with temperature below 0 °C'@en,230,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/239>,239,stable,skos:Concept,"'Blowing snow, impossible to determine whether snow is falling or not'@en",239,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/240>,240,stable,skos:Concept,'Not used'@en,240,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/241>,241,stable,skos:Concept,'Fog on sea'@en,241,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/242>,242,stable,skos:Concept,'Fog in valleys'@en,242,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/243>,243,stable,skos:Concept,'Arctic or Antarctic sea smoke'@en,243,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/244>,244,stable,skos:Concept,"'Steam fog (sea, lake or river)'@en",244,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/245>,245,stable,skos:Concept,'Steam log (land)'@en,245,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/246>,246,stable,skos:Concept,'Fog over ice or snow cover'@en,246,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/247>,247,stable,skos:Concept,"'Dense fog, visibility 60-90 m'@en",247,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/248>,248,stable,skos:Concept,"'Dense fog, visibility 30-60 m'@en",248,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/249>,249,stable,skos:Concept,"'Dense fog, visibility less than 30 m'@en",249,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/250>,250,stable,skos:Concept,"'Drizzle, rate of fall - less than 0.10 mm h-1'@en",250,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/251>,251,stable,skos:Concept,"'Drizzle, rate of fall - 0.10-0.19 mm h-1'@en",251,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/252>,252,stable,skos:Concept,"'Drizzle, rate of fall - 0.20-0.39 mm h-1'@en",252,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/253>,253,stable,skos:Concept,"'Drizzle, rate of fall - 0.40-0.79 mm h-1'@en",253,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/254>,254,stable,skos:Concept,"'Drizzle, rate of fall - 0.80-1.59 mm h-1'@en",254,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/255>,255,stable,skos:Concept,"'Drizzle, rate of fall - 1.60-3.19 mm h-1'@en",255,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/256>,256,stable,skos:Concept,"'Drizzle, rate of fall - 3.20-6.39 mm h-1'@en",256,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/257>,257,stable,skos:Concept,"'Drizzle, rate of fall - 6.4 mm h-1 or more'@en",257,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/258>,258,stable,skos:Concept,'Not used'@en,258,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/259>,259,stable,skos:Concept,'Drizzle and snow'@en,259,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/260>,260,stable,skos:Concept,"'Rain, rate of fall - less than 1.0 mm h-1'@en",260,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/261>,261,stable,skos:Concept,"'Rain, rate of fall - 1.0-1.9 mm h-1'@en",261,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/262>,262,stable,skos:Concept,"'Rain, rate of fall - 2.0-3.9 mm h-1'@en",262,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/263>,263,stable,skos:Concept,"'Rain, rate of fall - 4.0-7.9 mm h-1'@en",263,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/264>,264,stable,skos:Concept,"'Rain, rate of fall - 8.0-15.9 mm h-1'@en",264,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/265>,265,stable,skos:Concept,"'Rain, rate of fall - 16.0-31.9 mm h-1'@en",265,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/266>,266,stable,skos:Concept,"'Rain, rate of fall - 32.0-63.9 mm h-1'@en",266,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/267>,267,stable,skos:Concept,"'Rain, rate of fall - 64.0 mm h-1 or more'@en",267,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/270>,270,stable,skos:Concept,"'Snow, rate of fall - less than 1.0 cm h-1'@en",270,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/271>,271,stable,skos:Concept,"'Snow, rate of fall - 1.0-1.9 cm h-1'@en",271,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/272>,272,stable,skos:Concept,"'Snow, rate of fall - 2.0-3.9 cm h-1'@en",272,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/273>,273,stable,skos:Concept,"'Snow, rate of fall - 4.0-7.9 cm h-1'@en",273,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/274>,274,stable,skos:Concept,"'Snow, rate of fall - 8.0-15.9 cm h-1'@en",274,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/275>,275,stable,skos:Concept,"'Snow, rate of fall - 16.0-31.9 cm h-1'@en",275,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/276>,276,stable,skos:Concept,"'Snow, rate of fall - 32.0-63.9 cm h-1'@en",276,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/277>,277,stable,skos:Concept,"'Snow, rate of fall - 64.0 cm h-1 or more'@en",277,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/278>,278,stable,skos:Concept,'Snow or ice crystal precipitation from a clear sky'@en,278,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/279>,279,stable,skos:Concept,"'Wet snow, freezing on contact'@en",279,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/280>,280,stable,skos:Concept,'Precipitation of rain'@en,280,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/281>,281,stable,skos:Concept,"'Precipitation of rain, freezing'@en",281,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/282>,282,stable,skos:Concept,'Precipitation of rain and snow mixed'@en,282,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/283>,283,stable,skos:Concept,'Precipitation of snow'@en,283,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/284>,284,stable,skos:Concept,'Precipitation of snow pellets or small hall'@en,284,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/285>,285,stable,skos:Concept,"'Precipitation of snow pellets or small hail, with rain'@en",285,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/286>,286,stable,skos:Concept,"'Precipitation of snow pellets or small hail, with rain and snow mixed'@en",286,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/287>,287,stable,skos:Concept,"'Precipitation of snow pellets or small hail, with snow'@en",287,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/288>,288,stable,skos:Concept,'Precipitation of hail'@en,288,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/289>,289,stable,skos:Concept,"'Precipitation of hail, with rain'@en",289,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/290>,290,stable,skos:Concept,"'Precipitation of hall, with rain and snow mixed'@en",290,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/291>,291,stable,skos:Concept,"'Precipitation of hail, with snow'@en",291,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/292>,292,stable,skos:Concept,'Shower(s) or thunderstorm over sea'@en,292,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/293>,293,stable,skos:Concept,'Shower(s) or thunderstorm over mountains'@en,293,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/508>,508,stable,skos:Concept,"'No significant phenomenon to report, present and past weather omitted'@en",508,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/509>,509,stable,skos:Concept,"'No observation, data not available, present and past weather omitted'@en",509,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/510>,510,stable,skos:Concept,"'Present and past weather missing, but expected'@en",510,""
+'020003',<http://codes.wmo.int/bufr4/codeflag/0-20-003/511>,511,stable,skos:Concept,'Missing value'@en,511,""
