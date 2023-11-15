@@ -132,7 +132,7 @@ def generate_safety_report(aa_id):
 generate_safety_report("209524")
 
 #read in crime rate per country from csv file and clean data
-crime_countries = pd.read_csv("crime-rate-by-country-2023.csv")
+crime_countries = pd.read_csv("../../../res/master_data/crime-rate-by-country-2023.csv")
 crime_countries_clean = crime_countries[["country", "cca3", "cca2",
                                           "crimeRateByCountry_crimeIndex"]].sort_values(by="crimeRateByCountry_crimeIndex")
 
