@@ -133,7 +133,7 @@ def generate_safety_report(aa_id):
 generate_safety_report("209524")
 
 #read in crime rate per country from csv file and clean data
-crime_countries = pd.read_csv("crime-rate-by-country-2023.csv")
+crime_countries = pd.read_csv("../../../res/master_data/crime-rate-by-country-2023.csv")
 crime_countries_clean = crime_countries[["country", "cca3", "cca2",
                                           "crimeRateByCountry_crimeIndex"]].sort_values(by="crimeRateByCountry_crimeIndex")
 
@@ -174,17 +174,17 @@ safety_df = pd.merge(safety_df, crime_countries_clean.rename(columns={'cca3': 'I
 safety_df = safety_df[safety_df['PoliticalStability'].notna()]
 
 #read in global peace index excel report, filter columns
-global_peace_index = pd.read_excel("global_peace_index.xlsx", sheet_name=1, skiprows=3)
+global_peace_index = pd.read_excel("../../../res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
 global_peace_index = global_peace_index.rename(columns={global_peace_index.columns[17]: 'peace_index'})
 global_peace_index = global_peace_index[["Country", "iso3c", "peace_index"]]
 
 #read in global terrorism index excel report, filter columns
-global_terrorism_index = pd.read_excel("global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
+global_terrorism_index = pd.read_excel("../../../res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
 global_terrorism_index = global_terrorism_index.rename(columns={global_terrorism_index.columns[4]: 'terrorism_index'})
 global_terrorism_index = global_terrorism_index[["Country", "iso3c", "terrorism_index"]]
 
 #read in ecological threat excel report, filter columns
-ecological_threat_report = pd.read_excel("ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
+ecological_threat_report = pd.read_excel("../../../res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
 ecological_threat_report = ecological_threat_report.rename(columns={ecological_threat_report.columns[2]: 'ecological_threat'})
 ecological_threat_report = ecological_threat_report[["Country", "ecological_threat"]]
 
