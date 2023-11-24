@@ -40,9 +40,10 @@ def get_geojson(city: str, country: str, shape: str = "polygon", long: int = 0, 
     else:
         raise ValueError("Invalid shape. Shape can either be 'polygon' or 'circle'.")
 
-def get_land_coverage(city, geojson: dict, map: str,) -> [pd.DataFrame, pd.DataFrame, ee.Image]:
+def get_land_coverage(city: str, geojson: dict, map: str,) -> [pd.DataFrame, pd.DataFrame, ee.Image]:
     """ Get segmentation stats of a geojson
-    Input:  - geojson: geojson of a city
+    Input:  - city: name of the city
+            - geojson: geojson of a city
             - map: name of the landcover map. Can either be "Copernicus" or "ESA"
     Output: land_coverage: segmentation stats of the geojson
     """
@@ -107,7 +108,7 @@ def get_landmarks(starting_city: str, shape: str, bounding_box: list, long: int,
     with open(os.path.join(current_script_directory, path), "r") as f:
         apikey = f.read()
     
-    # Get geojson from geoapify API
+    # Get landmarks from geoapify API
     url = "https://api.geoapify.com/v2/places"
     params = {
         "categories": "natural,national_park,beach",
@@ -143,7 +144,7 @@ params = {
     "radius_landmarks": 13000
 }
 
-def main(params: dict) -> pd.DataFrame:
+def main(params: dict) -> [dict, pd.DataFrame, pd.DataFrame, ee.Image, pd.DataFrame]:
     """ Get all geographical data
     Input:  parameters (dict)
     Output: output of geographical data
