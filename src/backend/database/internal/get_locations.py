@@ -1,4 +1,4 @@
-import geojson
+#import geojsonds
 from geopy import distance
 from geopy.geocoders import Nominatim
 from math import ceil
