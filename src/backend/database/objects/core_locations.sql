@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS core_locations;
 
 CREATE TABLE core_locations (
-    location_id         SERIAL PRIMARY KEY NOT NULL,
+    location_id         NUMERIC(9,0) PRIMARY KEY NOT NULL,
     city                VARCHAR(255) NOT NULL,
     district            VARCHAR(255),
     state               VARCHAR(255),
@@ -14,7 +14,7 @@ CREATE TABLE core_locations (
     box_bottom_left_lon NUMERIC(10,7),
     box_top_right_lat   NUMERIC(10,7),
     box_top_right_lon   NUMERIC(10,7),
-    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at          TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc-01')
 );
 
 COMMENT ON TABLE core_locations IS 'Table stores geographical master data of all locations.';

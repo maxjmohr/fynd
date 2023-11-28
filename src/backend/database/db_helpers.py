@@ -60,12 +60,13 @@ def execute_sql(conn, cur, sql:str, commit:bool = True):
     print('\033[1m\033[92mSuccessfully executed SQL query.\033[0m')
 
 
-def insert_data(engine, data:pd.DataFrame, table:str):
+def insert_data(engine, data:pd.DataFrame, table:str, if_exists:str = 'append'):
     ''' Insert data into the database
     Input:  - engine: connection to the database (via sqlalchemy)
             - cur: cursor of the connection
             - data: data to insert
             - table: name of the table to insert the data into
+            - if_exists: str, whether to append the data to the table or replace the table
             ! This function automatically commits the changes !
     Output: None
     '''
