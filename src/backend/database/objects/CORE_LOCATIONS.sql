@@ -1,35 +1,35 @@
-DROP TABLE IF EXISTS CORE_LOCATIONS;
+DROP TABLE IF EXISTS core_locations;
 
-CREATE TABLE CORE_LOCATIONS (
-    LOCATION_ID         SERIAL PRIMARY KEY NOT NULL,
-    CITY                VARCHAR(255) NOT NULL,
-    DISTRICT            VARCHAR(255),
-    STATE               VARCHAR(255),
-    COUNTRY             VARCHAR(255) NOT NULL,
-    ADRESS_TYPE         VARCHAR(255),
-    LAT                 NUMERIC(10,7) NOT NULL,
-    LON                 NUMERIC(10,7) NOT NULL,
-    RADIUS_KM           NUMERIC(4,0),
-    BOX_BOTTOM_LEFT_LAT NUMERIC(10,7),
-    BOX_BOTTOM_LEFT_LON NUMERIC(10,7),
-    BOX_TOP_RIGHT_LAT   NUMERIC(10,7),
-    BOX_TOP_RIGHT_LON   NUMERIC(10,7),
-    UPDATED_AT          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE core_locations (
+    location_id         SERIAL PRIMARY KEY NOT NULL,
+    city                VARCHAR(255) NOT NULL,
+    district            VARCHAR(255),
+    state               VARCHAR(255),
+    country             VARCHAR(255) NOT NULL,
+    adress_type         VARCHAR(255),
+    lat                 NUMERIC(10,7) NOT NULL,
+    lon                 NUMERIC(10,7) NOT NULL,
+    radius_km           NUMERIC(4,0),
+    box_bottom_left_lat NUMERIC(10,7),
+    box_bottom_left_lon NUMERIC(10,7),
+    box_top_right_lat   NUMERIC(10,7),
+    box_top_right_lon   NUMERIC(10,7),
+    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE CORE_LOCATIONS IS 'Table stores geographical master data of all locations.';
+COMMENT ON TABLE core_locations IS 'Table stores geographical master data of all locations.';
 
-COMMENT ON COLUMN CORE_LOCATIONS.LOCATION_ID IS 'Unique identifier for the location';
-COMMENT ON COLUMN CORE_LOCATIONS.CITY IS 'City name';
-COMMENT ON COLUMN CORE_LOCATIONS.DISTRICT IS 'District name';
-COMMENT ON COLUMN CORE_LOCATIONS.STATE IS 'State name';
-COMMENT ON COLUMN CORE_LOCATIONS.COUNTRY IS 'Country name';
-COMMENT ON COLUMN CORE_LOCATIONS.ADRESS_TYPE IS 'Type of address';
-COMMENT ON COLUMN CORE_LOCATIONS.LAT IS 'Latitude of the location';
-COMMENT ON COLUMN CORE_LOCATIONS.LON IS 'Longitude of the location';
-COMMENT ON COLUMN CORE_LOCATIONS.RADIUS_KM IS 'Radius of the location in kilometers to include the entire location geographically';
-COMMENT ON COLUMN CORE_LOCATIONS.BOX_BOTTOM_LEFT_LAT IS 'Latitude of the bottom left corner of the bounding box to include the entire location geographically';
-COMMENT ON COLUMN CORE_LOCATIONS.BOX_BOTTOM_LEFT_LON IS 'Longitude of the bottom left corner of the bounding box to include the entire location geographically';
-COMMENT ON COLUMN CORE_LOCATIONS.BOX_TOP_RIGHT_LAT IS 'Latitude of the top right corner of the bounding box to include the entire location geographically';
-COMMENT ON COLUMN CORE_LOCATIONS.BOX_TOP_RIGHT_LON IS 'Longitude of the top right corner of the bounding box to include the entire location geographically';
-COMMENT ON COLUMN CORE_LOCATIONS.UPDATED_AT IS 'Timestamp of the last update of the record';
+COMMENT ON COLUMN core_locations.location_id IS 'Unique identifier for the location';
+COMMENT ON COLUMN core_locations.city IS 'City name';
+COMMENT ON COLUMN core_locations.district IS 'District name';
+COMMENT ON COLUMN core_locations.state IS 'State name';
+COMMENT ON COLUMN core_locations.country IS 'Country name';
+COMMENT ON COLUMN core_locations.adress_type IS 'Type of address';
+COMMENT ON COLUMN core_locations.lat IS 'Latitude of the location';
+COMMENT ON COLUMN core_locations.lon IS 'Longitude of the location';
+COMMENT ON COLUMN core_locations.radius_km IS 'Radius of the location in kilometers to include the entire location geographically';
+COMMENT ON COLUMN core_locations.box_bottom_left_lat IS 'Latitude of the bottom left corner of the bounding box to include the entire location geographically';
+COMMENT ON COLUMN core_locations.box_bottom_left_lon IS 'Longitude of the bottom left corner of the bounding box to include the entire location geographically';
+COMMENT ON COLUMN core_locations.box_top_right_lat IS 'Latitude of the top right corner of the bounding box to include the entire location geographically';
+COMMENT ON COLUMN core_locations.box_top_right_lon IS 'Longitude of the top right corner of the bounding box to include the entire location geographically';
+COMMENT ON COLUMN core_locations.updated_at IS 'Timestamp of the last update of the record';

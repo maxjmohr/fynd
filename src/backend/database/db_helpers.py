@@ -60,9 +60,24 @@ def execute_sql(conn, cur, sql:str, commit:bool = True):
     print('\033[1m\033[92mSuccessfully executed SQL query.\033[0m')
 
 
-def fetch_data(conn, total_object:str, sql:str = None) -> pd.DataFrame:
+def insert_data(engine, data:pd.DataFrame, table:str):
+    ''' Insert data into the database
+    Input:  - engine: connection to the database (via sqlalchemy)
+            - cur: cursor of the connection
+            - data: data to insert
+            - table: name of the table to insert the data into
+            ! This function automatically commits the changes !
+    Output: None
+    '''
+    # Insert the data
+    data.to_sql(table, engine, if_exists='append', index=False)
+
+    print('\033[1m\033[92mSuccessfully inserted data into table {}.\033[0m'.format(table))
+
+
+def fetch_data(engine, total_object:str, sql:str = None) -> pd.DataFrame:
     ''' Fetch data from the database
-    Input:  - conn: connection to the database
+    Input:  - engine: connection to the database (via sqlalchemy)
             - cur: cursor of the connection
             - sql: SQL query to fetch the data
     Output: list of tuples
@@ -71,7 +86,7 @@ def fetch_data(conn, total_object:str, sql:str = None) -> pd.DataFrame:
         sql = f"SELECT * FROM {total_object}"
     
     # Fetch the data
-    return pd.read_sql_query(sql, conn)
+    return pd.read_sql(sql, engine)
 
 
 def create_db_object(conn, cur, object:str = None, sql:str = None, commit:bool = True):
@@ -98,7 +113,3 @@ def create_db_object(conn, cur, object:str = None, sql:str = None, commit:bool =
         conn.commit()
 
     print('\033[1m\033[92mSuccessfully created object{}.\033[0m'.format(" "+object))
-
-conn, cur, engine = connect_to_db()
-create_db_object(conn, cur, "CORE_LOCATIONS")
-disconnect_from_db(conn, cur, engine)
