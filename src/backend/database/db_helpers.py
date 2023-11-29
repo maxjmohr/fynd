@@ -3,7 +3,6 @@ import pandas as pd
 import psycopg2
 import re
 from sqlalchemy import create_engine
-import warnings
 
 def connect_to_db(db:str = "dsp", host:str = "2001:7c0:2320:2:f816:3eff:fe45:cffc", user:str = "postgres", password:str = "l0r10t", port:str = "5433"):
     ''' Connect to PostgreSQL database via psycopg2 and sqlalchemy
@@ -106,7 +105,7 @@ def create_db_object(conn, cur, object:str = None, sql:str = None, commit:bool =
         with open(file_path, 'r') as file:
             sql = file.read()
     else:
-        warnings.warn("WARNING: Please save the object creation script as a sql file under src/backend/database/objects.")
+        print('\033[1m\033[91mWARNING: Please save the object creation script as a sql file under src/backend/database/objects.\033[0m')
 
     # Execute the SQL query
     cur.execute(sql)
