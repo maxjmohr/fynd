@@ -1,4 +1,4 @@
 .DS_Store
 .cache.sqlite
-.dsproject
+.dsproject          
 *_apikey.txt
