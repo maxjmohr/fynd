@@ -92,6 +92,9 @@ class LocationMasterData:
             self.country = location_info[1]
         elif len(location_info) == 1:
             self.city = location_info[0]
+        else:
+            self.city = location_info[0]
+            self.country = location_info[-1]
 
         # Check if city is assigned
         if self.city is None:
