@@ -127,7 +127,7 @@ def generate_safety_report(aa_id):
 
 #generate_safety_report("209524")
 
-def create_country_safety_df(country_iso3):
+def create_country_safety_df():
 
     #read in crime rate per country from csv file and clean data
     crime_countries = pd.read_csv("res/master_data/crime-rate-by-country-2023.csv")
@@ -220,10 +220,10 @@ def create_country_safety_df(country_iso3):
             'terrorism_index', 'ecological_threat']] = 10 - safety_df[['crimeRateByCountry_crimeIndex', 
                                                                         'peace_index', 'terrorism_index', 'ecological_threat']]
 
-    #example country
-    return safety_df[safety_df["ISO3"]==country_iso3][['PoliticalStability', 'RuleofLaw', 'PersonalFreedom',
-                'crimeRateByCountry_crimeIndex', 'peace_index',
-                'terrorism_index', 'ecological_threat']]
+ 
+    safety_df.insert(0, 'index', safety_df.index) 
 
-safety_df = create_country_safety_df("DEU")
+    return safety_df
+
+safety_df = create_country_safety_df()
 print(safety_df)
