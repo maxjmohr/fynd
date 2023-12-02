@@ -237,10 +237,10 @@ def create_country_safety_df():
                                                                           'peace_index', 'terrorism_index', 
                                                                           'ecological_threat']]
 
- 
-    safety_df.insert(0, 'index', safety_df.index) 
+    column_dict={"ISO2":"iso2", "ISO3":"iso3", "CountryName":"country_name", "PoliticalStability":"political_stability",
+                 'RuleofLaw':"rule_of_law", 'PersonalFreedom':"personal_freedom", 'crimeRateByCountry_crimeIndex':"crime_rate"}
+    safety_df.rename(columns=column_dict, inplace=True)
+
+    safety_df.insert(0, 'country_id', safety_df.index)
 
     return safety_df
-
-safety_df = create_country_safety_df()
-print(safety_df)

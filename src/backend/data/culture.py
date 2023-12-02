@@ -2,6 +2,9 @@ import requests
 import pandas as pd
 from tqdm import tqdm
 import pickle
+import os
+
+os.chdir("src/backend/data")
 
 # Read API key
 with open('api_key_fsq.txt', 'r') as f:
@@ -126,7 +129,7 @@ def cultural_profile(ll: str, radius: int = 10000):
     # Get scores
     scores = compute_coarse_act_scores(places.copy())
     
-    return scores
+    return places
 
 
 if __name__ == '__main__':

@@ -199,9 +199,9 @@ class LocationMasterData:
 
         return data, geo_json
     
-data, geo_json = LocationMasterData(city="Buxtehude", country="Germany", shape="polygon").get_all()
+#data, geo_json = LocationMasterData(city="Buxtehude", country="Germany", shape="polygon").get_all()
 
-print(data)
+#print(data)
 #print(geo_json)
 
 
