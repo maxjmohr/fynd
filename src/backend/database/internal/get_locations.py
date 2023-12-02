@@ -1,4 +1,3 @@
-
 import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -6,30 +5,98 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 import db_helpers
 
+from Countrydetails import countries
 import geojson
 from geopy import distance
 from geopy.geocoders import Nominatim
+from lxml import etree
 from math import ceil
 import pandas as pd
 from random import choice
 import requests
 from shapely.geometry import Point, mapping
+import time
+from tqdm import trange
 import pandas as pd
 
 ###------| Steps |------###
 # 1: Get target location names
 # 2: Get any relevant geographical data of target locations
-# 3: Store data in database
+# 3: Execute the data gathering and store data in database
 ###------------###
 
 
 ###------| Step 1: Get target location names |------###
 
-"""# Read test citiess
-data = pd.read_csv("test_cities.csv")
+class WikivoyageScraper:
+    "Scrape data from Wikivoyage"
+    def __init__(self) -> None:
+        "Initialize the class: get url and all countries"
+        self.url = "https://en.wikivoyage.org/wiki"
+        self.countries = countries.all_countries().countries()
 
-# Print the DataFrame
-print(data)"""
+    def get_destinations(self, save:bool = True) -> pd.DataFrame:
+        ''' Get the destinations from Wikivoyage
+        Input:  - self.url
+                - self.countries: all countries
+                - save: bool, whether to save the dataframe or not
+        Output: dataframe with the most relevant destinations per country
+        '''
+        data_list = []
+
+        for country in self.countries:
+            # Print progress and sleep for one second
+            time.sleep(1)
+            print(f"Getting destinations from {country}...")
+
+            # Get the HTML code
+            url_total = f"{self.url}/{country}"
+            page = requests.get(url_total).content
+            tree = etree.HTML(page)
+
+            # XPath expression to get city and other destination names
+            results = list(tree.xpath('//span[@class="fn org listing-name"]/a/text()'))
+
+            # Add location names to dictionary
+            data_dict = {}
+            if country not in data_dict:
+                data_dict[country] = {"city": [], "other_destinations": []}
+            if len(results) != 0:
+                data_dict[country]["city"] = results[:8] # Only the first 9 values are cities
+                data_dict[country]["other_destination"] = results[9:] # The rest are other destinations
+
+            # Store in list
+            for country, locations in data_dict.items():
+                for location_type, names in locations.items():
+                    for name in names:
+                        data_list.append({"name": name, "country": country, "type": location_type})
+            
+        # Store and save dataframe
+        data = pd.DataFrame(data_list)
+        if save:
+            # Combine the current working directory with the relative path
+            current_directory = os.getcwd()
+            relative_path = "res/master_data/wikivoyage_locations.csv"
+            save_path = os.path.join(current_directory, relative_path)
+            data.to_csv(save_path, index=False)
+            
+        return data
+
+
+def only_cities(data: pd.DataFrame) -> pd.DataFrame:
+    ''' Get only the cities from the dataframe
+    Input:  df: pd.DataFrame
+    Output: pd.DataFrame
+    '''
+    # Get only the cities
+    data = data[data["type"] == "city"].copy()
+    # Drop the type column
+    data.drop("type", axis=1, inplace=True)
+    # Rename column name to city
+    data.rename(columns={"name": "city"}, inplace=True)
+    # Reset the index
+    data.reset_index(drop=True, inplace=True)
+    return data
 
 
 ###------| Step 2: Get any master data of target locations |------###
@@ -64,71 +131,80 @@ class LocationMasterData:
         # API call
         name = ["Felix Koehn", "Max Mohr", "Lukas Schick", "Jakob Zgonc"]
         geolocator = Nominatim(user_agent=choice(name))
-        results = geolocator.geocode(query=self.target, exactly_one=True, geometry="geojson", language="en").raw
+        results = geolocator.geocode(query=self.target, exactly_one=True, geometry="geojson", language="en")
 
-        # Split the location info using commas and extract columns (information differs from location to location)
-        location_info = results["display_name"].replace('ü', 'ue').replace('ä', 'ae').replace('ö', 'oe').replace('ß', 'ss').split(', ')
-        if len(location_info) == 6:
-            self.city = location_info[0]
-            self.district = location_info[2]
-            self.state = location_info[3]
-            self.country = location_info[5]
-        elif len(location_info) == 5:
-            self.city = location_info[0]
-            self.district = location_info[1]
-            self.state = location_info[2]
-            self.country = location_info[4]
-        if len(location_info) == 4:
-            self.city = location_info[0]
-            self.district = location_info[1]
-            self.state = location_info[2]
-            self.country = location_info[3]
-        elif len(location_info) == 3:
-            self.city = location_info[0]
-            self.state = location_info[1]
-            self.country = location_info[2]
-        elif len(location_info) == 2:
-            self.city = location_info[0]
-            self.country = location_info[1]
-        elif len(location_info) == 1:
-            self.city = location_info[0]
+        if results is not None:
+            results = results.raw
+
+            # Split the location info using commas and extract columns (information differs from location to location)
+            location_info = results["display_name"].replace('ü', 'ue').replace('ä', 'ae').replace('ö', 'oe').replace('ß', 'ss').split(', ')
+            if len(location_info) == 6:
+                self.city = location_info[0]
+                self.district = location_info[2]
+                self.state = location_info[3]
+                self.country = location_info[5]
+            elif len(location_info) == 5:
+                self.city = location_info[0]
+                self.district = location_info[1]
+                self.state = location_info[2]
+                self.country = location_info[4]
+            if len(location_info) == 4:
+                self.city = location_info[0]
+                self.district = location_info[1]
+                self.state = location_info[2]
+                self.country = location_info[3]
+            elif len(location_info) == 3:
+                self.city = location_info[0]
+                self.state = location_info[1]
+                self.country = location_info[2]
+            elif len(location_info) == 2:
+                self.city = location_info[0]
+                self.country = location_info[1]
+            elif len(location_info) == 1:
+                self.city = location_info[0]
+            else:
+                self.city = location_info[0]
+                self.country = location_info[-1]
+
+            # Check if city is assigned
+            if self.city is None:
+                raise ValueError("City geographical information could not be retrieved.")
+
+            # Get coordinates and other geographical data
+            location_id = results["place_id"]
+            adress_type = results["addresstype"]
+            lat = results["lat"]
+            lon = results["lon"]
+
+            # Get bounding box and rearrage it (bottom left (lat&lon) and top right (lat&lon))
+            bounding_box = [results["boundingbox"][0], results["boundingbox"][2], results["boundingbox"][1], results["boundingbox"][3]]
+
+            # Calculate radius from center to bottom left corner of bounding box in km (always round up)
+            radius_km = ceil(distance.great_circle([lat,lon], [bounding_box[0],bounding_box[1]]).km)
+
+            # Create dataframe
+            data = pd.DataFrame(data = {"location_id": [location_id], "city": [self.city], "district": [self.district], "state": [self.state], "country": [self.country], "adress_type": [adress_type],
+                                        "lat": [lat], "lon": [lon], "radius_km": [radius_km],
+                                        "box_bottom_left_lat": [bounding_box[0]], "box_bottom_left_lon": [bounding_box[1]], "box_top_right_lat": [bounding_box[2]], "box_top_right_lon": [bounding_box[3]]})
+
+            # Get geojson
+            if "geojson" in results and self.shape == "polygon":
+                geo_json = results["geojson"]
+            elif "geojson" in results and self.shape == "circle":
+                # Create a point
+                point = Point(lon, lat)
+                # Create a circle around the point with a specific radius
+                circle = point.buffer(radius_km / 111.32)
+                # Convert the circle to a GeoJSON object
+                geo_json = geojson.Feature(geometry=mapping(circle))["geometry"]
+            elif "geojson" in results and self.shape != "polygon" and self.shape != "circle":
+                raise ValueError("Invalid shape. Shape can either be 'polygon' or 'circle'.")
+            else:
+                geo_json = None
+            
         else:
-            self.city = location_info[0]
-            self.country = location_info[-1]
-
-        # Check if city is assigned
-        if self.city is None:
-            raise ValueError("City geographical information could not be retrieved.")
-
-        # Get coordinates and other geographical data
-        location_id = results["place_id"]
-        adress_type = results["addresstype"]
-        lat = results["lat"]
-        lon = results["lon"]
-
-        # Get bounding box and rearrage it (bottom left (lat&lon) and top right (lat&lon))
-        bounding_box = [results["boundingbox"][0], results["boundingbox"][2], results["boundingbox"][1], results["boundingbox"][3]]
-
-        # Calculate radius from center to bottom left corner of bounding box in km (always round up)
-        radius_km = ceil(distance.great_circle([lat,lon], [bounding_box[0],bounding_box[1]]).km)
-
-        # Create dataframe
-        data = pd.DataFrame(data = {"location_id": [location_id], "city": [self.city], "district": [self.district], "state": [self.state], "country": [self.country], "adress_type": [adress_type],
-                                    "lat": [lat], "lon": [lon], "radius_km": [radius_km],
-                                    "box_bottom_left_lat": [bounding_box[0]], "box_bottom_left_lon": [bounding_box[1]], "box_top_right_lat": [bounding_box[2]], "box_top_right_lon": [bounding_box[3]]})
-
-        # Get geojson
-        if self.shape == "polygon":
-            geo_json = results["geojson"]
-        elif self.shape == "circle":
-            # Create a point
-            point = Point(lon, lat)
-            # Create a circle around the point with a specific radius
-            circle = point.buffer(radius_km / 111.32)
-            # Convert the circle to a GeoJSON object
-            geo_json = geojson.Feature(geometry=mapping(circle))["geometry"]
-        else:
-            raise ValueError("Invalid shape. Shape can either be 'polygon' or 'circle'.")
+            data = None
+            geo_json = None
     
         return data, geo_json
     
@@ -151,7 +227,8 @@ class LocationMasterData:
                 "namePrefix": city,
                 "limit": 1,
                 "offset": 0,
-                "sort": "-population"
+                "sort": "-population",  # Sort by descending population
+                "types": ["CITY", "ISLAND"]
             }
             response = requests.get(base_url, params=params).json()["data"][0]
 
@@ -191,24 +268,72 @@ class LocationMasterData:
         data, geo_json = self.get_coordinates()
 
         # Get info and population
-        total_population = self.get_population()
+        if data is not None and geo_json is not None:
+            total_population = self.get_population()
 
-        # Merge dataframes and rearrage columns
-        data = pd.merge(data, total_population, on="city", how="left")
-        data = data[["location_id", "city", "district", "state", "country", "country_code", "adress_type", "population", "lat", "lon", "radius_km", "box_bottom_left_lat", "box_bottom_left_lon", "box_top_right_lat", "box_top_right_lon"]]
+            # Merge dataframes and rearrage columns
+            data = pd.merge(data, total_population, on="city", how="left")
+            data = data[["location_id", "city", "district", "state", "country", "country_code", "adress_type", "population", "lat", "lon", "radius_km", "box_bottom_left_lat", "box_bottom_left_lon", "box_top_right_lat", "box_top_right_lon"]]
+        else:
+            data = pd.DataFrame(data = {"location_id": [None], "city": [None], "district": [None], "state": [None], "country": [None], "country_code": [None], "adress_type": [None], "population": [None], "lat": [None], "lon": [None], "radius_km": [None], "box_bottom_left_lat": [None], "box_bottom_left_lon": [None], "box_top_right_lat": [None], "box_top_right_lon": [None]})
+            geo_json = None
 
         return data, geo_json
     
-data, geo_json = LocationMasterData(city="Buxtehude", country="Germany", shape="polygon").get_all()
+"""data, geo_json = LocationMasterData(city="Tuebingen", country="Germany", shape="polygon").get_all()
 
 print(data)
 #print(geo_json)
+print(data["population"])"""
+
+def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
+    ''' Get master data of all cities
+    Input:  - cities: pd.DataFrame
+            - city: str, name of the city
+            - country: str, name of the country
+            - shape: str, either "polygon" or "circle"
+    Output: dataframe with all master data
+    '''
+    master_data = pd.DataFrame()
+
+    for i in trange(len(data), desc="Getting master data"):
+        # Sleep for one second
+        time.sleep(1)
+        # Get data
+        city = data["city"][i]
+        country=data["country"][i]
+        print(f"Getting master data for {city}...")
+        master_data = pd.concat([master_data, LocationMasterData(city=city, country=country, shape=shape).get_all()[0]], ignore_index=True)
+    
+    # Delete all duplicates
+    master_data.drop_duplicates(inplace=True)
+    # Delete all rows where city is None
+    master_data.dropna(subset=["city"], inplace=True)
+    # Reset the index
+    master_data.reset_index(drop=True, inplace=True)
+
+    return master_data
 
 
-###------| Step 3: Store data in database |------###
+###------| Step 3: Execute the data gathering and store data in database |------###
 
-"""conn, cur, engine = db_helpers.connect_to_db()
+## Get locations
+update_Wikivoyage_cities = False
+# Check if data already exists
+if os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == False:
+    print("File with locations already exists. Reading file...")
+    cities = only_cities(pd.read_csv("res/master_data/wikivoyage_locations.csv"))
+else:
+    print("File with locations does not exist yet. Creating file...")
+    cities = only_cities(WikivoyageScraper().get_destinations(save=True))
+
+## Get master data
+master_data = get_master_data(cities, shape="polygon")
+
+
+## Store data in database
+conn, cur, engine = db_helpers.connect_to_db()
 db_helpers.create_db_object(conn, cur, object="core_locations")
-db_helpers.insert_data(engine, data, table="core_locations", if_exists="replace")
+db_helpers.insert_data(engine, master_data, table="core_locations", if_exists="replace")
 print(db_helpers.fetch_data(engine, total_object="core_locations"))
-db_helpers.disconnect_from_db(conn, cur, engine)"""
+db_helpers.disconnect_from_db(conn, cur, engine)

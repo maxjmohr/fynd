@@ -1,0 +1,2480 @@
+name,country,type
+Kabul,Afghanistan,city
+Balkh,Afghanistan,city
+Bamiyan,Afghanistan,city
+Ghazni,Afghanistan,city
+Herat,Afghanistan,city
+Jalalabad,Afghanistan,city
+Kandahar,Afghanistan,city
+Kunduz,Afghanistan,city
+Band-e Amir National Park,Afghanistan,other_destination
+Khyber Pass,Afghanistan,other_destination
+Minaret of Jam,Afghanistan,other_destination
+Nuristan,Afghanistan,other_destination
+Panjshir Valley,Afghanistan,other_destination
+Salang Pass,Afghanistan,other_destination
+Shamali Plain,Afghanistan,other_destination
+Wakhan National Park,Afghanistan,other_destination
+Mariehamn,Aland Islands,city
+Eckerö,Aland Islands,city
+Finström,Aland Islands,city
+Geta,Aland Islands,city
+Hammarland,Aland Islands,city
+Jomala,Aland Islands,city
+Lemland,Aland Islands,city
+Lumparland,Aland Islands,city
+Sund,Aland Islands,other_destination
+Brändö,Aland Islands,other_destination
+Föglö,Aland Islands,other_destination
+Kumlinge,Aland Islands,other_destination
+Kökar,Aland Islands,other_destination
+Sottunga,Aland Islands,other_destination
+Vårdö,Aland Islands,other_destination
+Kobba Klintar,Aland Islands,other_destination
+Tirana,Albania,city
+Durrës,Albania,city
+Berat,Albania,city
+Fier,Albania,city
+Gjirokastër,Albania,city
+Korçë,Albania,city
+Kruje,Albania,city
+Shkodër,Albania,city
+Albanian Alps,Albania,other_destination
+Albanian Riviera,Albania,other_destination
+Dhërmi,Albania,other_destination
+Butrint,Albania,other_destination
+Lura National Park,Albania,other_destination
+Pustec,Albania,other_destination
+Thethi,Albania,other_destination
+Peshkopi,Albania,other_destination
+Golem,Albania,other_destination
+Algiers,Algeria,city
+Annaba,Algeria,city
+Batna,Algeria,city
+Bechar,Algeria,city
+Constantine,Algeria,city
+Oran,Algeria,city
+Sétif,Algeria,city
+Tamanrasset,Algeria,city
+Pago Pago,American Samoa,city
+National Park of American Samoa,American Samoa,city
+Andorra la Vella,Andorra,city
+Santa Coloma d'Andorra,Andorra,city
+Sant Julia de Loria,Andorra,city
+Escaldes-Engordany,Andorra,city
+Encamp,Andorra,city
+La Massana,Andorra,city
+Ordino,Andorra,city
+Canillo,Andorra,city
+Pal,Andorra,other_destination
+Pas de la Casa,Andorra,other_destination
+Soldeu,Andorra,other_destination
+Luanda,Angola,city
+Benguela,Angola,city
+Cabinda,Angola,city
+Huambo,Angola,city
+Lobito,Angola,city
+M'banza-Kongo,Angola,city
+Lubango,Angola,city
+Malanje,Angola,city
+Namibe,Angola,other_destination
+Cangandala National Park,Angola,other_destination
+Floresta do Maiombe,Angola,other_destination
+Great Escarpment,Angola,other_destination
+Iona National Park,Angola,other_destination
+Kalandula Falls,Angola,other_destination
+Kissama National Park,Angola,other_destination
+Mussulo Island,Angola,other_destination
+Pungo Andongo,Angola,other_destination
+Sumbe Caves,Angola,other_destination
+Buenos Aires,Argentina,city
+Córdoba,Argentina,city
+La Plata,Argentina,city
+Mendoza,Argentina,city
+Rosario,Argentina,city
+Salta,Argentina,city
+San Carlos de Bariloche,Argentina,city
+San Juan,Argentina,city
+El Calafate,Argentina,other_destination
+Iberá Wetlands,Argentina,other_destination
+Iguazú Falls,Argentina,other_destination
+Nahuel Huapi National Park,Argentina,other_destination
+Quebrada de Humahuaca,Argentina,other_destination
+Yerevan,Armenia,city
+Alaverdi,Armenia,city
+Dilijan,Armenia,city
+Echmiadzin,Armenia,city
+Goris,Armenia,city
+Gyumri,Armenia,city
+Jermuk,Armenia,city
+Tsaghkadzor,Armenia,city
+Oranjestad,Aruba,city
+Noord,Aruba,city
+Palm Beach,Aruba,city
+Savaneta,Aruba,city
+Arikok National Park,Aruba,city
+Lord Howe Island,Australia,city
+Norfolk Island,Australia,city
+Christmas Island,Australia,city
+Cocos (Keeling) Islands,Australia,city
+Torres Strait Islands,Australia,city
+Kangaroo Island,Australia,city
+Rottnest Island,Australia,city
+King Island,Australia,city
+Canberra,Australia,other_destination
+Adelaide,Australia,other_destination
+Brisbane,Australia,other_destination
+Cairns,Australia,other_destination
+Darwin,Australia,other_destination
+Hobart,Australia,other_destination
+Melbourne,Australia,other_destination
+Perth,Australia,other_destination
+Sydney,Australia,other_destination
+Blue Mountains National Park,Australia,other_destination
+Cradle Mountain-Lake St Clair National Park,Australia,other_destination
+Daintree Rainforest,Australia,other_destination
+Great Barrier Reef,Australia,other_destination
+Great Ocean Road,Australia,other_destination
+Kakadu National Park,Australia,other_destination
+Ikara-Flinders Ranges National Park,Australia,other_destination
+Purnululu National Park,Australia,other_destination
+Uluṟu-Kata Tjuṯa National Park,Australia,other_destination
+Vienna,Austria,city
+Bregenz,Austria,city
+Eisenstadt,Austria,city
+Graz,Austria,city
+Innsbruck,Austria,city
+Klagenfurt,Austria,city
+Linz,Austria,city
+Salzburg,Austria,city
+Lake Constance,Austria,other_destination
+Kaprun,Austria,other_destination
+Pinswang,Austria,other_destination
+Salzkammergut,Austria,other_destination
+Igls,Austria,other_destination
+Thermenland,Austria,other_destination
+Wörthersee,Austria,other_destination
+Zell am See,Austria,other_destination
+Eng,Austria,other_destination
+Baku,Azerbaijan,city
+Ganja,Azerbaijan,city
+Lankaran,Azerbaijan,city
+Nakhchivan,Azerbaijan,city
+Qabala,Azerbaijan,city
+Sheki,Azerbaijan,city
+Shemakha,Azerbaijan,city
+Sumqayit,Azerbaijan,city
+Nabran,Azerbaijan,other_destination
+Quba,Azerbaijan,other_destination
+Lahich,Azerbaijan,other_destination
+Qax,Azerbaijan,other_destination
+Nij,Azerbaijan,other_destination
+Göygöl,Azerbaijan,other_destination
+Shamkir,Azerbaijan,other_destination
+Naftalan,Azerbaijan,other_destination
+Manama,Bahrain,city
+Hamad Town,Bahrain,city
+Isa Town,Bahrain,city
+Muharraq,Bahrain,city
+Riffa,Bahrain,city
+Sitra,Bahrain,city
+Southern Governorate,Bahrain,city
+Hawar Islands,Bahrain,city
+Dhaka,Bangladesh,city
+Barisal,Bangladesh,city
+Chittagong,Bangladesh,city
+Jessore,Bangladesh,city
+Khulna,Bangladesh,city
+Mymensingh,Bangladesh,city
+Rajshahi,Bangladesh,city
+Rangpur,Bangladesh,city
+Cox's Bazar,Bangladesh,other_destination
+Bagerhat,Bangladesh,other_destination
+Padna Meghna River Estuarine,Bangladesh,other_destination
+Somapura Mahavihara,Bangladesh,other_destination
+Saint Martins Island,Bangladesh,other_destination
+Sundarbans,Bangladesh,other_destination
+Minsk,Belarus,city
+Brest,Belarus,city
+Polotsk,Belarus,city
+Gomel,Belarus,city
+Pinsk,Belarus,city
+Grodno,Belarus,city
+Mogilev,Belarus,city
+Nesvizh,Belarus,city
+Belovezhskaya Pushcha National Park,Belarus,other_destination
+Mir Castle Complex,Belarus,other_destination
+Brussels,Belgium,city
+Antwerp,Belgium,city
+Bruges,Belgium,city
+Ghent,Belgium,city
+Leuven,Belgium,city
+Liège,Belgium,city
+Mechelen,Belgium,city
+Mons,Belgium,city
+Kraainem,Belgium,other_destination
+Tervuren,Belgium,other_destination
+Grimbergen,Belgium,other_destination
+Ardennes,Belgium,other_destination
+Dinant,Belgium,other_destination
+Pajottenland,Belgium,other_destination
+Spa,Belgium,other_destination
+Ypres,Belgium,other_destination
+Poperinge,Belgium,other_destination
+Sint-Niklaas,Belgium,other_destination
+Belmopan,Belize,city
+Belize City,Belize,city
+Corozal Town,Belize,city
+Crooked Tree,Belize,city
+Dangriga,Belize,city
+Hopkins,Belize,city
+Orange Walk Town,Belize,city
+Punta Gorda,Belize,city
+Ambergris Caye,Belize,other_destination
+Caye Caulker,Belize,other_destination
+Placencia Peninsula,Belize,other_destination
+Tobacco Caye,Belize,other_destination
+Altun Ha,Belize,other_destination
+Caracol,Belize,other_destination
+Lamanai,Belize,other_destination
+Lubaantun,Belize,other_destination
+Xunantunich,Belize,other_destination
+Porto-Novo,Benin,city
+Abomey,Benin,city
+Cotonou,Benin,city
+Grand-Popo,Benin,city
+Malanville,Benin,city
+Natitingou,Benin,city
+Ouidah,Benin,city
+Parakou,Benin,city
+W National Park,Benin,other_destination
+Hamilton,Bermuda,city
+St. George's,Bermuda,city
+Thimphu,Bhutan,city
+Jakar,Bhutan,city
+Mongar,Bhutan,city
+Paro,Bhutan,city
+Punakha,Bhutan,city
+Phuentsholing,Bhutan,city
+Samdrup Jongkhar,Bhutan,city
+Trashigang,Bhutan,city
+Jigme Dorji National Park,Bhutan,other_destination
+Jigme Singye Wangchuck National Park,Bhutan,other_destination
+Royal Manas National Park,Bhutan,other_destination
+Phrumsengla National Park,Bhutan,other_destination
+Bumdeling Wildlife Sanctuary,Bhutan,other_destination
+Jomotsangkha Wildlife Sanctuary,Bhutan,other_destination
+Sakteng Wildlife Sanctuary,Bhutan,other_destination
+Jigme Khesar Strict Nature Reserve,Bhutan,other_destination
+La Paz,Bolivia,city
+Cochabamba,Bolivia,city
+Oruro,Bolivia,city
+Potosí,Bolivia,city
+Quime,Bolivia,city
+Santa Cruz,Bolivia,city
+Sorata,Bolivia,city
+Sucre,Bolivia,city
+Chacaltaya,Bolivia,other_destination
+Isla del Sol,Bolivia,other_destination
+Jesuit Missions of the Chiquitos,Bolivia,other_destination
+Madidi National Park,Bolivia,other_destination
+Noel Kempff Mercado National Park,Bolivia,other_destination
+Sajama National Park,Bolivia,other_destination
+Salar de Uyuni,Bolivia,other_destination
+Tiwanaku,Bolivia,other_destination
+Yungas region,Bolivia,other_destination
+Sarajevo,Bosnia and Herzegovina,city
+Banja Luka,Bosnia and Herzegovina,city
+Bihać,Bosnia and Herzegovina,city
+Jajce,Bosnia and Herzegovina,city
+Mostar,Bosnia and Herzegovina,city
+Neum,Bosnia and Herzegovina,city
+Tuzla,Bosnia and Herzegovina,city
+Teslic,Bosnia and Herzegovina,city
+Kozara,Bosnia and Herzegovina,other_destination
+Međugorje,Bosnia and Herzegovina,other_destination
+Srebrenica,Bosnia and Herzegovina,other_destination
+Gaborone,Botswana,city
+Francistown,Botswana,city
+Ghanzi,Botswana,city
+Gweta,Botswana,city
+Kanye,Botswana,city
+Kasane,Botswana,city
+Maun,Botswana,city
+Nata,Botswana,city
+Okavango Delta,Botswana,other_destination
+Central Kalahari Game Reserve,Botswana,other_destination
+Chobe National Park,Botswana,other_destination
+Kgalagadi Transfrontier Park,Botswana,other_destination
+Nxai Pan National Park,Botswana,other_destination
+Northern Tuli Game Reserve,Botswana,other_destination
+Tsodilo,Botswana,other_destination
+Brasília,Brazil,city
+Florianópolis,Brazil,city
+Fortaleza,Brazil,city
+Manaus,Brazil,city
+Porto Alegre,Brazil,city
+Recife,Brazil,city
+Rio de Janeiro,Brazil,city
+Salvador,Brazil,city
+Amazonas,Brazil,other_destination
+Chapada Diamantina National Park,Brazil,other_destination
+Chapada dos Veadeiros,Brazil,other_destination
+Fernando de Noronha,Brazil,other_destination
+Ilha Grande,Brazil,other_destination
+Iguaçu Falls,Brazil,other_destination
+Ilha do Marajó,Brazil,other_destination
+Lençóis Maranhenses,Brazil,other_destination
+Pantanal,Brazil,other_destination
+Bandar Seri Begawan,Brunei,city
+Bangar,Brunei,city
+Kuala Belait,Brunei,city
+Muara,Brunei,city
+Seria,Brunei,city
+Tutong,Brunei,city
+Ulu Temburong National Park,Brunei,city
+Sofia,Bulgaria,city
+Burgas,Bulgaria,city
+Gabrovo,Bulgaria,city
+Pleven,Bulgaria,city
+Plovdiv,Bulgaria,city
+Ruse,Bulgaria,city
+Varna,Bulgaria,city
+Veliko Tarnovo,Bulgaria,city
+Central Balkan National Park,Bulgaria,other_destination
+Dragoman Marsh,Bulgaria,other_destination
+Etar Architectural-Ethnographic Complex,Bulgaria,other_destination
+Pirin National Park,Bulgaria,other_destination
+Rhodope Mountains,Bulgaria,other_destination
+Ouagadougou,Burkina Faso,city
+Banfora,Burkina Faso,city
+Bobo-Dioulasso,Burkina Faso,city
+Dédougou,Burkina Faso,city
+Gaoua,Burkina Faso,city
+Koudougou,Burkina Faso,city
+Ouahigouya,Burkina Faso,city
+Fada N'gourma,Burkina Faso,city
+W National Park,Burkina Faso,other_destination
+Gitega,Burundi,city
+Bujumbura,Burundi,city
+Bururi,Burundi,city
+Cibitoke,Burundi,city
+Kabezi,Burundi,city
+Muyinga,Burundi,city
+Ngozi,Burundi,city
+Bururi Forest Natural Reserve,Burundi,city
+Nyakazu Break and the Karera Falls,Burundi,other_destination
+Rusizi National Park,Burundi,other_destination
+Ruvubu National Park,Burundi,other_destination
+Rwihinda Lake Natural Reserve,Burundi,other_destination
+Vyanda Forest Natural Reserve,Burundi,other_destination
+Bujumbura International Airport,Burundi,other_destination
+Phnom Penh,Cambodia,city
+Banlung,Cambodia,city
+Battambang,Cambodia,city
+Kampot,Cambodia,city
+Koh Kong,Cambodia,city
+Kampong Thom,Cambodia,city
+Kratie,Cambodia,city
+Siem Reap,Cambodia,city
+Angkor Archaeological Park,Cambodia,other_destination
+Bokor National Park,Cambodia,other_destination
+Kampong Cham,Cambodia,other_destination
+Kep,Cambodia,other_destination
+Koh Ker,Cambodia,other_destination
+Poipet,Cambodia,other_destination
+Preah Vihear,Cambodia,other_destination
+Tonle Sap Lake,Cambodia,other_destination
+Yaoundé,Cameroon,city
+Bafoussam,Cameroon,city
+Bamenda,Cameroon,city
+Buea,Cameroon,city
+Douala,Cameroon,city
+Garoua,Cameroon,city
+Limbe,Cameroon,city
+Ngaoundere,Cameroon,city
+Korup National Park,Cameroon,other_destination
+Mount Cameroon,Cameroon,other_destination
+Ngoketunjia,Cameroon,other_destination
+Waza National Park,Cameroon,other_destination
+Ottawa,Canada,city
+Calgary,Canada,city
+Halifax,Canada,city
+Montreal,Canada,city
+Quebec City,Canada,city
+Toronto,Canada,city
+Vancouver,Canada,city
+Whitehorse,Canada,city
+Dawson City,Canada,other_destination
+Southern Gulf Islands,Canada,other_destination
+Okanagan,Canada,other_destination
+Banff National Park,Canada,other_destination
+Writing-on-Stone Provincial Park,Canada,other_destination
+Niagara Peninsula,Canada,other_destination
+Algonquin Park,Canada,other_destination
+Saguenay–St. Lawrence Marine Park,Canada,other_destination
+Praia,Cape Verde,city
+Mindelo,Cape Verde,city
+Cidade Velha,Cape Verde,city
+Espargos,Cape Verde,city
+Assomada,Cape Verde,city
+Santa Maria,Cape Verde,city
+São Filipe,Cape Verde,city
+Brava,Cape Verde,city
+TAP Portugal,Cape Verde,other_destination
+George Town,Cayman Islands,city
+Bangui,Central African Republic,city
+Bambari,Central African Republic,city
+Bangassou,Central African Republic,city
+Birao,Central African Republic,city
+Bouar,Central African Republic,city
+Bria,Central African Republic,city
+Mbaiki,Central African Republic,city
+Dzanga-Sangha National Park,Central African Republic,city
+N'Djamena,Chad,city
+Moundou,Chad,city
+Abéché,Chad,city
+Faya,Chad,city
+Santiago,Chile,city
+Concepción,Chile,city
+Iquique,Chile,city
+La Serena,Chile,city
+Punta Arenas,Chile,city
+San Pedro de Atacama,Chile,city
+Valdivia,Chile,city
+Valparaíso,Chile,city
+Chiloé Island,Chile,other_destination
+Laguna San Rafael National Park,Chile,other_destination
+Lauca National Park,Chile,other_destination
+Pichilemu,Chile,other_destination
+Robinson Crusoe Island,Chile,other_destination
+Torres del Paine National Park,Chile,other_destination
+Valle de Elqui,Chile,other_destination
+Valle de la Luna,Chile,other_destination
+Villarrica,Chile,other_destination
+Beijing,China,city
+Chengdu,China,city
+Guangzhou,China,city
+Hangzhou,China,city
+Harbin,China,city
+Kashgar,China,city
+Nanjing,China,city
+Shanghai,China,city
+Great Wall of China,China,other_destination
+Hainan,China,other_destination
+Jiuzhaigou Nature Reserve,China,other_destination
+Leshan,China,other_destination
+Mount Everest,China,other_destination
+Mount Tai,China,other_destination
+Tibet,China,other_destination
+Yungang Grottoes,China,other_destination
+Guilin,China,other_destination
+Pulu Keeling National Park,Cocos (Keeling) Islands,city
+Bogotá,Colombia,city
+Barranquilla,Colombia,city
+Cali,Colombia,city
+Cartagena,Colombia,city
+Manizales,Colombia,city
+Medellín,Colombia,city
+Pereira,Colombia,city
+Popayán,Colombia,city
+Amacayacu National Park,Colombia,other_destination
+Catedral de Sal,Colombia,other_destination
+Ciudad Perdida de Teyuni,Colombia,other_destination
+Corales del Rosario,Colombia,other_destination
+Isla Gorgona,Colombia,other_destination
+Los Nevados National Park,Colombia,other_destination
+Providencia,Colombia,other_destination
+San Agustín,Colombia,other_destination
+Tayrona National Park,Colombia,other_destination
+Moroni,Comoros,city
+Domoni,Comoros,city
+Fomboni,Comoros,city
+Nioumachoua,Comoros,city
+Moutsamoudou,Comoros,city
+Mount Karthala,Comoros,city
+Marae Moana,Cook Islands,city
+Suwarrow National Park,Cook Islands,city
+San José,Costa Rica,city
+Alajuela,Costa Rica,city
+Cartago,Costa Rica,city
+Heredia,Costa Rica,city
+Jacó,Costa Rica,city
+Liberia,Costa Rica,city
+Puerto Limón,Costa Rica,city
+Quesada,Costa Rica,city
+Cahuita National Park,Costa Rica,other_destination
+Chirripo National Park,Costa Rica,other_destination
+Cocos Island National Park,Costa Rica,other_destination
+Corcovado National Park,Costa Rica,other_destination
+Manuel Antonio National Park,Costa Rica,other_destination
+Monteverde and Santa Elena Cloud Forest Reserves,Costa Rica,other_destination
+Rincón de la Vieja Volcano National Park,Costa Rica,other_destination
+Tortuguero National Park,Costa Rica,other_destination
+Havana,Cuba,city
+Baracoa,Cuba,city
+Camagüey,Cuba,city
+Cienfuegos,Cuba,city
+Matanzas,Cuba,city
+Pinar del Rio,Cuba,city
+Santa Clara,Cuba,city
+Santiago de Cuba,Cuba,city
+Cayo Largo,Cuba,other_destination
+Gran Parque Natural Topes de Collantes,Cuba,other_destination
+Isla de la Juventud,Cuba,other_destination
+Jardines del Rey,Cuba,other_destination
+Maria la Gorda,Cuba,other_destination
+Parque Nacional Ciénaga de Zapata,Cuba,other_destination
+La Güira National Park,Cuba,other_destination
+Reserva de la Biosfera Sierra del Rosario,Cuba,other_destination
+Varadero Beach,Cuba,other_destination
+Viñales,Cuba,other_destination
+Nicosia,Cyprus,city
+Ayia Napa,Cyprus,city
+Larnaca,Cyprus,city
+Limassol,Cyprus,city
+Paphos,Cyprus,city
+Akamas Peninsula,Cyprus,city
+Troodos Mountains,Cyprus,city
+Lefkara,Cyprus,city
+Prague,Czech Republic,city
+Brno,Czech Republic,city
+České Budějovice,Czech Republic,city
+Český Krumlov,Czech Republic,city
+Karlovy Vary,Czech Republic,city
+Kutná Hora,Czech Republic,city
+Olomouc,Czech Republic,city
+Ostrava,Czech Republic,city
+Bohemian Paradise,Czech Republic,other_destination
+Karlštejn Castle,Czech Republic,other_destination
+Krkonoše,Czech Republic,other_destination
+Litomyšl,Czech Republic,other_destination
+Mariánské Lázně,Czech Republic,other_destination
+Mutěnice Wine Region,Czech Republic,other_destination
+Nové Město na Moravě,Czech Republic,other_destination
+Terezín,Czech Republic,other_destination
+Znojmo,Czech Republic,other_destination
+Václav Havel Airport,Czech Republic,other_destination
+Brno,Czech Republic,other_destination
+Ostrava,Czech Republic,other_destination
+Pardubice,Czech Republic,other_destination
+Karlovy Vary,Czech Republic,other_destination
+České Budějovice,Czech Republic,other_destination
+Copenhagen,Denmark,city
+Aalborg,Denmark,city
+Aarhus,Denmark,city
+Esbjerg,Denmark,city
+Nykøbing Falster,Denmark,city
+Odense,Denmark,city
+Roskilde,Denmark,city
+Skagen,Denmark,city
+Anholt,Denmark,other_destination
+Ertholmene,Denmark,other_destination
+Femø,Denmark,other_destination
+Fanø,Denmark,other_destination
+Hirsholmene,Denmark,other_destination
+Kongernes Nordsjælland National Park,Denmark,other_destination
+Læsø,Denmark,other_destination
+Samsø,Denmark,other_destination
+Stevns Cliff,Denmark,other_destination
+Djibouti,Djibouti,city
+Galafi,Djibouti,city
+Obock,Djibouti,city
+Tadjoura,Djibouti,city
+Day Forest National Park,Djibouti,city
+Moucha Island,Djibouti,city
+Roseau,Dominica,city
+Portsmouth,Dominica,city
+Scott's Head,Dominica,city
+Calibishie,Dominica,city
+St. Joseph,Dominica,city
+Marigot (Dominica),Dominica,city
+Morne Trois Pitons National Park,Dominica,city
+Santo Domingo,Dominican Republic,city
+Higüey,Dominican Republic,city
+Juan Dolio,Dominican Republic,city
+Puerto Plata,Dominican Republic,city
+Punta Cana,Dominican Republic,city
+San Pedro de Macoris,Dominican Republic,city
+Santa Barbara De Samana,Dominican Republic,city
+Santiago de los Caballeros,Dominican Republic,city
+Rio San Juan,Dominican Republic,other_destination
+La Romana,Dominican Republic,other_destination
+Bayahibe,Dominican Republic,other_destination
+Bonao,Dominican Republic,other_destination
+Cabarete,Dominican Republic,other_destination
+Jarabacoa,Dominican Republic,other_destination
+Las Terrenas,Dominican Republic,other_destination
+Las Galeras,Dominican Republic,other_destination
+Miches,Dominican Republic,other_destination
+Bahia de las Aguilas,Dominican Republic,other_destination
+Playa Bonita,Dominican Republic,other_destination
+Dili,East Timor,city
+Baucau,East Timor,city
+Ermera,East Timor,city
+Gleno,East Timor,city
+Liquiçá,East Timor,city
+Lospalos,East Timor,city
+Maliana,East Timor,city
+Suai,East Timor,city
+Quito,Ecuador,city
+Ambato,Ecuador,city
+Baños,Ecuador,city
+Cuenca,Ecuador,city
+Guayaquil,Ecuador,city
+Ibarra,Ecuador,city
+Loja,Ecuador,city
+Otavalo,Ecuador,city
+Baeza,Ecuador,other_destination
+Canoa,Ecuador,other_destination
+Esmeraldas,Ecuador,other_destination
+Guamote,Ecuador,other_destination
+Guaranda,Ecuador,other_destination
+Mindo,Ecuador,other_destination
+Montañita,Ecuador,other_destination
+Puerto López,Ecuador,other_destination
+Puyo,Ecuador,other_destination
+Quilotoa Loop,Ecuador,other_destination
+ Salinas,Ecuador,other_destination
+Tena,Ecuador,other_destination
+Vilcabamba,Ecuador,other_destination
+Cuyabeno Wildlife Reserve,Ecuador,other_destination
+Parque Nacional Cotopaxi,Ecuador,other_destination
+Parque Nacional Cajas,Ecuador,other_destination
+Podocarpus National Park,Ecuador,other_destination
+Pululahua Geobotanical Reserve,Ecuador,other_destination
+Sangay National Park,Ecuador,other_destination
+Yasuni National Park,Ecuador,other_destination
+Cairo,Egypt,city
+Alexandria,Egypt,city
+Aswan,Egypt,city
+Hurghada,Egypt,city
+Luxor,Egypt,city
+Port Said,Egypt,city
+Sharm el Sheikh,Egypt,city
+Quseir,Egypt,city
+Dahab,Egypt,other_destination
+Karnak,Egypt,other_destination
+Memphis,Egypt,other_destination
+Saqqara,Egypt,other_destination
+Siwa,Egypt,other_destination
+St. Katherine,Egypt,other_destination
+Taba Heights,Egypt,other_destination
+Valley of the Kings,Egypt,other_destination
+San Salvador,El Salvador,city
+La Libertad,El Salvador,city
+San Francisco Gotera,El Salvador,city
+Santa Ana,El Salvador,city
+San Miguel,El Salvador,city
+Santa Tecla,El Salvador,city
+Suchitoto,El Salvador,city
+El Pital,El Salvador,city
+Parque Nacional El Imposible,El Salvador,other_destination
+San Miguel,El Salvador,other_destination
+Malabo,Equatorial Guinea,city
+Bata,Equatorial Guinea,city
+Ciudad de la Paz,Equatorial Guinea,city
+Acalayong,Equatorial Guinea,city
+Ebebiyin,Equatorial Guinea,city
+Evinayong,Equatorial Guinea,city
+Luba,Equatorial Guinea,city
+Mbini,Equatorial Guinea,city
+Monte Alén National Park,Equatorial Guinea,other_destination
+Asmara,Eritrea,city
+Keren,Eritrea,city
+Massawa,Eritrea,city
+Teseney,Eritrea,city
+Senafe,Eritrea,city
+Assab,Eritrea,city
+Nakfa,Eritrea,city
+Dahlak Marine National Park,Eritrea,city
+Debre Sina,Eritrea,other_destination
+Matara,Eritrea,other_destination
+Semenawi Bahri National Park,Eritrea,other_destination
+Tallinn,Estonia,city
+Tartu,Estonia,city
+Narva,Estonia,city
+Pärnu,Estonia,city
+Rakvere,Estonia,city
+Haapsalu,Estonia,city
+Viljandi,Estonia,city
+Kuressaare,Estonia,city
+Lahemaa National Park,Estonia,other_destination
+Soomaa National Park,Estonia,other_destination
+Matsalu National Park,Estonia,other_destination
+Vilsandi National Park,Estonia,other_destination
+Karula National Park,Estonia,other_destination
+Alutaguse National Park,Estonia,other_destination
+Otepää Nature Park and Lake Pühajärve,Estonia,other_destination
+Meenikunno Nature Park,Estonia,other_destination
+Saaremaa,Estonia,other_destination
+Hiiumaa,Estonia,other_destination
+Kihnu,Estonia,other_destination
+Muhu,Estonia,other_destination
+Ruhnu,Estonia,other_destination
+Vormsi,Estonia,other_destination
+Addis Ababa,Ethiopia,city
+Adama,Ethiopia,city
+Axum,Ethiopia,city
+Bahir Dar,Ethiopia,city
+Dire Dawa,Ethiopia,city
+Gondar,Ethiopia,city
+Harar,Ethiopia,city
+Lalibela,Ethiopia,city
+Abijatta Shalla Lakes National Park,Ethiopia,other_destination
+Awash National Park,Ethiopia,other_destination
+Mago National Park,Ethiopia,other_destination
+Omo National Park,Ethiopia,other_destination
+Simien National Park,Ethiopia,other_destination
+Sodere,Ethiopia,other_destination
+Konso,Ethiopia,other_destination
+Danakil Depression,Ethiopia,other_destination
+Stanley,Falkland Islands,city
+Goose Green,Falkland Islands,city
+Port Howard,Falkland Islands,city
+North Arm,Falkland Islands,city
+Tórshavn,Faroe Islands,city
+Klaksvík,Faroe Islands,city
+Hoyvík,Faroe Islands,city
+Tvøroyri,Faroe Islands,city
+Vágur,Faroe Islands,city
+Runavík,Faroe Islands,city
+Fuglafjørður,Faroe Islands,city
+Kirkjubøur,Faroe Islands,city
+Eiði,Faroe Islands,other_destination
+Saksun,Faroe Islands,other_destination
+Oyndarfjørður,Faroe Islands,other_destination
+Gásadalur,Faroe Islands,other_destination
+Bøur,Faroe Islands,other_destination
+Nólsoy,Faroe Islands,other_destination
+Viðareiði,Faroe Islands,other_destination
+Porkeri,Faroe Islands,other_destination
+Fámjin,Faroe Islands,other_destination
+Hvalba,Faroe Islands,other_destination
+Vestmanna,Faroe Islands,other_destination
+Suva,Fiji Islands,city
+Lautoka,Fiji Islands,city
+Levuka,Fiji Islands,city
+Nadi,Fiji Islands,city
+Nausori,Fiji Islands,city
+Taveuni,Fiji Islands,city
+Denarau,Fiji Islands,city
+Nananu-i-Ra Island,Fiji Islands,city
+Helsinki,Finland,city
+Jyväskylä,Finland,city
+Oulu,Finland,city
+Rauma,Finland,city
+Rovaniemi,Finland,city
+Savonlinna,Finland,city
+Tampere,Finland,city
+Turku,Finland,city
+Archipelago Sea,Finland,other_destination
+"Finnish national parks, other protected areas, hiking areas or wilderness areas",Finland,other_destination
+Koli National Park,Finland,other_destination
+Lemmenjoki National Park,Finland,other_destination
+Nuuksio National Park,Finland,other_destination
+Kilpisjärvi,Finland,other_destination
+Levi,Finland,other_destination
+Suomenlinna,Finland,other_destination
+Paris,France,city
+Bordeaux,France,city
+Lille,France,city
+Lyon,France,city
+Marseille,France,city
+Nantes,France,city
+Nice,France,city
+Strasbourg,France,city
+Camargue,France,other_destination
+Disneyland Paris,France,other_destination
+French Alps,France,other_destination
+French Riviera,France,other_destination
+Loire Valley,France,other_destination
+Luberon,France,other_destination
+Mont Saint Michel,France,other_destination
+Verdon Gorge,France,other_destination
+Cayenne,French Guiana,city
+Kourou,French Guiana,city
+Saint-Laurent,French Guiana,city
+Saint-Georges,French Guiana,city
+Île du Diable (Devil's Island),French Guiana,city
+Guiana Amazonian Park,French Guiana,city
+Papeete,French Polynesia,city
+Clipperton Island,French Polynesia,city
+Rapa,French Polynesia,city
+Libreville,Gabon,city
+Franceville,Gabon,city
+Gamba,Gabon,city
+Mayumba,Gabon,city
+Port-Gentil,Gabon,city
+Akanda National Park,Gabon,city
+Batéké Plateau National Park,Gabon,city
+Crystal Mountains National Park,Gabon,city
+Loango National Park,Gabon,other_destination
+Lopé National Park,Gabon,other_destination
+Mayumba National Park,Gabon,other_destination
+Minkebe National Park,Gabon,other_destination
+Mwagne National Park,Gabon,other_destination
+Berlin,Germany,city
+Bremen,Germany,city
+Cologne,Germany,city
+Dresden,Germany,city
+Düsseldorf,Germany,city
+Frankfurt,Germany,city
+Hamburg,Germany,city
+Munich,Germany,city
+Baltic Sea Coast,Germany,other_destination
+Bavarian Alps,Germany,other_destination
+Black Forest,Germany,other_destination
+East Frisian Islands,Germany,other_destination
+Franconian Switzerland,Germany,other_destination
+Harz,Germany,other_destination
+Lake Constance,Germany,other_destination
+Middle Rhine Valley,Germany,other_destination
+North Frisian Islands,Germany,other_destination
+Accra,Ghana,city
+Cape Coast,Ghana,city
+Koforidua,Ghana,city
+Kumasi,Ghana,city
+Obuasi,Ghana,city
+Sekondi-Takoradi,Ghana,city
+Sunyani,Ghana,city
+Tamale,Ghana,city
+Boti Falls,Ghana,other_destination
+Prampram,Ghana,other_destination
+Kakum National Park,Ghana,other_destination
+Mole National Park,Ghana,other_destination
+Paga,Ghana,other_destination
+Shai Hills Reserve,Ghana,other_destination
+Wli Falls,Ghana,other_destination
+Málaga Airport,Gibraltar,city
+Jerez Airport,Gibraltar,city
+Athens,Greece,city
+Chania,Greece,city
+Chersonissos,Greece,city
+Heraklion,Greece,city
+Kavala,Greece,city
+Patras,Greece,city
+Rhodes,Greece,city
+Thessaloniki,Greece,city
+Crete,Greece,other_destination
+Corfu,Greece,other_destination
+Delphi,Greece,other_destination
+Meteora,Greece,other_destination
+Mount Athos,Greece,other_destination
+Mykonos,Greece,other_destination
+Olympia,Greece,other_destination
+Rhodes,Greece,other_destination
+Santorini,Greece,other_destination
+Nuuk,Greenland,city
+Ittoqqortoormiit,Greenland,city
+Kangerlussuaq,Greenland,city
+Kulusuk,Greenland,city
+Qaanaaq,Greenland,city
+Sisimiut,Greenland,city
+Tasiilaq,Greenland,city
+Upernavik,Greenland,city
+Northeast Greenland National Park,Greenland,other_destination
+Kangerlussuaq,Greenland,other_destination
+Narsarsuaq,Greenland,other_destination
+Nuuk,Greenland,other_destination
+Basse-Terre,Guadeloupe,city
+Grande-Terre,Guadeloupe,city
+Les Saintes,Guadeloupe,city
+Hagåtña,Guam,city
+Tumon,Guam,city
+Dededo,Guam,city
+Tamuning,Guam,city
+Mangilao,Guam,city
+Talofofo,Guam,city
+War in the Pacific National Historical Park,Guam,city
+Guam National Wildlife Refuge,Guam,city
+Guatemala City,Guatemala,city
+Antigua Guatemala,Guatemala,city
+Flores,Guatemala,city
+Melchor de Mencos,Guatemala,city
+Panajachel,Guatemala,city
+Puerto Barrios,Guatemala,city
+Puerto San José,Guatemala,city
+Quetzaltenango,Guatemala,city
+Aguateca,Guatemala,other_destination
+El Mirador,Guatemala,other_destination
+Iximché,Guatemala,other_destination
+Lake Atitlán,Guatemala,other_destination
+Monterrico,Guatemala,other_destination
+Nakúm,Guatemala,other_destination
+Rio Dulce,Guatemala,other_destination
+Semuc Champey,Guatemala,other_destination
+Tikal,Guatemala,other_destination
+Conakry,Guinea,city
+Beyla,Guinea,city
+Boke,Guinea,city
+Dalaba,Guinea,city
+Faranah,Guinea,city
+Forécariah,Guinea,city
+Kankan,Guinea,city
+Kindia,Guinea,city
+Labé,Guinea,other_destination
+Mamou,Guinea,other_destination
+Fouta Djalon,Guinea,other_destination
+Loos Islands,Guinea,other_destination
+Badiar National Park,Guinea,other_destination
+Mount Nimba Strict Nature Reserve,Guinea,other_destination
+National Park of the Upper Niger,Guinea,other_destination
+Bissau,Guinea-Bissau,city
+Bafatá,Guinea-Bissau,city
+Bolama,Guinea-Bissau,city
+Buba,Guinea-Bissau,city
+Bubaque,Guinea-Bissau,city
+Cacheu,Guinea-Bissau,city
+Catió,Guinea-Bissau,city
+Farim,Guinea-Bissau,city
+Bijagos Islands,Guinea-Bissau,other_destination
+Varela,Guinea-Bissau,other_destination
+Lagoas de Cufada Natural Park,Guinea-Bissau,other_destination
+Georgetown,Guyana,city
+Bartica,Guyana,city
+Mabaruma,Guyana,city
+New Amsterdam,Guyana,city
+Lethem,Guyana,city
+Linden,Guyana,city
+Parika,Guyana,city
+Paramakatoi,Guyana,city
+Kaieteur National Park,Guyana,other_destination
+Michelle's Island,Guyana,other_destination
+Port-au-Prince,Haiti,city
+Cap-Haïtien,Haiti,city
+Gonaïves,Haiti,city
+Jacmel,Haiti,city
+Jérémie,Haiti,city
+Les Cayes,Haiti,city
+Petionville,Haiti,city
+Port-de-Paix,Haiti,city
+Labadie,Haiti,other_destination
+Tegucigalpa,Honduras,city
+La Ceiba,Honduras,city
+El Progreso,Honduras,city
+Comayagua,Honduras,city
+Gracias,Honduras,city
+Puerto Cortes,Honduras,city
+San Pedro Sula,Honduras,city
+Santa Rosa de Copán,Honduras,city
+Cusuco National Park,Honduras,other_destination
+Bay Islands,Honduras,other_destination
+Copán,Honduras,other_destination
+Lake Yojoa,Honduras,other_destination
+Río Plátano Biosphere Reserve,Honduras,other_destination
+Budapest,Hungary,city
+Debrecen,Hungary,city
+Győr,Hungary,city
+Kecskemét,Hungary,city
+Miskolc,Hungary,city
+Nyíregyháza,Hungary,city
+Pécs,Hungary,city
+Szeged,Hungary,city
+Lake Balaton,Hungary,other_destination
+Hortobágy National Park,Hungary,other_destination
+Reykjavík,Iceland,city
+Akureyri,Iceland,city
+Egilsstaðir,Iceland,city
+Hafnarfjörður,Iceland,city
+Höfn,Iceland,city
+Húsavík,Iceland,city
+Ísafjörður,Iceland,city
+Selfoss,Iceland,city
+Þingvellir National Park,Iceland,other_destination
+Vatnajökull National Park,Iceland,other_destination
+Snæfellsjökull National Park,Iceland,other_destination
+Blue Lagoon,Iceland,other_destination
+Mývatn,Iceland,other_destination
+Gullfoss,Iceland,other_destination
+Langjökull,Iceland,other_destination
+Geysir,Iceland,other_destination
+Jökulsárlón,Iceland,other_destination
+Landmannalaugar,Iceland,other_destination
+Reykholt,Iceland,other_destination
+Thórsmörk,Iceland,other_destination
+Delhi,India,city
+Bangalore,India,city
+Chennai,India,city
+Hyderabad,India,city
+Jaipur,India,city
+Kolkata,India,city
+Mumbai,India,city
+Shimla,India,city
+Bodh Gaya,India,other_destination
+Ellora,India,other_destination
+Ajanta,India,other_destination
+Golden Temple,India,other_destination
+Hampi,India,other_destination
+Khajuraho,India,other_destination
+Konark,India,other_destination
+Meenakshi Temple,India,other_destination
+Taj Mahal,India,other_destination
+Forts and palaces of India,India,other_destination
+Indian national parks and wildlife sanctuaries,India,other_destination
+Indian zoos and botanical gardens,India,other_destination
+Natural wonders of India,India,other_destination
+Sacred sites of the Indian subcontinent,India,other_destination
+Hill stations in India,India,other_destination
+UNESCO World Heritage List (India),India,other_destination
+Jakarta,Indonesia,city
+Bandung,Indonesia,city
+Banjarmasin,Indonesia,city
+Jayapura,Indonesia,city
+Kuta,Indonesia,city
+Makassar,Indonesia,city
+Medan,Indonesia,city
+Palembang,Indonesia,city
+Baliem Valley,Indonesia,other_destination
+Borobudur,Indonesia,other_destination
+Bromo-Tengger-Semeru National Park,Indonesia,other_destination
+Bunaken,Indonesia,other_destination
+Kerinci Seblat National Park,Indonesia,other_destination
+Komodo National Park,Indonesia,other_destination
+Lake Toba,Indonesia,other_destination
+Lombok,Indonesia,other_destination
+Tana Toraja,Indonesia,other_destination
+Tehran,Iran,city
+Hamedan,Iran,city
+Isfahan,Iran,city
+Kerman,Iran,city
+Mashad,Iran,city
+Qom,Iran,city
+Shiraz,Iran,city
+Tabriz,Iran,city
+Alamut,Iran,other_destination
+Dizin,Iran,other_destination
+Kish Island,Iran,other_destination
+Qeshm Island,Iran,other_destination
+Pasargad,Iran,other_destination
+Persepolis,Iran,other_destination
+Susa,Iran,other_destination
+Baghdad,Iraq,city
+Ar Rutba,Iraq,city
+Basra,Iraq,city
+Dahuk,Iraq,city
+Erbil,Iraq,city
+Fallujah,Iraq,city
+Karbala,Iraq,city
+Kirkuk,Iraq,city
+Ashur,Iraq,other_destination
+Babylon,Iraq,other_destination
+Ctesiphon,Iraq,other_destination
+Hatra,Iraq,other_destination
+Lalish,Iraq,other_destination
+Nineveh,Iraq,other_destination
+Ur,Iraq,other_destination
+Uruk,Iraq,other_destination
+Dublin,Ireland,city
+Cork,Ireland,city
+Galway,Ireland,city
+Killarney,Ireland,city
+Kilkenny,Ireland,city
+Letterkenny,Ireland,city
+Limerick,Ireland,city
+Sligo,Ireland,city
+Brú Na Bóinne,Ireland,other_destination
+Glendalough,Ireland,other_destination
+County Donegal,Ireland,other_destination
+Burren,Ireland,other_destination
+Aran Islands,Ireland,other_destination
+Skellig Michael,Ireland,other_destination
+Jerusalem,Israel,city
+Tel Aviv,Israel,city
+Akko,Israel,city
+Be'er Sheva,Israel,city
+Eilat,Israel,city
+Haifa,Israel,city
+Nazareth,Israel,city
+Safed,Israel,city
+Old City of Jerusalem,Israel,other_destination
+Old City of Acre,Israel,other_destination
+Sea of Galilee region,Israel,other_destination
+Dead Sea,Israel,other_destination
+Jezreel Valley,Israel,other_destination
+Judaean Desert,Israel,other_destination
+Bahá'í Gardens and World Center,Israel,other_destination
+Masada,Israel,other_destination
+Ein Avdat,Israel,other_destination
+Caesarea National Park,Israel,other_destination
+Beth Shean Valley,Israel,other_destination
+Belvoir Fortress,Israel,other_destination
+Nimrod Fortress,Israel,other_destination
+Rosh Haniqra,Israel,other_destination
+Ramon Crater,Israel,other_destination
+Mount Hermon,Israel,other_destination
+Carmel Range,Israel,other_destination
+Ben Gurion International Airport,Israel,other_destination
+Rome,Italy,city
+Bologna,Italy,city
+Florence,Italy,city
+Genoa,Italy,city
+Milan,Italy,city
+Naples,Italy,city
+Pisa,Italy,city
+Turin,Italy,city
+Amalfi Coast,Italy,other_destination
+Capri,Italy,other_destination
+Cinque Terre,Italy,other_destination
+Italian Alps,Italy,other_destination
+Lake Como,Italy,other_destination
+Lake Garda,Italy,other_destination
+Pompeii,Italy,other_destination
+Herculaneum,Italy,other_destination
+Taormina,Italy,other_destination
+Vesuvius,Italy,other_destination
+Kingston,Jamaica,city
+Montego Bay,Jamaica,city
+Negril,Jamaica,city
+Portmore,Jamaica,city
+Ocho Rios,Jamaica,city
+Port Antonio,Jamaica,city
+Morant Bay,Jamaica,city
+Falmouth,Jamaica,city
+Black River,Jamaica,other_destination
+Blue Mountains,Jamaica,other_destination
+Cave Valley,Jamaica,other_destination
+Nassau Valley,Jamaica,other_destination
+Manchester,Jamaica,other_destination
+Great Goat Island,Jamaica,other_destination
+Treasure Beach,Jamaica,other_destination
+Tokyo,Japan,city
+Hiroshima,Japan,city
+Kanazawa,Japan,city
+Kyoto,Japan,city
+Nagasaki,Japan,city
+Nara,Japan,city
+Osaka,Japan,city
+Sapporo,Japan,city
+Miyajima,Japan,other_destination
+Mount Fuji,Japan,other_destination
+Mount Koya,Japan,other_destination
+Naoshima,Japan,other_destination
+Sado Island,Japan,other_destination
+Shirakawa-go,Japan,other_destination
+Shiretoko National Park,Japan,other_destination
+Yaeyama Islands,Japan,other_destination
+Yakushima,Japan,other_destination
+Jersey Airport,Jersey,city
+Government House,Jersey,city
+Fishermen's Chapel,Jersey,city
+Amman,Jordan,city
+Aqaba,Jordan,city
+Irbid,Jordan,city
+Jerash,Jordan,city
+Kerak,Jordan,city
+Madaba,Jordan,city
+Salt,Jordan,city
+Ajlun,Jordan,city
+Dana Nature Reserve,Jordan,other_destination
+Dead Sea,Jordan,other_destination
+Petra,Jordan,other_destination
+Umm Qais,Jordan,other_destination
+Wadi Rum,Jordan,other_destination
+Desert castles,Jordan,other_destination
+Astana,Kazakhstan,city
+Almaty,Kazakhstan,city
+Aktobe,Kazakhstan,city
+Atyrau,Kazakhstan,city
+Pavlodar,Kazakhstan,city
+Semey,Kazakhstan,city
+Shymkent,Kazakhstan,city
+Turkestan,Kazakhstan,city
+Aksu-Zhabagly,Kazakhstan,other_destination
+Altai Mountains,Kazakhstan,other_destination
+Baikonur,Kazakhstan,other_destination
+Karkaraly National Park,Kazakhstan,other_destination
+Talgar,Kazakhstan,other_destination
+Zailiysky Alatau,Kazakhstan,other_destination
+Western Kenya,Kenya,city
+Eastern Kenya,Kenya,city
+Central Kenya,Kenya,city
+Coastal Kenya,Kenya,city
+Nairobi,Kenya,city
+Mombasa,Kenya,city
+Kisumu,Kenya,city
+Lamu,Kenya,city
+Malindi,Kenya,other_destination
+Meru,Kenya,other_destination
+Nakuru,Kenya,other_destination
+Mtwapa,Kenya,other_destination
+Kakamega Rainforest,Kenya,other_destination
+Aberdare National Park,Kenya,other_destination
+Sibiloi National Park,Kenya,other_destination
+Mount Elgon National Park,Kenya,other_destination
+Lake Nakuru National Park,Kenya,other_destination
+Mount Kenya National Park,Kenya,other_destination
+Maasai Mara National Reserve,Kenya,other_destination
+Nairobi National Park,Kenya,other_destination
+Tsavo East National Park,Kenya,other_destination
+Tsavo West National Park,Kenya,other_destination
+Amboseli National Park,Kenya,other_destination
+Tarawa,Kiribati,city
+Kuwait City,Kuwait,city
+Jahra,Kuwait,city
+Ahmadi,Kuwait,city
+Hawalli,Kuwait,city
+Farwaniya,Kuwait,city
+Mubarak al-Kabeer,Kuwait,city
+Shuwaikh,Kuwait,city
+Farwaniyah,Kuwait,city
+Rai,Kuwait,other_destination
+Bishkek,Kyrgyzstan,city
+Arslanbob,Kyrgyzstan,city
+Balykchy,Kyrgyzstan,city
+Jalal-Abad,Kyrgyzstan,city
+Karakol,Kyrgyzstan,city
+Kochkor,Kyrgyzstan,city
+Naryn,Kyrgyzstan,city
+Osh,Kyrgyzstan,city
+Issyk Kul,Kyrgyzstan,other_destination
+Song Kul,Kyrgyzstan,other_destination
+Kol'ukok,Kyrgyzstan,other_destination
+Tash Rabat,Kyrgyzstan,other_destination
+Sary-Chelek Nature Reserve,Kyrgyzstan,other_destination
+Burana Tower,Kyrgyzstan,other_destination
+Ala Archa National Park,Kyrgyzstan,other_destination
+Suusamyr Valley,Kyrgyzstan,other_destination
+Vientiane,Laos,city
+Huay Xai,Laos,city
+Luang Namtha,Laos,city
+Luang Prabang,Laos,city
+Muang Xay,Laos,city
+Pakbeng,Laos,city
+Pakse,Laos,city
+Savannakhet,Laos,city
+Ban Nalan Trail,Laos,other_destination
+Bolaven Plateau,Laos,other_destination
+Champasak,Laos,other_destination
+Nong Khiaw,Laos,other_destination
+Plain of Jars,Laos,other_destination
+Si Phan Don,Laos,other_destination
+Vang Vieng,Laos,other_destination
+Vieng Xai,Laos,other_destination
+Pakse,Laos,other_destination
+Riga,Latvia,city
+Sigulda,Latvia,city
+Cēsis,Latvia,city
+Jūrmala,Latvia,city
+Daugavpils,Latvia,city
+Ventspils,Latvia,city
+Liepāja,Latvia,city
+Kuldīga,Latvia,city
+Ķemeri National Park,Latvia,other_destination
+Slīteres National Park,Latvia,other_destination
+Beirut,Lebanon,city
+Tripoli,Lebanon,city
+Sidon,Lebanon,city
+Tyre,Lebanon,city
+Byblos,Lebanon,city
+Jounieh,Lebanon,city
+Jezzine,Lebanon,city
+Zahle,Lebanon,city
+Kadisha Valley,Lebanon,other_destination
+Deir el Qamar,Lebanon,other_destination
+Baalbek,Lebanon,other_destination
+Maseru,Lesotho,city
+Leribe,Lesotho,city
+Mafeteng,Lesotho,city
+Mohale's Hoek,Lesotho,city
+Mokhotlong,Lesotho,city
+Qacha's Nek,Lesotho,city
+Quthing,Lesotho,city
+Teyateyaneng,Lesotho,city
+"Afriski, Oxbow",Lesotho,other_destination
+Sani Pass,Lesotho,other_destination
+Sehlabathebe National Park,Lesotho,other_destination
+Ts'ehlanyane National Park,Lesotho,other_destination
+Katse,Lesotho,other_destination
+Malealea,Lesotho,other_destination
+Maloti Drakensberg Park,Lesotho,other_destination
+Morija,Lesotho,other_destination
+Semonkong,Lesotho,other_destination
+Thaba Bosiu,Lesotho,other_destination
+Kome Cave Dwellings,Lesotho,other_destination
+Monrovia,Liberia,city
+Robertsport,Liberia,city
+Greenville,Liberia,city
+Harper,Liberia,city
+Paynesville,Liberia,city
+Sapo National Park,Liberia,city
+Monkey Island,Liberia,city
+Tripoli,Libya,city
+Benghazi,Libya,city
+Ghadamis,Libya,city
+Sabha,Libya,city
+Shahhat,Libya,city
+Surt,Libya,city
+Tobruk,Libya,city
+Zuwara,Libya,city
+Gaberoun,Libya,other_destination
+Ghat,Libya,other_destination
+Leptis Magna,Libya,other_destination
+Sabratha,Libya,other_destination
+Vaduz,Liechtenstein,city
+Balzers,Liechtenstein,city
+Malbun,Liechtenstein,city
+Schaan,Liechtenstein,city
+Triesen,Liechtenstein,city
+Triesenberg,Liechtenstein,city
+Ruggell,Liechtenstein,city
+Bendern,Liechtenstein,city
+Schellenberg,Liechtenstein,other_destination
+Vilnius,Lithuania,city
+Jonava,Lithuania,city
+Kaunas,Lithuania,city
+Klaipėda,Lithuania,city
+Panevėžys,Lithuania,city
+Šiauliai,Lithuania,city
+Trakai,Lithuania,city
+Visaginas,Lithuania,city
+Curonian Spit,Lithuania,other_destination
+Dzūkija National Park,Lithuania,other_destination
+Hill of Crosses,Lithuania,other_destination
+Kernavė,Lithuania,other_destination
+Purnuskes,Lithuania,other_destination
+Žemaičių Kalvarija,Lithuania,other_destination
+Luxembourg City,Luxembourg,city
+Clervaux,Luxembourg,city
+Diekirch,Luxembourg,city
+Echternach,Luxembourg,city
+Ettelbruck,Luxembourg,city
+Esch-sur-Alzette,Luxembourg,city
+Mondorf-les-Bains,Luxembourg,city
+Vianden,Luxembourg,city
+Schengen,Luxembourg,other_destination
+Antananarivo,Madagascar,city
+Ambalavao,Madagascar,city
+Ambositra,Madagascar,city
+Antsirabe,Madagascar,city
+Fianarantsoa,Madagascar,city
+Ihosy,Madagascar,city
+Morondava,Madagascar,city
+Taolagnaro,Madagascar,city
+Anakao,Madagascar,other_destination
+Andasibe-Mantadia National Park,Madagascar,other_destination
+Andringitra National Park,Madagascar,other_destination
+Ile aux Nattes,Madagascar,other_destination
+Isalo National Park,Madagascar,other_destination
+Masoala National Park,Madagascar,other_destination
+Nosy Be,Madagascar,other_destination
+Ranomafana National Park,Madagascar,other_destination
+Tsingy de Bemaraha Reserve,Madagascar,other_destination
+Lilongwe,Malawi,city
+Blantyre,Malawi,city
+Mzuzu,Malawi,city
+Karonga,Malawi,city
+Mangochi,Malawi,city
+Nkhotakota,Malawi,city
+Zomba,Malawi,city
+Cape Maclear,Malawi,city
+Mua,Malawi,other_destination
+Zomba Plateau,Malawi,other_destination
+Monkey Bay,Malawi,other_destination
+Nkhata Bay,Malawi,other_destination
+Lake Malawi National Park,Malawi,other_destination
+Liwonde National Park,Malawi,other_destination
+Majete Wildlife Park,Malawi,other_destination
+Nyika National Park,Malawi,other_destination
+Ntchisi Forest Reserve,Malawi,other_destination
+Kuala Lumpur,Malaysia,city
+George Town,Malaysia,city
+Malacca,Malaysia,city
+Ipoh,Malaysia,city
+Johor Bahru,Malaysia,city
+Kuantan,Malaysia,city
+Kota Kinabalu,Malaysia,city
+Kuching,Malaysia,city
+Cameron Highlands,Malaysia,other_destination
+Perhentian Islands,Malaysia,other_destination
+Taman Negara,Malaysia,other_destination
+Kinabalu National Park,Malaysia,other_destination
+Langkawi,Malaysia,other_destination
+Sipadan,Malaysia,other_destination
+Redang,Malaysia,other_destination
+Tioman,Malaysia,other_destination
+Fraser's Hill,Malaysia,other_destination
+Malé,Maldives,city
+Addu,Maldives,city
+Fuvahmulah,Maldives,city
+Kulhudhuffushi,Maldives,city
+Kuredu ,Maldives,city
+Mathiveri,Maldives,city
+Rasdhoo,Maldives,city
+Thoddoo,Maldives,city
+Bamako,Mali,city
+Gao,Mali,city
+Kayes,Mali,city
+Kidal,Mali,city
+Mopti,Mali,city
+Ségou,Mali,city
+Sikasso,Mali,city
+Timbuktu,Mali,city
+Dogon Country,Mali,other_destination
+Djenné,Mali,other_destination
+Valletta,Malta,city
+Cottonera,Malta,city
+Marsaxlokk,Malta,city
+Mdina,Malta,city
+Mosta,Malta,city
+Rabat,Malta,city
+St. Julian's,Malta,city
+Sliema,Malta,city
+Mellieħa,Malta,other_destination
+Majuro,Marshall Islands,city
+Kwajalein,Marshall Islands,city
+Ebeye,Marshall Islands,city
+Fort-de-France,Martinique,city
+Le Carbet,Martinique,city
+Le Diamant,Martinique,city
+Sainte-Anne,Martinique,city
+Saint-Pierre,Martinique,city
+Trois-Ilets,Martinique,city
+Nouakchott,Mauritania,city
+Atar,Mauritania,city
+Chinguetti,Mauritania,city
+Nouadhibou,Mauritania,city
+Tichit,Mauritania,city
+Banc d'Arguin National Park,Mauritania,city
+Port Louis,Mauritius,city
+Beau Bassin-Rose Hill,Mauritius,city
+Curepipe,Mauritius,city
+Quatre Bornes,Mauritius,city
+Vacoas-Phoenix,Mauritius,city
+Blue Bay,Mauritius,city
+Centre de Flacq,Mauritius,city
+Chamarel,Mauritius,city
+Flic en Flac,Mauritius,other_destination
+Mahébourg,Mauritius,other_destination
+Pamplemousses,Mauritius,other_destination
+Souillac,Mauritius,other_destination
+Tamarin,Mauritius,other_destination
+Triolet,Mauritius,other_destination
+Trou d'Eau Douce,Mauritius,other_destination
+Agaléga,Mauritius,other_destination
+Rodrigues,Mauritius,other_destination
+Le Morne,Mauritius,other_destination
+Macchabée - Bel Ombre Nature Preserve,Mauritius,other_destination
+Mamoudzou,Mayotte,city
+Dzaoudzi–Pamandzi Airport,Mayotte,city
+Mexico City,Mexico,city
+Cancún,Mexico,city
+Guadalajara,Mexico,city
+Mazatlan,Mexico,city
+Monterrey,Mexico,city
+San Luis Potosi,Mexico,city
+Taxco,Mexico,city
+Tijuana,Mexico,city
+Monarch Butterfly Reserves,Mexico,other_destination
+Sumidero Canyon,Mexico,other_destination
+Chichen Itza,Mexico,other_destination
+Ek Balam,Mexico,other_destination
+El Tajín,Mexico,other_destination
+Monte Alban,Mexico,other_destination
+Palenque,Mexico,other_destination
+Teotihuacan,Mexico,other_destination
+Tulum,Mexico,other_destination
+Uxmal,Mexico,other_destination
+Hagåtña,Micronesia,city
+Kolonia,Micronesia,city
+Koror,Micronesia,city
+Majuro,Micronesia,city
+Melekeok,Micronesia,city
+Tarawa,Micronesia,city
+Nan Madol,Micronesia,city
+War in the Pacific National Historical Park,Micronesia,city
+Chișinău,Moldova,city
+Bălţi,Moldova,city
+Soroca,Moldova,city
+Ungheni,Moldova,city
+Comrat,Moldova,city
+Cahul,Moldova,city
+Orhei,Moldova,city
+Gagauzia,Moldova,city
+Orheiul Vechi,Moldova,other_destination
+Ulaanbaatar,Mongolia,city
+Choibalsan,Mongolia,city
+Erdenet,Mongolia,city
+Hovd,Mongolia,city
+Karakorum,Mongolia,city
+Mörön,Mongolia,city
+Ölgii,Mongolia,city
+Chinggis,Mongolia,city
+Khogno Khan National Park,Mongolia,other_destination
+Altai Tavan Bogd National Park,Mongolia,other_destination
+Gun-Galuut Nature Reserve,Mongolia,other_destination
+Gorkhi-Terelj National Park,Mongolia,other_destination
+Khustain Nuruu National Park,Mongolia,other_destination
+Gobi Gurvan Saikhan National Park,Mongolia,other_destination
+Podgorica,Montenegro,city
+Bar,Montenegro,city
+Budva,Montenegro,city
+Cetinje,Montenegro,city
+Kotor,Montenegro,city
+Nikšić,Montenegro,city
+Tivat,Montenegro,city
+Žabljak,Montenegro,city
+Bečići,Montenegro,other_destination
+Biogradska Gora National Park,Montenegro,other_destination
+Durmitor National Park,Montenegro,other_destination
+Lovćen National Park,Montenegro,other_destination
+Mount Ostrog,Montenegro,other_destination
+Perast,Montenegro,other_destination
+Prokletije National Park,Montenegro,other_destination
+Skadar Lake National Park ,Montenegro,other_destination
+Sveti Stefan,Montenegro,other_destination
+Bay of Kotor,Montenegro,other_destination
+Budva,Montenegro,other_destination
+Rabat,Morocco,city
+Agadir,Morocco,city
+Casablanca,Morocco,city
+Fez,Morocco,city
+Marrakech,Morocco,city
+Meknes,Morocco,city
+Ouarzazate,Morocco,city
+Tangier,Morocco,city
+High Atlas,Morocco,other_destination
+Merzouga,Morocco,other_destination
+M'Hamid,Morocco,other_destination
+Tinerhir,Morocco,other_destination
+Volubilis,Morocco,other_destination
+Maputo,Mozambique,city
+Beira,Mozambique,city
+Ilha de Mozambique,Mozambique,city
+Inhambane,Mozambique,city
+Nampula,Mozambique,city
+Pemba,Mozambique,city
+Bazaruto Archipelago,Mozambique,city
+Cahora Bassa,Mozambique,city
+Ilha de Mozambique,Mozambique,other_destination
+Limpopo National Park,Mozambique,other_destination
+Ponta d'Ouro,Mozambique,other_destination
+Quirimbas Archipelago and National Park,Mozambique,other_destination
+Tofo Beach,Mozambique,other_destination
+Vilanculos,Mozambique,other_destination
+Naypyidaw,Myanmar,city
+Bago,Myanmar,city
+Kawthaung,Myanmar,city
+Mandalay,Myanmar,city
+Mawlamyine,Myanmar,city
+Pyin U Lwin,Myanmar,city
+Taunggyi,Myanmar,city
+Twante,Myanmar,city
+Bagan,Myanmar,other_destination
+Inle Lake,Myanmar,other_destination
+Kengtung,Myanmar,other_destination
+Kyaiktiyo,Myanmar,other_destination
+Mount Popa,Myanmar,other_destination
+Mrauk U,Myanmar,other_destination
+Ngapali,Myanmar,other_destination
+Ngwe Saung,Myanmar,other_destination
+Pyay,Myanmar,other_destination
+Pathein,Myanmar,other_destination
+Windhoek,Namibia,city
+Gobabis,Namibia,city
+Katima Mulilo,Namibia,city
+Keetmanshoop,Namibia,city
+Lüderitz,Namibia,city
+Mariental,Namibia,city
+Opuwo,Namibia,city
+Rundu,Namibia,city
+Brandberg,Namibia,other_destination
+Damaraland,Namibia,other_destination
+Etosha National Park,Namibia,other_destination
+Fish River Canyon Park,Namibia,other_destination
+Kaokoland,Namibia,other_destination
+Skeleton Coast,Namibia,other_destination
+Sossusvlei,Namibia,other_destination
+Spitzkoppe,Namibia,other_destination
+Waterberg Plateau Park,Namibia,other_destination
+Kathmandu,Nepal,city
+Bhaktapur,Nepal,city
+Biratnagar,Nepal,city
+Janakpur,Nepal,city
+Namche Bazaar,Nepal,city
+Nepalgunj,Nepal,city
+Patan,Nepal,city
+Pokhara,Nepal,city
+Chitwan National Park,Nepal,other_destination
+Daman,Nepal,other_destination
+Haleshi,Nepal,other_destination
+Lumbini,Nepal,other_destination
+Mount Everest,Nepal,other_destination
+Nagarkot,Nepal,other_destination
+Parping,Nepal,other_destination
+Tangting,Nepal,other_destination
+Aruba,Netherlands Antilles,city
+Bonaire,Netherlands Antilles,city
+Curaçao,Netherlands Antilles,city
+Saba,Netherlands Antilles,city
+Sint Eustatius,Netherlands Antilles,city
+Sint Maarten,Netherlands Antilles,city
+Nouméa,New Caledonia,city
+Bourail,New Caledonia,city
+Le Mont-Dore,New Caledonia,city
+Mueo,New Caledonia,city
+Port Bousie,New Caledonia,city
+Thio,New Caledonia,city
+Ouvéa,New Caledonia,city
+Blue River Provincial Park,New Caledonia,city
+Wellington,New Zealand,city
+Auckland,New Zealand,city
+Christchurch,New Zealand,city
+Dunedin,New Zealand,city
+Hamilton,New Zealand,city
+Napier,New Zealand,city
+Nelson,New Zealand,city
+Queenstown,New Zealand,city
+Abel Tasman National Park,New Zealand,other_destination
+Aoraki / Mount Cook National Park,New Zealand,other_destination
+Bay of Islands,New Zealand,other_destination
+Coromandel Peninsula,New Zealand,other_destination
+Marlborough,New Zealand,other_destination
+Milford Sound,New Zealand,other_destination
+Taupo,New Zealand,other_destination
+Tongariro National Park,New Zealand,other_destination
+Westland Tai Poutini National Park,New Zealand,other_destination
+Managua,Nicaragua,city
+León,Nicaragua,city
+Granada,Nicaragua,city
+Masaya,Nicaragua,city
+Estelí,Nicaragua,city
+Matagalpa,Nicaragua,city
+Jinotega,Nicaragua,city
+Bluefields,Nicaragua,city
+San Juan del Sur,Nicaragua,other_destination
+Isla de Ometepe,Nicaragua,other_destination
+Laguna de Apoyo,Nicaragua,other_destination
+Pueblos Blancos,Nicaragua,other_destination
+Volcan Masaya,Nicaragua,other_destination
+Volcan Cosigüina,Nicaragua,other_destination
+Somoto Canyon,Nicaragua,other_destination
+Big and Little Corn Islands,Nicaragua,other_destination
+Pearl Lagoon,Nicaragua,other_destination
+El Castillo,Nicaragua,other_destination
+Solentiname Islands,Nicaragua,other_destination
+Ruta del Tránsito,Nicaragua,other_destination
+Niamey,Niger,city
+Agadez,Niger,city
+Ayorou,Niger,city
+Diffa,Niger,city
+Dosso,Niger,city
+Maradi,Niger,city
+Tahoua,Niger,city
+Zinder,Niger,city
+Koure,Niger,other_destination
+Balleyara Market,Niger,other_destination
+Ayorou,Niger,other_destination
+Bilma,Niger,other_destination
+Air and Ténéré Natural Reserve,Niger,other_destination
+Abuja,Nigeria,city
+Benin City,Nigeria,city
+Calabar,Nigeria,city
+Enugu,Nigeria,city
+Ibadan,Nigeria,city
+Kano,Nigeria,city
+Lagos,Nigeria,city
+Osogbo,Nigeria,city
+Agbokim Waterfalls,Nigeria,other_destination
+Chad Basin National Park,Nigeria,other_destination
+Cross River National Park,Nigeria,other_destination
+Gashaka Gumti National Park ,Nigeria,other_destination
+Kainji National Park,Nigeria,other_destination
+Kamuku National Park,Nigeria,other_destination
+Okomu National Park,Nigeria,other_destination
+Old Oyo National Park,Nigeria,other_destination
+Yankari National Park,Nigeria,other_destination
+Oslo,Norway,city
+Bergen,Norway,city
+Bodø,Norway,city
+Drammen,Norway,city
+Fredrikstad,Norway,city
+Kristiansand,Norway,city
+Stavanger,Norway,city
+Tromsø,Norway,city
+Atlanterhavsveien,Norway,other_destination
+Hardangervidda,Norway,other_destination
+Jostedalsbreen,Norway,other_destination
+Jotunheimen,Norway,other_destination
+Lofoten,Norway,other_destination
+Nordkapp,Norway,other_destination
+Sognefjorden,Norway,other_destination
+Muscat,Oman,city
+Bahla,Oman,city
+Buraimi,Oman,city
+Ibra,Oman,city
+Matrah,Oman,city
+Nizwa,Oman,city
+Salalah,Oman,city
+Sohar,Oman,city
+Hajar Mountains,Oman,other_destination
+Madha,Oman,other_destination
+Masirah Island,Oman,other_destination
+Musandam Peninsula,Oman,other_destination
+Wahiba Sands,Oman,other_destination
+Islamabad,Pakistan,city
+Faisalabad,Pakistan,city
+Karachi,Pakistan,city
+Lahore,Pakistan,city
+Multan,Pakistan,city
+Muzaffarabad,Pakistan,city
+Peshawar,Pakistan,city
+Quetta,Pakistan,city
+Karakoram Highway,Pakistan,other_destination
+Murree,Pakistan,other_destination
+Khewra Salt Mine,Pakistan,other_destination
+Mohenjo-daro,Pakistan,other_destination
+Taxila,Pakistan,other_destination
+Changa Manga,Pakistan,other_destination
+Nankana Sahib,Pakistan,other_destination
+Melekeok,Palau,city
+Koror,Palau,city
+Panama City,Panama,city
+Balboa,Panama,city
+Boquete,Panama,city
+Boca Chica,Panama,city
+Colón,Panama,city
+David,Panama,city
+Gamboa,Panama,city
+Portobelo,Panama,city
+La Amistad International Park,Panama,other_destination
+Parque Nacional Marino Golfo de Chiriquí,Panama,other_destination
+El Valle,Panama,other_destination
+Pearl Islands,Panama,other_destination
+San Blas Islands,Panama,other_destination
+Taboga,Panama,other_destination
+Volcan Barú,Panama,other_destination
+Tocumen International Airport,Panama,other_destination
+Asunción,Paraguay,city
+Areguá,Paraguay,city
+Ciudad del Este,Paraguay,city
+Concepción,Paraguay,city
+Encarnación,Paraguay,city
+Filadelfia,Paraguay,city
+Pilar,Paraguay,city
+Villeta,Paraguay,city
+San Bernardino,Paraguay,other_destination
+Trinidad,Paraguay,other_destination
+Along the Paraguay River,Paraguay,other_destination
+Walk through the historic Asunción city center,Paraguay,other_destination
+Sights around Asunción,Paraguay,other_destination
+Aquidabán Cargo Ferry,Paraguay,other_destination
+Estación Biológica ,Paraguay,other_destination
+Cerro Corá National Park,Paraguay,other_destination
+Lima,Peru,city
+Arequipa,Peru,city
+Ayacucho,Peru,city
+Cajamarca,Peru,city
+Chiclayo,Peru,city
+Cuzco,Peru,city
+Iquitos,Peru,city
+Puno,Peru,city
+Chan Chan,Peru,other_destination
+Chavín de Huántar,Peru,other_destination
+Huascarán National Park,Peru,other_destination
+Lake Titicaca,Peru,other_destination
+Machu Picchu,Peru,other_destination
+Manú National Park,Peru,other_destination
+Nazca lines,Peru,other_destination
+Paracas National Reservation,Peru,other_destination
+Máncora,Peru,other_destination
+Metro Manila,Philippines,city
+Bacolod,Philippines,city
+Baguio,Philippines,city
+Cagayan de Oro,Philippines,city
+Cebu City,Philippines,city
+Davao,Philippines,city
+Tagbilaran,Philippines,city
+Vigan,Philippines,city
+Banaue,Philippines,other_destination
+Boracay,Philippines,other_destination
+Donsol,Philippines,other_destination
+El Nido,Philippines,other_destination
+Malapascua,Philippines,other_destination
+Mayon Volcano,Philippines,other_destination
+Panglao Island,Philippines,other_destination
+Puerto Galera,Philippines,other_destination
+Taal Volcano,Philippines,other_destination
+Boracay,Philippines,other_destination
+Alona Beach,Philippines,other_destination
+Coron Island,Philippines,other_destination
+El Nido,Philippines,other_destination
+Sabang,Philippines,other_destination
+Mount Apo,Philippines,other_destination
+Mayon Volcano,Philippines,other_destination
+Taal Volcano,Philippines,other_destination
+Warsaw,Poland,city
+Gdańsk,Poland,city
+Katowice,Poland,city
+Kraków,Poland,city
+Lublin,Poland,city
+Łódź,Poland,city
+Poznań,Poland,city
+Szczecin,Poland,city
+Auschwitz-Birkenau,Poland,other_destination
+Białowieża National Park,Poland,other_destination
+Bory Tucholskie National Park,Poland,other_destination
+Kalwaria Zebrzydowska,Poland,other_destination
+Karkonosze National Park,Poland,other_destination
+Malbork,Poland,other_destination
+Słowiński National Park,Poland,other_destination
+Wieliczka Salt Mine,Poland,other_destination
+Wielkopolski National Park,Poland,other_destination
+Lisbon,Portugal,city
+Angra do Heroísmo,Portugal,city
+Aveiro,Portugal,city
+Braga,Portugal,city
+Coimbra,Portugal,city
+Évora,Portugal,city
+Funchal,Portugal,city
+Guimarães,Portugal,city
+Alto Douro Wine Region,Portugal,other_destination
+Cabo da Roca,Portugal,other_destination
+Prehistoric Rock Art Sites in the Côa Valley,Portugal,other_destination
+Laurisilva of Madeira,Portugal,other_destination
+Peneda-Gerês National Park,Portugal,other_destination
+Serra da Estrela Natural Park ,Portugal,other_destination
+San Juan,Puerto Rico,city
+Arecibo,Puerto Rico,city
+Aguadilla,Puerto Rico,city
+Caguas,Puerto Rico,city
+Carolina,Puerto Rico,city
+Fajardo,Puerto Rico,city
+Mayagüez,Puerto Rico,city
+Ponce,Puerto Rico,city
+San Juan National Historic Site,Puerto Rico,other_destination
+Doha,Qatar,city
+Al Khor,Qatar,city
+Al Shamal,Qatar,city
+Al Shahaniyah,Qatar,city
+Al Wakrah,Qatar,city
+Dukhan,Qatar,city
+Mesaieed,Qatar,city
+Umm Salal Mohammed,Qatar,city
+Saint-Denis,Reunion,city
+Saint-Gilles,Reunion,city
+Saint-Leu,Reunion,city
+Saint-Pierre,Reunion,city
+Etang-Salé,Reunion,city
+Saint-Benoît,Reunion,city
+Cilaos,Reunion,city
+Salazie,Reunion,city
+Plaine de Cafres,Reunion,other_destination
+Réunion National Park,Reunion,other_destination
+Cirque de Cilaos,Reunion,other_destination
+Cirque de Mafate,Reunion,other_destination
+Piton de la Fournaise,Reunion,other_destination
+Bucharest,Romania,city
+Brașov,Romania,city
+Cluj-Napoca,Romania,city
+Constanța,Romania,city
+Iași,Romania,city
+Sibiu,Romania,city
+Sighișoara,Romania,city
+Suceava,Romania,city
+Corvin Castle,Romania,other_destination
+Sinaia,Romania,other_destination
+Predeal,Romania,other_destination
+Poiana Brașov,Romania,other_destination
+Băile Herculane,Romania,other_destination
+Transylvanian Alps,Romania,other_destination
+Painted Monasteries,Romania,other_destination
+Biertan,Romania,other_destination
+Câlnic,Romania,other_destination
+Dârjiu,Romania,other_destination
+Prejmer,Romania,other_destination
+Saschiz,Romania,other_destination
+Viscri,Romania,other_destination
+Danube Delta,Romania,other_destination
+Moscow,Russia,city
+Irkutsk,Russia,city
+Kazan,Russia,city
+Nizhny Novgorod,Russia,city
+Saint Petersburg,Russia,city
+Sochi,Russia,city
+Vladivostok,Russia,city
+Volgograd,Russia,city
+Border of Europe and Asia,Russia,other_destination
+Golden Ring,Russia,other_destination
+Kamchatka,Russia,other_destination
+Kizhi,Russia,other_destination
+Komi Virgin Forests,Russia,other_destination
+Lake Baikal,Russia,other_destination
+Mamaev Kurgan,Russia,other_destination
+Solovetsky Islands,Russia,other_destination
+Kigali,Rwanda,city
+Gicumbi,Rwanda,city
+Rusizi,Rwanda,city
+Rubavu,Rwanda,city
+Butare,Rwanda,city
+Kabuga,Rwanda,city
+Kibeho,Rwanda,city
+Kibungo,Rwanda,city
+Muhanga,Rwanda,other_destination
+Musanze,Rwanda,other_destination
+Ngororero,Rwanda,other_destination
+Nyamata,Rwanda,other_destination
+Rwamagana,Rwanda,other_destination
+Akagera National Park,Rwanda,other_destination
+Volcanoes National Park,Rwanda,other_destination
+Nyungwe National Park,Rwanda,other_destination
+Castries,Saint Lucia,city
+Vieux Fort,Saint Lucia,city
+Soufriere,Saint Lucia,city
+Gros Islet,Saint Lucia,city
+Marigot Bay,Saint Lucia,city
+Gustavia,Saint-Barthelemy,city
+Apia,Samoa,city
+São Tomé,Sao Tome and Principe,city
+Santo António,Sao Tome and Principe,city
+Riyadh,Saudi Arabia,city
+Abha,Saudi Arabia,city
+Dhahran,Saudi Arabia,city
+Jeddah,Saudi Arabia,city
+Jubail,Saudi Arabia,city
+Mecca,Saudi Arabia,city
+Medina,Saudi Arabia,city
+Najran,Saudi Arabia,city
+Empty Quarter,Saudi Arabia,other_destination
+Hajj,Saudi Arabia,other_destination
+Madain Saleh,Saudi Arabia,other_destination
+Dakar,Senegal,city
+Saint-Louis,Senegal,city
+Thiès,Senegal,city
+Kaolack,Senegal,city
+Ziguinchor,Senegal,city
+Tambacounda,Senegal,city
+Touba,Senegal,city
+Kafountine,Senegal,city
+Belgrade,Serbia,city
+Kragujevac,Serbia,city
+Kraljevo,Serbia,city
+Niš,Serbia,city
+Novi Sad,Serbia,city
+Požarevac,Serbia,city
+Subotica,Serbia,city
+Sremska Mitrovica,Serbia,city
+Đerdap National Park,Serbia,other_destination
+Kopaonik National Park,Serbia,other_destination
+Palić,Serbia,other_destination
+Sokobanja,Serbia,other_destination
+Tara National Park,Serbia,other_destination
+Zlatibor,Serbia,other_destination
+Victoria,Seychelles,city
+Beau Vallon,Seychelles,city
+Takamaka,Seychelles,city
+Morne Seychellois National Park,Seychelles,city
+Freetown,Sierra Leone,city
+Bo,Sierra Leone,city
+Bonthe,Sierra Leone,city
+Kenema,Sierra Leone,city
+Koidu,Sierra Leone,city
+Makeni,Sierra Leone,city
+Magburaka,Sierra Leone,city
+Banana Islands,Sierra Leone,city
+Tiwai Island,Sierra Leone,other_destination
+Bratislava,Slovakia,city
+Banská Bystrica,Slovakia,city
+Košice,Slovakia,city
+Nitra,Slovakia,city
+Poprad,Slovakia,city
+Rajecké Teplice,Slovakia,city
+Trenčín,Slovakia,city
+Trnava,Slovakia,city
+Slovak Paradise National Park,Slovakia,other_destination
+High Tatras,Slovakia,other_destination
+Vlkolínec,Slovakia,other_destination
+Slovak Karst,Slovakia,other_destination
+Levoča,Slovakia,other_destination
+Bojnice,Slovakia,other_destination
+Piešťany,Slovakia,other_destination
+Spiš castle,Slovakia,other_destination
+Bardejov,Slovakia,other_destination
+Poprad,Slovakia,other_destination
+Košice international airport,Slovakia,other_destination
+Ljubljana,Slovenia,city
+Bled,Slovenia,city
+Celje,Slovenia,city
+Koper/Capodistria,Slovenia,city
+Maribor,Slovenia,city
+Nova Gorica,Slovenia,city
+Piran/Pirano,Slovenia,city
+Postojna,Slovenia,city
+ Škocjan Caves,Slovenia,other_destination
+Triglav National Park,Slovenia,other_destination
+Soča Valley,Slovenia,other_destination
+Garowe,Somalia,city
+Bosaso,Somalia,city
+Mogadishu,Somalia,city
+Kismayo,Somalia,city
+Galkacyo,Somalia,city
+Las Khorey,Somalia,city
+Taleh,Somalia,city
+Hargeisa,Somalia,city
+Prince Edward Islands,South Africa,city
+Pretoria,South Africa,city
+Cape Town,South Africa,city
+Bloemfontein,South Africa,city
+Durban,South Africa,city
+Johannesburg,South Africa,city
+Kimberley,South Africa,city
+Polokwane,South Africa,city
+Upington,South Africa,other_destination
+Kruger National Park,South Africa,other_destination
+Kgalagadi Transfrontier Park,South Africa,other_destination
+Hluhluwe-iMfolozi Park,South Africa,other_destination
+Addo Elephant National Park,South Africa,other_destination
+Marakele National Park,South Africa,other_destination
+Pilanesberg National Park,South Africa,other_destination
+iSimangaliso Wetland Park,South Africa,other_destination
+Cradle of Humankind,South Africa,other_destination
+Robben Island,South Africa,other_destination
+iSimangaliso Wetland Park,South Africa,other_destination
+Ukhahlamba Drakensberg Park,South Africa,other_destination
+Vredefort,South Africa,other_destination
+Grytviken,South Georgia,city
+Juba,South Sudan,city
+Aweil,South Sudan,city
+Bentiu,South Sudan,city
+Malakal,South Sudan,city
+Nimule,South Sudan,city
+Rumbek,South Sudan,city
+Wau,South Sudan,city
+Yambio,South Sudan,city
+Bandingilo National Park,South Sudan,other_destination
+Boma National Park,South Sudan,other_destination
+Southern National Park,South Sudan,other_destination
+Nimule National Park,South Sudan,other_destination
+Madrid,Spain,city
+Barcelona,Spain,city
+Bilbao,Spain,city
+Córdoba,Spain,city
+Granada,Spain,city
+Málaga,Spain,city
+Seville,Spain,city
+Valencia,Spain,city
+Costa Blanca,Spain,other_destination
+Costa Brava,Spain,other_destination
+Costa del Sol,Spain,other_destination
+Gran Canaria,Spain,other_destination
+Ibiza,Spain,other_destination
+Mallorca,Spain,other_destination
+Sierra Nevada,Spain,other_destination
+Tenerife,Spain,other_destination
+Sri Jayawardenapura Kotte,Sri Lanka,city
+Anuradhapura,Sri Lanka,city
+Batticaloa,Sri Lanka,city
+Colombo,Sri Lanka,city
+Galle,Sri Lanka,city
+Jaffna,Sri Lanka,city
+Kandy,Sri Lanka,city
+Negombo,Sri Lanka,city
+Arugam Bay,Sri Lanka,other_destination
+Dambulla,Sri Lanka,other_destination
+Horton Plains,Sri Lanka,other_destination
+Mirissa,Sri Lanka,other_destination
+Sinharaja Forest Reserve,Sri Lanka,other_destination
+Unawatuna,Sri Lanka,other_destination
+Yala National Park,Sri Lanka,other_destination
+Khartoum,Sudan,city
+Abyei,Sudan,city
+Al Ubayyid,Sudan,city
+Gedaref,Sudan,city
+Kassala,Sudan,city
+Nyala,Sudan,city
+Port Sudan,Sudan,city
+Atbara,Sudan,city
+Meroë,Sudan,other_destination
+Paramaribo,Suriname,city
+Albina,Suriname,city
+Apoera,Suriname,city
+Domburg,Suriname,city
+Groningen,Suriname,city
+Lelydorp,Suriname,city
+Moengo,Suriname,city
+Nieuw Amsterdam,Suriname,city
+Santigron,Suriname,other_destination
+Bigi Pan Nature Reserve,Suriname,other_destination
+Brownsberg Nature Park,Suriname,other_destination
+Central Suriname Nature Reserve,Suriname,other_destination
+Colakreek,Suriname,other_destination
+Galibi nature reserve,Suriname,other_destination
+Jodensavanne,Suriname,other_destination
+Nature Resort Kabalebo,Suriname,other_destination
+Old plantations in Commewijne,Suriname,other_destination
+Raleighvallen Nature Reserve,Suriname,other_destination
+Upper Suriname,Suriname,other_destination
+Mbabane,Swaziland,city
+Lobamba,Swaziland,city
+Manzini,Swaziland,city
+Big Bend,Swaziland,city
+Nhlangano,Swaziland,city
+Siteki,Swaziland,city
+Mkhaya Game Reserve,Swaziland,city
+Hlane Royal National Park,Swaziland,city
+Mantenga Nature Reserve,Swaziland,other_destination
+Mlilwane Wildlife Sanctuary,Swaziland,other_destination
+Mlawula Nature Reserve,Swaziland,other_destination
+Stockholm,Sweden,city
+Gothenburg,Sweden,city
+Karlskrona,Sweden,city
+Linköping,Sweden,city
+Lund,Sweden,city
+Malmö,Sweden,city
+Umeå,Sweden,city
+Uppsala,Sweden,city
+Bergslagen,Sweden,other_destination
+Ekerö,Sweden,other_destination
+High Coast,Sweden,other_destination
+Kiruna Municipality,Sweden,other_destination
+Laponia,Sweden,other_destination
+Siljansbygden,Sweden,other_destination
+Stockholm archipelago,Sweden,other_destination
+Åre,Sweden,other_destination
+Öland,Sweden,other_destination
+Berne,Switzerland,city
+Basel,Switzerland,city
+Geneva,Switzerland,city
+Interlaken,Switzerland,city
+Lausanne,Switzerland,city
+Lucerne,Switzerland,city
+Lugano,Switzerland,city
+Saint Gallen,Switzerland,city
+Davos,Switzerland,other_destination
+Grindelwald,Switzerland,other_destination
+Lavaux,Switzerland,other_destination
+St. Moritz,Switzerland,other_destination
+ Jungfrau-Aletsch,Switzerland,other_destination
+Zermatt,Switzerland,other_destination
+Château Chillon,Switzerland,other_destination
+Lavaux,Switzerland,other_destination
+Bellinzona,Switzerland,other_destination
+St. Gallen,Switzerland,other_destination
+Matterhorn,Switzerland,other_destination
+Aletsch Glacier,Switzerland,other_destination
+Engadine,Switzerland,other_destination
+Rhine Falls,Switzerland,other_destination
+Damascus,Syria,city
+Aleppo,Syria,city
+Deir-az-Zur,Syria,city
+Hama,Syria,city
+Homs,Syria,city
+Latakia,Syria,city
+Tartous,Syria,city
+Raqqa,Syria,city
+Bosra,Syria,other_destination
+Dead Cities,Syria,other_destination
+Der Mar Musa,Syria,other_destination
+Krak des Chevaliers,Syria,other_destination
+Palmyra,Syria,other_destination
+Saladin's Castle,Syria,other_destination
+Salamieh,Syria,other_destination
+Taipei,Taiwan,city
+Miaoli,Taiwan,city
+Hualien,Taiwan,city
+Jiufen,Taiwan,city
+Kaohsiung,Taiwan,city
+Taichung,Taiwan,city
+Puli,Taiwan,city
+Tainan,Taiwan,city
+Alishan,Taiwan,other_destination
+Kenting National Park,Taiwan,other_destination
+Shei-pa National Park,Taiwan,other_destination
+Sun Moon Lake,Taiwan,other_destination
+Taipingshan,Taiwan,other_destination
+Taroko Gorge,Taiwan,other_destination
+Yangmingshan National Park,Taiwan,other_destination
+Yushan,Taiwan,other_destination
+Lalashan,Taiwan,other_destination
+Dushanbe,Tajikistan,city
+Bokhtar,Tajikistan,city
+Isfara,Tajikistan,city
+Istaravshan,Tajikistan,city
+Khorugh,Tajikistan,city
+Khujand,Tajikistan,city
+Konibodom,Tajikistan,city
+Kulob,Tajikistan,city
+Pamir,Tajikistan,other_destination
+Zeravshan Valley,Tajikistan,other_destination
+Dodoma,Tanzania,city
+Arusha,Tanzania,city
+Dar es Salaam,Tanzania,city
+Kigoma,Tanzania,city
+Mbeya,Tanzania,city
+Morogoro,Tanzania,city
+Moshi,Tanzania,city
+Mtwara,Tanzania,city
+Arusha National Park,Tanzania,other_destination
+Mikumi National Park,Tanzania,other_destination
+Mount Kilimanjaro,Tanzania,other_destination
+Ngorongoro Conservation Area,Tanzania,other_destination
+Ruaha National Park,Tanzania,other_destination
+Serengeti National Park,Tanzania,other_destination
+Stone Town,Tanzania,other_destination
+Tarangire National Park,Tanzania,other_destination
+Udzungwa Mountains National Park,Tanzania,other_destination
+Bangkok,Thailand,city
+Ayutthaya,Thailand,city
+Chiang Mai,Thailand,city
+Chiang Rai,Thailand,city
+Hat Yai,Thailand,city
+Kanchanaburi,Thailand,city
+Nakhon Ratchasima,Thailand,city
+Pattaya,Thailand,city
+Khao Sok National Park,Thailand,other_destination
+Khao Yai National Park,Thailand,other_destination
+Ko Chang,Thailand,other_destination
+Ko Lipe,Thailand,other_destination
+Ko Pha Ngan,Thailand,other_destination
+Ko Samet,Thailand,other_destination
+Ko Samui,Thailand,other_destination
+Krabi Province,Thailand,other_destination
+Phuket,Thailand,other_destination
+Lomé,Togo,city
+Aneho,Togo,city
+Atakpamé,Togo,city
+Badou,Togo,city
+Dapaong,Togo,city
+Kara,Togo,city
+Kpalimé,Togo,city
+Sokodé,Togo,city
+Fazao Mafakassa National Park,Togo,other_destination
+Kéran National Park,Togo,other_destination
+Fosse aux Lions National Park,Togo,other_destination
+Tunis,Tunisia,city
+Gabes,Tunisia,city
+Kairouan,Tunisia,city
+El Kef,Tunisia,city
+Mahdia,Tunisia,city
+Monastir,Tunisia,city
+Sfax,Tunisia,city
+Sousse,Tunisia,city
+Tozeur,Tunisia,other_destination
+Carthage,Tunisia,other_destination
+Djerba,Tunisia,other_destination
+Dougga,Tunisia,other_destination
+El Jem,Tunisia,other_destination
+Jebil National Park,Tunisia,other_destination
+Kerkouane,Tunisia,other_destination
+Ksar Ghilane,Tunisia,other_destination
+Matmata,Tunisia,other_destination
+Metlaoui,Tunisia,other_destination
+Sufetula,Tunisia,other_destination
+Tataouine,Tunisia,other_destination
+Sunburn,Tunisia,other_destination
+Yellow fever,Tunisia,other_destination
+Ankara,Turkey,city
+Antalya,Turkey,city
+Bodrum,Turkey,city
+Edirne,Turkey,city
+Istanbul,Turkey,city
+Izmir,Turkey,city
+Konya,Turkey,city
+Trabzon,Turkey,city
+Ani,Turkey,other_destination
+Cappadocia,Turkey,other_destination
+Ephesus,Turkey,other_destination
+Gallipoli,Turkey,other_destination
+Mount Nemrut,Turkey,other_destination
+Ölüdeniz,Turkey,other_destination
+Pamukkale,Turkey,other_destination
+Sümela,Turkey,other_destination
+Uludağ,Turkey,other_destination
+Ashgabat,Turkmenistan,city
+Balkanabat,Turkmenistan,city
+Daşoguz,Turkmenistan,city
+Mary,Turkmenistan,city
+Türkmenabat,Turkmenistan,city
+Turkmenbashi,Turkmenistan,city
+Darvaza,Turkmenistan,city
+Altin Depe,Turkmenistan,city
+Gonur Depe,Turkmenistan,other_destination
+Jeitun,Turkmenistan,other_destination
+Merv,Turkmenistan,other_destination
+Namazga Depe,Turkmenistan,other_destination
+Nissa,Turkmenistan,other_destination
+Dekhistan,Turkmenistan,other_destination
+Geok-tepe,Turkmenistan,other_destination
+Konye Urgench,Turkmenistan,other_destination
+Köýtendag Nature Reserve,Turkmenistan,other_destination
+Fongafale,Tuvalu,city
+Kampala,Uganda,city
+Arua,Uganda,city
+Entebbe,Uganda,city
+Jinja,Uganda,city
+Fort Portal,Uganda,city
+Gulu,Uganda,city
+Mbarara,Uganda,city
+Kabale,Uganda,city
+Ajai Game Reserve,Uganda,other_destination
+Bwindi Impenetrable National Park,Uganda,other_destination
+Mgahinga Gorilla National Park,Uganda,other_destination
+Kidepo Valley National Park,Uganda,other_destination
+Murchison Falls National Park,Uganda,other_destination
+Queen Elizabeth National Park,Uganda,other_destination
+Kibale Forest National Park,Uganda,other_destination
+Rwenzori National Park,Uganda,other_destination
+Ssese Islands,Uganda,other_destination
+Lake Bunyonyi,Uganda,other_destination
+Kyiv,Ukraine,city
+Chernihiv,Ukraine,city
+Chernivtsi,Ukraine,city
+Dnipro,Ukraine,city
+Kamianets-Podilskyi,Ukraine,city
+Kharkiv,Ukraine,city
+Lviv,Ukraine,city
+Odesa,Ukraine,city
+Carpathians,Ukraine,other_destination
+Chernobyl,Ukraine,other_destination
+Wooden tserkvas of the Carpathian region,Ukraine,other_destination
+Abu Dhabi,United Arab Emirates,city
+Dubai,United Arab Emirates,city
+Sharjah,United Arab Emirates,city
+Ajman,United Arab Emirates,city
+Umm al Quwain,United Arab Emirates,city
+Ra's al Khaymah,United Arab Emirates,city
+Fujairah,United Arab Emirates,city
+Al Ain,United Arab Emirates,city
+Khor Fakkan,United Arab Emirates,other_destination
+Liwa Oasis,United Arab Emirates,other_destination
+Ruwais,United Arab Emirates,other_destination
+London,United Kingdom,city
+Belfast,United Kingdom,city
+Birmingham,United Kingdom,city
+Bristol,United Kingdom,city
+Cardiff,United Kingdom,city
+Edinburgh,United Kingdom,city
+Glasgow,United Kingdom,city
+Liverpool,United Kingdom,city
+Giant's Causeway,United Kingdom,other_destination
+Gower Peninsula,United Kingdom,other_destination
+Hadrian's Wall,United Kingdom,other_destination
+Isle of Arran,United Kingdom,other_destination
+Lake District National Park,United Kingdom,other_destination
+Loch Ness,United Kingdom,other_destination
+Peak District National Park,United Kingdom,other_destination
+Snowdonia National Park,United Kingdom,other_destination
+Stonehenge,United Kingdom,other_destination
+"Washington, D.C.",United States,city
+Boston,United States,city
+Chicago,United States,city
+Los Angeles,United States,city
+Miami,United States,city
+New Orleans,United States,city
+New York City,United States,city
+San Francisco,United States,city
+Denali National Park,United States,other_destination
+Grand Canyon,United States,other_destination
+Great Smoky Mountains National Park,United States,other_destination
+Mesa Verde National Park,United States,other_destination
+Mount Rushmore,United States,other_destination
+Niagara Falls,United States,other_destination
+Walt Disney World,United States,other_destination
+Yellowstone National Park,United States,other_destination
+Yosemite National Park,United States,other_destination
+Montevideo,Uruguay,city
+Punta del Este,Uruguay,city
+Colonia,Uruguay,city
+Piriapolis,Uruguay,city
+Rivera,Uruguay,city
+La Paloma,Uruguay,city
+Paysandú,Uruguay,city
+Salto,Uruguay,city
+Cabo Polonio,Uruguay,other_destination
+Punta del Diablo,Uruguay,other_destination
+Santa Teresa National Park,Uruguay,other_destination
+Quebrada de los Cuervos,Uruguay,other_destination
+Tashkent,Uzbekistan,city
+Andijan,Uzbekistan,city
+Bukhara,Uzbekistan,city
+Khiva,Uzbekistan,city
+Namangan,Uzbekistan,city
+Nukus,Uzbekistan,city
+Samarkand,Uzbekistan,city
+Shakhrisabz,Uzbekistan,city
+Aral Sea,Uzbekistan,other_destination
+Port-Vila,Vanuatu,city
+Luganville,Vanuatu,city
+Epi Island,Vanuatu,city
+Espiritu Santo,Vanuatu,city
+Malekula,Vanuatu,city
+Caracas,Venezuela,city
+Coro,Venezuela,city
+Ciudad Bolívar,Venezuela,city
+Ciudad Guayana,Venezuela,city
+Maracaibo,Venezuela,city
+Maracay,Venezuela,city
+Mérida,Venezuela,city
+Puerto La Cruz,Venezuela,city
+Canaima National Park,Venezuela,other_destination
+Choroní Beach,Venezuela,other_destination
+Los Roques Archipelago,Venezuela,other_destination
+Margarita Island,Venezuela,other_destination
+Mochima National Park,Venezuela,other_destination
+Morrocoy National Park,Venezuela,other_destination
+Los Llanos,Venezuela,other_destination
+Orinoco Delta,Venezuela,other_destination
+La Gran Sabana,Venezuela,other_destination
+Hanoi,Vietnam,city
+Ho Chi Minh City,Vietnam,city
+Da Nang,Vietnam,city
+Dalat,Vietnam,city
+Haiphong,Vietnam,city
+Hoi An,Vietnam,city
+Hue,Vietnam,city
+Nha Trang,Vietnam,city
+El Aaiún,Western Sahara,city
+Al Mahbass,Western Sahara,city
+Boujdour,Western Sahara,city
+Ad Dakhla,Western Sahara,city
+El Marsa,Western Sahara,city
+Guelta Zemmur,Western Sahara,city
+Haouza,Western Sahara,city
+Smara,Western Sahara,city
+Bir Lehlou,Western Sahara,other_destination
+Tifariti,Western Sahara,other_destination
+Agwanit,Western Sahara,other_destination
+Zoug,Western Sahara,other_destination
+Meharrize,Western Sahara,other_destination
+Dougaj,Western Sahara,other_destination
+La Güera,Western Sahara,other_destination
+Sana'a,Yemen,city
+Aden,Yemen,city
+Al Hudayda,Yemen,city
+Al Mukalla,Yemen,city
+Dhamar,Yemen,city
+Ibb,Yemen,city
+Kawkaban,Yemen,city
+Mokha,Yemen,city
+Ta'izz,Yemen,other_destination
+Haraz Mountains,Yemen,other_destination
+Lusaka,Zambia,city
+Chingola,Zambia,city
+Chipata,Zambia,city
+Kabwe,Zambia,city
+Kasama,Zambia,city
+Kitwe,Zambia,city
+Livingstone,Zambia,city
+Ndola,Zambia,city
+Blue Lagoon National Park,Zambia,other_destination
+Kafue National Park,Zambia,other_destination
+Lochinvar National Park,Zambia,other_destination
+Lower Zambezi National Park,Zambia,other_destination
+North Luangwa National Park,Zambia,other_destination
+Nsumbu National Park,Zambia,other_destination
+South Luangwa National Park,Zambia,other_destination
+Victoria Falls,Zambia,other_destination
+West Lunga National Park,Zambia,other_destination
+Harare,Zimbabwe,city
+Bulawayo,Zimbabwe,city
+Chimanimani,Zimbabwe,city
+Gweru,Zimbabwe,city
+Kariba,Zimbabwe,city
+Masvingo,Zimbabwe,city
+Mutare,Zimbabwe,city
+Victoria Falls,Zimbabwe,city
+Great Zimbabwe,Zimbabwe,other_destination
+Kariba,Zimbabwe,other_destination
+Matobo,Zimbabwe,other_destination
+Mutoroshanga Ethel Mine,Zimbabwe,other_destination
+Chinhoyi Caves,Zimbabwe,other_destination
