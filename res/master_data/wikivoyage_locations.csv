@@ -640,11 +640,8 @@ Tena,Ecuador,other_destination
 Vilcabamba,Ecuador,other_destination
 Cuyabeno Wildlife Reserve,Ecuador,other_destination
 Parque Nacional Cotopaxi,Ecuador,other_destination
-Parque Nacional Cajas,Ecuador,other_destination
-Podocarpus National Park,Ecuador,other_destination
 Pululahua Geobotanical Reserve,Ecuador,other_destination
 Sangay National Park,Ecuador,other_destination
-Yasuni National Park,Ecuador,other_destination
 Cairo,Egypt,city
 Alexandria,Egypt,city
 Aswan,Egypt,city
@@ -1210,6 +1207,33 @@ Tsavo East National Park,Kenya,other_destination
 Tsavo West National Park,Kenya,other_destination
 Amboseli National Park,Kenya,other_destination
 Tarawa,Kiribati,city
+Pyongyang,North Korea,city
+Chongjin,North Korea,city
+Hamhung,North Korea,city
+Kaechon,North Korea,city
+Kaesong,North Korea,city
+Nampho,North Korea,city
+Rason,North Korea,city
+Sinuiju,North Korea,city
+Kumgangsan,North Korea,other_destination
+Baekdu Mountains,North Korea,other_destination
+Panmunjom,North Korea,other_destination
+Seoul,South Korea,city
+Busan,South Korea,city
+Chuncheon,South Korea,city
+Daegu,South Korea,city
+Daejeon,South Korea,city
+Gwangju,South Korea,city
+Gyeongju,South Korea,city
+Incheon,South Korea,city
+Seoraksan National Park,South Korea,other_destination
+Andong,South Korea,other_destination
+Ansan,South Korea,other_destination
+Panmunjeom,South Korea,other_destination
+Yeosu,South Korea,other_destination
+Jindo,South Korea,other_destination
+Ulleungdo,South Korea,other_destination
+Pyeongchang,South Korea,other_destination
 Kuwait City,Kuwait,city
 Jahra,Kuwait,city
 Ahmadi,Kuwait,city
