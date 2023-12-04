@@ -31,21 +31,29 @@ try:
 except ResponseError as error:
     raise error """
 
-#teleport api
-def get_teleport_city_safety(city):
-    api_string = "https://api.teleport.org/api/urban_areas/slug:" + city + "/scores/"
+# for select cities, the Teleport API offers city specific safety scores. When available, 
+# this score can supplement/supercede the country score
+def create_city_safety_df(city):
+    #call API for city
+    api_string = "https://api.teleport.org/api/urban_areas/slug:" + city.lower() + "/scores/"
     city_safety = requests.get(api_string)
 
-    teleport_safety_df = pd.DataFrame.from_dict(city_safety.json()["categories"])
+    # if scores are not available for this city, return empty dataframe
+    if str(city_safety) == "<Response [404]>":
+        city_safety_df = pd.DataFrame({'A' : []})
+    else:
+        # convert scores per category into dataframe
+        city_safety_df = pd.DataFrame.from_dict(city_safety.json()["categories"])
 
-    teleport_safety_df = teleport_safety_df.drop(columns=["color"])
-    teleport_safety_df = teleport_safety_df.rename(columns={"name":"Category", "score_out_of_10":"ScoreOutOf10"})
 
-    print(teleport_safety_df)
+        #city_safety_df = city_safety_df.drop(columns=["color"])
 
-#get_teleport_city_safety("berlin")
+        # rename columns
+        city_safety_df = city_safety_df.rename(columns={"name":"Category", "score_out_of_10":"ScoreOutOf10"})
 
-#travel advisory --> scores inacurate
+    return city_safety_df
+
+# travel advisory --> scores inacurate
 """ country_travel_warning = requests.get("https://www.travel-advisory.info/api")
 print(country_travel_warning.text) """
 
@@ -130,11 +138,7 @@ def generate_safety_report(aa_id):
 def create_country_safety_df():
 
     #read in crime rate per country from csv file and clean data
-    crime_countries = pd.read_csv("res/master_data/crime-rate-by-country-2023.csv")
-    crime_countries_clean = crime_countries[["country", "cca3", "cca2",
-                                            "crimeRateByCountry_crimeIndex"]].sort_values(by="crimeRateByCountry_crimeIndex")
-    #read in crime rate per country from csv file and clean data
-    crime_countries = pd.read_csv("res/master_data/crime-rate-by-country-2023.csv")
+    crime_countries = pd.read_csv("../../../res/master_data/crime-rate-by-country-2023.csv")
     crime_countries_clean = crime_countries[["country", "cca3", "cca2",
                                             "crimeRateByCountry_crimeIndex"]].sort_values(by="crimeRateByCountry_crimeIndex")
 
@@ -175,29 +179,29 @@ def create_country_safety_df():
     safety_df = safety_df[safety_df['PoliticalStability'].notna()]
 
     #read in global peace index excel report, filter columns
-    global_peace_index = pd.read_excel("res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
+    global_peace_index = pd.read_excel("../../../res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
     global_peace_index = global_peace_index.rename(columns={global_peace_index.columns[17]: 'peace_index'})
     global_peace_index = global_peace_index[["Country", "iso3c", "peace_index"]]
     #read in global peace index excel report, filter columns
-    global_peace_index = pd.read_excel("res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
+    global_peace_index = pd.read_excel("../../../res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
     global_peace_index = global_peace_index.rename(columns={global_peace_index.columns[17]: 'peace_index'})
     global_peace_index = global_peace_index[["Country", "iso3c", "peace_index"]]
 
     #read in global terrorism index excel report, filter columns
-    global_terrorism_index = pd.read_excel("res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
+    global_terrorism_index = pd.read_excel("../../../res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
     global_terrorism_index = global_terrorism_index.rename(columns={global_terrorism_index.columns[4]: 'terrorism_index'})
     global_terrorism_index = global_terrorism_index[["Country", "iso3c", "terrorism_index"]]
     #read in global terrorism index excel report, filter columns
-    global_terrorism_index = pd.read_excel("res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
+    global_terrorism_index = pd.read_excel("../../../res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
     global_terrorism_index = global_terrorism_index.rename(columns={global_terrorism_index.columns[4]: 'terrorism_index'})
     global_terrorism_index = global_terrorism_index[["Country", "iso3c", "terrorism_index"]]
 
     #read in ecological threat excel report, filter columns
-    ecological_threat_report = pd.read_excel("res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
+    ecological_threat_report = pd.read_excel("../../../res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
     ecological_threat_report = ecological_threat_report.rename(columns={ecological_threat_report.columns[2]: 'ecological_threat'})
     ecological_threat_report = ecological_threat_report[["Country", "ecological_threat"]]
     #read in ecological threat excel report, filter columns
-    ecological_threat_report = pd.read_excel("res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
+    ecological_threat_report = pd.read_excel("../../../res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
     ecological_threat_report = ecological_threat_report.rename(columns={ecological_threat_report.columns[2]: 'ecological_threat'})
     ecological_threat_report = ecological_threat_report[["Country", "ecological_threat"]]
 
@@ -240,7 +244,5 @@ def create_country_safety_df():
     column_dict={"ISO2":"iso2", "ISO3":"iso3", "CountryName":"country_name", "PoliticalStability":"political_stability",
                  'RuleofLaw':"rule_of_law", 'PersonalFreedom':"personal_freedom", 'crimeRateByCountry_crimeIndex':"crime_rate"}
     safety_df.rename(columns=column_dict, inplace=True)
-
-    safety_df.insert(0, 'country_id', safety_df.index)
 
     return safety_df

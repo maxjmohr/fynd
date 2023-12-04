@@ -103,7 +103,6 @@ def main(params: dict) -> pd.DataFrame:
 	print(f"Elevation: {response.Elevation()} m asl")
 	print(f"Timezone: {response.Timezone()} {response.TimezoneAbbreviation()}")
 	print(f"Timezone difference to GMT+0: {response.UtcOffsetSeconds()} s")"""
-	print(daily_df)
    
 	return daily_df
 

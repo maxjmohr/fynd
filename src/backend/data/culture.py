@@ -128,6 +128,10 @@ def cultural_profile(ll: str, radius: int = 10000):
 
     # Get scores
     scores = compute_coarse_act_scores(places.copy())
+
+    places["categories"] = places["categories"].astype(str)
+    places["location"] = places["location"].astype(str)
+    places["stats"] = places["stats"].astype(str)
     
     return places
 
