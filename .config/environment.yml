@@ -315,6 +315,7 @@ dependencies:
       - cattrs==23.1.2
       - click-plugins==1.1.1
       - cligj==0.7.2
+      - countrydetails==1.0.8
       - fiona==1.9.5
       - flatbuffers==23.5.26
       - geographiclib==2.0

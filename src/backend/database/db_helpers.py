@@ -60,26 +60,29 @@ def execute_sql(conn, cur, sql:str, commit:bool = True):
     print('\033[1m\033[92mSuccessfully executed SQL query.\033[0m')
 
 
-def insert_data(engine, data:pd.DataFrame, table:str, if_exists:str = 'append'):
+def insert_data(engine, data:pd.DataFrame, table:str, if_exists:str = 'append', updated_at:bool = True):
     ''' Insert data into the database
     Input:  - engine: connection to the database (via sqlalchemy)
-            - cur: cursor of the connection
             - data: data to insert
             - table: name of the table to insert the data into
             - if_exists: str, whether to append the data to the table or replace the table
+            - updated_at: bool, whether to add current date and time to the data
             ! This function automatically commits the changes !
     Output: None
     '''
+    # Add current date and time to the data
+    if updated_at:
+        data["updated_at"] = pd.to_datetime('today')
     # Insert the data
-    data.to_sql(table, engine, if_exists='append', index=False)
+    data.to_sql(table, engine, if_exists=if_exists, index=False)
 
     print('\033[1m\033[92mSuccessfully inserted data into table {}.\033[0m'.format(table))
 
 
-def fetch_data(engine, total_object:str, sql:str = None) -> pd.DataFrame:
+def fetch_data(engine, total_object:str = None, sql:str = None) -> pd.DataFrame:
     ''' Fetch data from the database
     Input:  - engine: connection to the database (via sqlalchemy)
-            - cur: cursor of the connection
+            - total_object: name of the table to fetch all data from
             - sql: SQL query to fetch the data
     Output: list of tuples
     '''
