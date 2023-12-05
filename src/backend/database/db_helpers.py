@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import psycopg2
 import re
+import sqlalchemy
 from sqlalchemy import create_engine
 
 def connect_to_db(db:str = "dsp", host:str = "2001:7c0:2320:2:f816:3eff:fedc:56d9", user:str = "postgres", password:str = "l0r10t", port:str = "5433"):

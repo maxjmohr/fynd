@@ -309,7 +309,6 @@ def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
 
     return master_data
 
-
 ###------| Step 3: Execute the data gathering and store data in database |------###
 
 ## Get locations
