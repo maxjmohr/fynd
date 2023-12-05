@@ -3,4 +3,4 @@
 .dsproject          
 *_apikey.txt
 api_key_fsq.txt
-__pycache__
+__pycache__/
