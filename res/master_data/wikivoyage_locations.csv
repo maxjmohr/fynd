@@ -113,23 +113,22 @@ Noord,Aruba,city
 Palm Beach,Aruba,city
 Savaneta,Aruba,city
 Arikok National Park,Aruba,city
-Lord Howe Island,Australia,city
-Norfolk Island,Australia,city
-Christmas Island,Australia,city
-Cocos (Keeling) Islands,Australia,city
-Torres Strait Islands,Australia,city
-Kangaroo Island,Australia,city
-Rottnest Island,Australia,city
-King Island,Australia,city
-Canberra,Australia,other_destination
-Adelaide,Australia,other_destination
-Brisbane,Australia,other_destination
-Cairns,Australia,other_destination
-Darwin,Australia,other_destination
-Hobart,Australia,other_destination
-Melbourne,Australia,other_destination
-Perth,Australia,other_destination
-Sydney,Australia,other_destination
+Canberra,Australia,city
+Adelaide,Australia,city
+Brisbane,Australia,city
+Cairns,Australia,city
+Darwin,Australia,city
+Hobart,Australia,city
+Melbourne,Australia,city
+Perth,Australia,city
+Lord Howe Island,Australia,island
+Norfolk Island,Australia,island
+Christmas Island,Australia,island
+Cocos (Keeling) Islands,Australia,island
+Torres Strait Islands,Australia,island
+Kangaroo Island,Australia,island
+Rottnest Island,Australia,island
+King Island,Australia,island
 Blue Mountains National Park,Australia,other_destination
 Cradle Mountain-Lake St Clair National Park,Australia,other_destination
 Daintree Rainforest,Australia,other_destination

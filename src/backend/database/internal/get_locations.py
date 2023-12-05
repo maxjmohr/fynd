@@ -20,6 +20,8 @@ import time
 from tqdm import trange
 import pandas as pd
 
+update_Wikivoyage_cities = False
+
 ###------| Steps |------###
 # 1: Get target location names
 # 2: Get any relevant geographical data of target locations
@@ -65,9 +67,13 @@ class WikivoyageScraper:
             data_dict = {}
             if country not in data_dict:
                 data_dict[country] = {"city": [], "other_destinations": []}
-            if len(results) != 0:
+            if len(results) != 0 and country != "Australia":
                 data_dict[country]["city"] = results[:8] # Only the first 9 values are cities
                 data_dict[country]["other_destination"] = results[9:] # The rest are other destinations
+            elif len(results) != 0 and country == "Australia":
+                data_dict[country]["island"] = results[:8] # Only the first 9 values are islands
+                data_dict[country]["city"] = results[9:17] # The next 9 values are cities
+                data_dict[country]["other_destination"] = results[18:] # The rest are other destinations
 
             # Store in list
             for country, locations in data_dict.items():
@@ -312,7 +318,6 @@ def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
 ###------| Step 3: Execute the data gathering and store data in database |------###
 
 ## Get locations
-update_Wikivoyage_cities = False
 # Check if data already exists
 if os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == False:
     print("File with locations already exists. Reading file...")
