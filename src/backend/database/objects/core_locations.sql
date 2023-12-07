@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS core_locations;
-
 CREATE TABLE core_locations (
     location_id         INTEGER PRIMARY KEY NOT NULL,
     city                VARCHAR(255) NOT NULL,
