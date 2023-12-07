@@ -157,7 +157,7 @@ class LocationMasterData:
             self.city = [replace_german_characters(city) for city in results["address"].values()][0] if "address" in results else None
             self.county = replace_german_characters(results["address"]["county"]) if "address" in results and "county" in results["address"] else None
             self.state = replace_german_characters(results["address"]["state"]) if "address" in results and "state" in results["address"] else None
-            self.country = replace_german_characters(results["address"]["country"]).replace('s', 'ß') if "address" in results and "country" in results["address"] else None
+            self.country = replace_german_characters(results["address"]["country"]) if "address" in results and "country" in results["address"] else None
             country_code = results["address"]["country_code"].upper() if "address" in results and "country_code" in results["address"] else None
 
             # Check if city is assigned
