@@ -331,8 +331,8 @@ master_data = get_master_data(cities, shape="polygon")
 
 
 ## Store data in database
-conn, cur, engine = db_helpers.connect_to_db()
-db_helpers.create_db_object(conn, cur, object="core_locations")
-db_helpers.insert_data(engine, master_data, table="core_locations", if_exists="replace", updated_at=True)
+#conn, cur, engine = db_helpers.connect_to_db()
+#db_helpers.create_db_object(conn, cur, object="core_locations")
+#db_helpers.insert_data(engine, master_data, table="core_locations", if_exists="replace", updated_at=True)
 # print(db_helpers.fetch_data(engine, total_object="core_locations"))
-db_helpers.disconnect_from_db(conn, cur, engine)
+#db_helpers.disconnect_from_db(conn, cur, engine)
