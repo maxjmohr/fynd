@@ -16,28 +16,22 @@ from data.safety_pipeline import create_city_safety_df
 from data.culture import cultural_profile
 from data import geography
 from data import weather
-from database import db_helpers
+from database.db_helpers import Database
 
 
 # takes a list of table names and sets up these tables in the database
 # names of tables must match names of sql-files in objects folder
 def create_raw_db_tables(table_names):
-    conn, cur, engine = db_helpers.connect_to_db()
 
     for table in table_names:
-        db_helpers.create_db_object(conn, cur, table)
-
-    db_helpers.disconnect_from_db(conn, cur, engine)
+        db.create_db_object(table)
 
 # takes a list of table names and sets up these tables in the database
 # names of tables must match names of sql-files in objects folder
 def create_log_db_tables(table_names):
-    conn, cur, engine = db_helpers.connect_to_db()
 
     for table in table_names:
-        db_helpers.create_db_object(conn, cur, table)
-
-    db_helpers.disconnect_from_db(conn, cur, engine)
+        db.create_db_object(table)
 
 # creates dataframe ready to be inserted into the raw_costs_city table
 def fill_raw_costs_city():
@@ -103,9 +97,9 @@ def fill_raw_geography(location):
 
 # dictonary that maps names of database tables to functions which fill these tables with data and their process id
 table_fill_function_dict = {
-    "raw_costs_city": [fill_raw_costs_city, 1],
+    #"raw_costs_city": [fill_raw_costs_city, 1],
     #"raw_costs_country": [fill_raw_costs_country, 2],
-    #"raw_safety_city": [fill_raw_safety_city, 3]
+    "raw_safety_city": [fill_raw_safety_city, 3]
     #"raw_safety_country": [fill_raw_safety_country, 4]
     #"raw_culture" : [fill_raw_culture, 5],
     #"raw_weather" : [fill_raw_weather, 6]
@@ -129,10 +123,9 @@ table_process_id_dict = {
 
 # calls fill-functions for individual tables and inserts data
 def fill_raw_db_tables(table_names):
-    conn, cur, engine = db_helpers.connect_to_db()
 
     # get list of locations from database
-    locations_df = db_helpers.fetch_data(engine, "core_locations")
+    locations_df = db.fetch_data("core_locations")
 
     #initialize table_df, exit_code, start_datetime and end_datetime to avoid duplicate code
     table_df = None
@@ -148,7 +141,7 @@ def fill_raw_db_tables(table_names):
                 #call fill-function, insert into table
                 table_df = table_fill_function_dict[table][0]()
                 start_datetime = datetime.datetime.now()
-                db_helpers.insert_data(engine, table_df, table)
+                db.insert_data(table_df, table)
                 end_datetime = datetime.datetime.now()
             else:
                 # for each location in core_locations
@@ -158,7 +151,7 @@ def fill_raw_db_tables(table_names):
                     #insert if data for this location is available for this dimension, else print error message
                     if len(table_df) > 0:
                         start_datetime = datetime.datetime.now()
-                        db_helpers.insert_data(engine, table_df, table)
+                        db.insert_data(table_df, table)
                         end_datetime = datetime.datetime.now()
                     else:
                         print("No data for table " + table + " for location " + row["city"] + ".")
@@ -167,23 +160,18 @@ def fill_raw_db_tables(table_names):
             print("Error when inserting into " + table + ":", type(error).__name__, "–", error)
             exit_code = 1
         finally:
-            fill_log_history_db_table(engine=engine,
-                                      process_id=table_fill_function_dict[table][1],
+            fill_log_history_db_table(process_id=table_fill_function_dict[table][1],
                                       start_datetime=start_datetime,
                                       status="Done",
                                       end_datetime=end_datetime,
                                       exit_code=exit_code)
 
 
-    db_helpers.disconnect_from_db(conn, cur, engine)
-
-
 # fills log_processes table in database with information on data insertion processes, takes process ids as input
 def fill_log_processes_db_table(process_ids):
-    conn, cur, engine = db_helpers.connect_to_db()
 
     # get data from log_history table
-    log_history = db_helpers.fetch_data(engine, "log_history")
+    log_history = db.fetch_data("log_history")
 
     # initialize empty dataframe which stores process information
     log_processes_df = pd.DataFrame({'process_id' : [],
@@ -222,16 +210,15 @@ def fill_log_processes_db_table(process_ids):
         log_processes_df = pd.concat([log_processes_df, new_row], ignore_index=True)
     
     # insert complete dataframe into database table
-    db_helpers.insert_data(engine, log_processes_df, "log_processes", updated_at=False)
-    db_helpers.disconnect_from_db(conn, cur, engine)
+    db.insert_data(log_processes_df, "log_processes", updated_at=False)
 
 
 # fills log_history table in database with information on latest insertion operations into database tables
-def fill_log_history_db_table(engine, process_id, start_datetime, status, end_datetime, exit_code):
+def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, exit_code):
 
     # get data from log_history and log_processes tables
-    log_history = db_helpers.fetch_data(engine, "log_history")
-    log_processes_df = db_helpers.fetch_data(engine, "log_processes")
+    log_history = db.fetch_data("log_history")
+    log_processes_df = db.fetch_data("log_processes")
 
 
     # try to get time of last insertion process, next insertion process according to turnus
@@ -265,8 +252,8 @@ def fill_log_history_db_table(engine, process_id, start_datetime, status, end_da
     log_processes_df.loc[log_processes_df["process_id"]==process_id, "next_exec_scheduled"] = next_exec_scheduled
     
     #insert data into log_history and log_processes tables
-    db_helpers.insert_data(engine, log_history_df, "log_history", updated_at=False)
-    db_helpers.insert_data(engine, log_processes_df, "log_processes", updated_at=False, if_exists='replace')
+    db.insert_data(log_history_df, "log_history", updated_at=False)
+    db.insert_data(log_processes_df, "log_processes", updated_at=False, if_exists='replace')
 
 
 #fill_log_processes_db_table(table_process_id_dict.keys())
@@ -276,10 +263,11 @@ def fill_log_history_db_table(engine, process_id, start_datetime, status, end_da
 #print(res)
 #db_helpers.disconnect_from_db(conn, cur, engine)
 
-
+db = Database()
+db.connect()
 create_raw_db_tables(table_names=table_fill_function_dict.keys())
 fill_raw_db_tables(table_names=table_fill_function_dict.keys())
-
+db.disconnect()
 
 #create_log_db_tables(log_tables)
 #fill_log_processes_db_table(table_process_id_dict.keys())
