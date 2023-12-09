@@ -45,11 +45,20 @@ def create_city_safety_df(city):
         # convert scores per category into dataframe
         city_safety_df = pd.DataFrame.from_dict(city_safety.json()["categories"])
 
-
-        #city_safety_df = city_safety_df.drop(columns=["color"])
+        city_safety_df = city_safety_df.drop(columns=["color"])
 
         # rename columns
         city_safety_df = city_safety_df.rename(columns={"name":"Category", "score_out_of_10":"ScoreOutOf10"})
+
+        city_safety_df = city_safety_df.pivot_table("ScoreOutOf10", "Category").T
+
+        city_safety_df = city_safety_df[["Safety", "Healthcare", "Environmental Quality", "Tolerance"]]
+
+        city_safety_df = city_safety_df.rename(columns={"Safety": "safety",
+                                                        "Healthcare": "healthcare",
+                                                        "Environmental Quality": "environmental_qual",
+                                                        "Tolerance": "tolerance"})
+        city_safety_df.insert(0, 'city', city)
 
     return city_safety_df
 
