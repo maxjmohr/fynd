@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS raw_safety_city;
-
 CREATE TABLE raw_safety_city (
     city_name           VARCHAR(64) PRIMARY KEY NOT NULL,
     safety              NUMERIC(8,6),
