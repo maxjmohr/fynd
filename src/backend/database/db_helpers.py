@@ -108,6 +108,24 @@ class Database:
         
         # Fetch the data
         return pd.read_sql(sql, self.engine)
+    
+
+    def delete_data(self, total_object:str, sql:str = None, commit:bool = True):
+        ''' Delete data from a database object
+        Input:  - self.conn: connection to the database
+                - self.cur: cursor of the connection
+                - total_object: name of the object to delete all data from
+                - sql: SQL query to delete the data
+                - commit: bool, whether to commit the changes or not
+        Output: None
+        '''
+        # Delete all data data
+        if sql is None:
+            sql = f"DELETE FROM {total_object}"
+
+        self.execute_sql(sql, commit=commit)
+
+        print('\033[1m\033[92mSuccessfully deleted data from table {}.\033[0m'.format(total_object))
 
 
     def create_db_object(self, object:str = None, sql:str = None, commit:bool = True, drop_if_exists:bool = False):
@@ -136,3 +154,30 @@ class Database:
         self.execute_sql(sql, commit=commit)
 
         print('\033[1m\033[92mSuccessfully created object{}.\033[0m'.format(" "+object))
+
+
+    def drop_db_object(self, object:str, sql:str = None, commit:bool = True):
+        ''' Drop an object in the database (most convenient with stored sql script under src/backend/database/objects)
+        Input:  - self.conn: connection to the database
+                - self.cur: cursor of the connection
+                - object: name of the table
+                - sql: SQL query to drop the table
+                - commit: bool, whether to commit the changes or not
+        Output: None
+        '''
+        # SQL query to drop the table
+        if sql is None:
+            sql = f"DROP TABLE {object}"
+
+        # Execute the SQL query
+        self.execute_sql(sql, commit=commit)
+
+        print('\033[1m\033[92mSuccessfully dropped object {}.\033[0m'.format(object))
+
+"""
+db = Database()
+db.connect()
+# TASK
+
+db.disconnect()
+"""
