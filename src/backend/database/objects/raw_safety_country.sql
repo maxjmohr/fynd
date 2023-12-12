@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS raw_safety_country;
-
 CREATE TABLE raw_safety_country (
     iso2                VARCHAR(2),
     iso3                VARCHAR(3) PRIMARY KEY NOT NULL,

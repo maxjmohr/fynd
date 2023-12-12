@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS raw_culture;
-
 CREATE TABLE raw_culture (
     fsq_id              VARCHAR(255) PRIMARY KEY NOT NULL,
     categories          VARCHAR(10000),
