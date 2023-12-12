@@ -37,7 +37,7 @@ class CostScores:
 
         # Load model if it exists
         current_script_directory = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(current_script_directory, "../../../res/models/costs_scores_numbeo_kmeans.model")
+        path = os.path.join(current_script_directory, "../../../../res/models/costs_scores_numbeo_kmeans.model")
         # Ensure that the directory structure exists
         os.makedirs(os.path.dirname(path), exist_ok=True)
         if os.path.exists(path):
@@ -72,5 +72,4 @@ data = CostScores(db).numbeo_scores()
 # Display the result
 print(data[["location_id", "city", "country", "score"]].sort_values(by="score", ascending=False).tail(50))
 
-db.disconnect()
-"""
+db.disconnect()"""
