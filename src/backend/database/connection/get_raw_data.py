@@ -12,7 +12,6 @@ from data import geography
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
 import datetime
-from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import pandas as pd
@@ -65,7 +64,7 @@ def fill_raw_db_tables(db: Database, table_names):
                 
             else: 
                 # Call the fill function
-                table_fill_function_dict[table](locations_df, table, db)
+                table_fill_function_dict[table][0](locations_df, table, db)
                 
                 """ TO-DO: THE INSERT HAPPENS IN THE FILL FUNCTIONS
                 if len(table_df) > 0:
