@@ -265,8 +265,9 @@ def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, 
 
 db = Database()
 db.connect()
-create_raw_db_tables(table_names=table_fill_function_dict.keys())
-fill_raw_db_tables(table_names=table_fill_function_dict.keys())
+#print(db.fetch_data("log_history"))
+#create_raw_db_tables(table_names=table_fill_function_dict.keys())
+#fill_raw_db_tables(table_names=table_fill_function_dict.keys())
 db.disconnect()
 
 #create_log_db_tables(log_tables)
