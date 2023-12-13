@@ -5,9 +5,9 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
-#from data.safety_pipeline import create_country_safety_df
-#from data.safety_pipeline import create_city_safety_df
-#from data.culture import cultural_profile
+from data.safety_pipeline import create_country_safety_df
+from data.safety_pipeline import create_city_safety_df
+from data.culture import cultural_profile
 from data import geography
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
@@ -45,39 +45,17 @@ def fill_raw_db_tables(db: Database, table_names):
     # Get list of locations from database
     locations_df = db.fetch_data("core_locations")
     
-    # Initialize table_df, exit_code, start_datetime and end_datetime to avoid duplicate code
-    table_df = None
-    exit_code = None
-    start_datetime = None
-    end_datetime = None
-    
     # Fill each table
     for table in table_names:
+        start_datetime = datetime.datetime.now()
         try:
-            # If table doesn't depend on locations from core_locations, insert data all at once
-            if table == "raw_safety_country":
-                #call fill-function, insert into table
-                table_df = table_fill_function_dict[table][0]()
-                start_datetime = datetime.datetime.now()
-                db.insert_data(table_df, table)
-                end_datetime = datetime.datetime.now()
-                
-            else: 
-                # Call the fill function
-                table_fill_function_dict[table][0](locations_df, table, db)
-                
-                """ TO-DO: THE INSERT HAPPENS IN THE FILL FUNCTIONS
-                if len(table_df) > 0:
-                        start_datetime = datetime.datetime.now()
-                        db.insert_data(table_df, table)
-                        end_datetime = datetime.datetime.now()
-                    else:
-                        print("No data for table " + table + " for location " + row["city"] + ".")
-                """
+            #call fill-function, insert into table
+            end_datetime = table_fill_function_dict[table][0](locations = locations_df, table_name = table, db = db)
             exit_code = 0
             
         except Exception as error:
             print("Error when inserting into " + table + ":", type(error).__name__, "–", error)
+            end_datetime = datetime.datetime.now()
             exit_code = 1
             
         finally:
@@ -93,14 +71,14 @@ def fill_raw_db_tables(db: Database, table_names):
 
 # takes a list of table names and sets up these tables in the database
 # names of tables must match names of sql-files in objects folder
-def create_log_db_tables(table_names):
+def create_log_db_tables(db : Database, table_names):
 
     for table in table_names:
         db.create_db_object(table)
         
         
 # fills log_processes table in database with information on data insertion processes, takes process ids as input
-def fill_log_processes_db_table(process_ids):
+def fill_log_processes_db_table(db : Database, process_ids):
 
     # get data from log_history table
     log_history = db.fetch_data("log_history")
@@ -179,11 +157,11 @@ def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, 
                                     'last_exec' : [last_exec],
                                     'next_exec_scheduled' : [next_exec_scheduled]})
     
-    #update log_processes with new last_exec and next_exec_scheduled times
+    # update log_processes with new last_exec and next_exec_scheduled times
     log_processes_df.loc[log_processes_df["process_id"]==process_id, "last_exec"] = last_exec
     log_processes_df.loc[log_processes_df["process_id"]==process_id, "next_exec_scheduled"] = next_exec_scheduled
     
-    #insert data into log_history and log_processes tables
+    # insert data into log_history and log_processes tables
     db.insert_data(log_history_df, "log_history", updated_at=False)
     db.insert_data(log_processes_df, "log_processes", updated_at=False, if_exists='replace')
 
@@ -262,28 +240,59 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     if len(costs) > 0:
         db.insert_data(costs, table_name, if_exists="append")
 
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+
 
 ####----| SAFETY |----####
 # creates dataframe ready to be inserted into the raw_safety_city table
-def fill_raw_safety_city(location):
-    safety_city_df = create_city_safety_df(location["city"])
+def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database):
 
-    return safety_city_df
+    # For each location call create_city_safety_df to get safety information for this location
+    for _, row in locations.iterrows():
+        safety_city_df = create_city_safety_df(row["city"])
+
+        # If information could be found for this location, insert it into the database
+        if len(safety_city_df) > 0:
+            db.insert_data(safety_city_df, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 # creates dataframe ready to be inserted into the raw_safety_country table
-def fill_raw_safety_country():
+def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database):
+
+    # Get safety information for all countries
     safety_country_df = create_country_safety_df()
 
-    return safety_country_df
+    # If information could be found, insert it into the database
+    if len(safety_country_df) > 0:
+        db.insert_data(safety_country_df, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 ####----| CULTURE |----####
 # creates dataframe ready to be inserted into the raw_culture table
-def fill_raw_culture(location):
-    culture_df = cultural_profile(location["lat"]+","+location["lon"])
-    culture_df = culture_df.convert_dtypes()
+def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
+    for _, row in locations.iterrows():
+        culture_df = cultural_profile(row["lat"]+","+row["lon"])
+        culture_df = culture_df.convert_dtypes()
 
-    return culture_df
+        if len(culture_df) > 0:
+            db.insert_data(culture_df, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 ####----| WEATHER |----####
@@ -335,6 +344,11 @@ def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db
         # Append the data to database table
         if len(weather_df) > 0:
             db.insert_data(weather_df, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database):
@@ -411,6 +425,11 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
             if len(weather_df) > 0:
                 db.insert_data(weather_df, table_name, if_exists="append")
 
+        # Get current time for logging and return it
+        end_datetime = datetime.datetime.now()
+
+        return end_datetime
+
 
 ####----| GEOGRAPHY |----####
 # creates dataframe ready to be inserted into the raw_geography table
@@ -424,11 +443,11 @@ def fill_raw_geography(location):
 # Dictonary that maps names of database tables to functions which fill these tables with data
 table_fill_function_dict = {
     #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
-    #"raw_safety_city": [fill_raw_safety_city, 2],
+    "raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
     #"raw_culture": [fill_raw_culture, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    "raw_weather_historical": [fill_raw_weather_historical, 6],
+    #"raw_weather_historical": [fill_raw_weather_historical, 6],
     #"raw_geography": [fill_raw_geography 7]
     }
 
@@ -451,9 +470,9 @@ db = Database()
 db.connect()
 
 # Create tables
-# create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
+#create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
 # Fill tables
-fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
+#fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
 
 # Create logging
 # create_log_db_tables(log_tables)
