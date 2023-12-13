@@ -1,12 +1,91 @@
 from lxml import etree
 import pandas as pd
 import numpy as np
+import os
 import requests
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+import xgboost as xgb
 
 class numbeoScraper:
     ''' Scrape data from numbeo.com '''
     def __init__(self) -> None:
+        "Initialize the class"
         self.url = "https://www.numbeo.com"
+
+    
+    def train_xgb(self, features:pd.DataFrame, targets:pd.DataFrame) -> xgb.XGBRegressor:
+        ''' Train an XGBoost model to predict missing values
+        Input:  - features: pd.DataFrame, features to train the model on
+                - targets: pd.DataFrame, targets to train the model on
+        Output: model: trained XGBoost model
+        '''
+
+        # Split the data into training and test sets
+        X_train, _, y_train, _ = train_test_split(features, targets, test_size=0.2, random_state=42)
+
+        X_train = X_train.fillna(0)  # Replace NaN with 0 or any other appropriate value
+        # y_train = y_train.fillna(0)  # Replace NaN with 0 or any other appropriate value
+
+        model = xgb.XGBRegressor(objective="reg:squarederror", random_state=666)
+        model.fit(X_train, y_train)
+
+        return model
+    
+
+    def predict_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+        ''' Predict missing values of feature columns in the DataFrame
+        Input:  - df: pd.DataFrame, DataFrame to predict missing values in
+                - model: xgb.XGBRegressor, trained XGBoost model
+        Output: pd.DataFrame, DataFrame with predicted missing values
+        '''
+        # Get the feature columns
+        feature_columns = df.columns[df.isna().any()].tolist()
+        # Delete city and country columns
+        if "city" in feature_columns:
+            feature_columns.remove("city")
+        if "country" in feature_columns:
+            feature_columns.remove("country")
+
+        # Create xgb DataFrame
+        df_xgb = df.copy()
+
+        # Drop city and country columns
+        if "city" in df_xgb.columns:
+            df_xgb.drop(["city"], axis=1, inplace=True)
+        if "country" in df_xgb.columns:
+            df_xgb.drop(["country"], axis=1, inplace=True)
+
+        # Turn all columns into float except city and country
+        for column in df_xgb.columns:
+            df_xgb[column] = pd.to_numeric(df_xgb[column], errors='coerce')
+
+        # Predict missing values
+        for column in feature_columns:
+            # Train the model for the current feature if it has not been trained yet
+            current_script_directory = os.path.dirname(os.path.abspath(__file__))
+            path = os.path.join(current_script_directory, f"../../../../res/models/costs_numbeo_{column}.model")
+            if os.path.exists(path):
+                model = xgb.XGBRegressor()
+                model.load_model(path)
+            else:
+                model = self.train_xgb(features=df_xgb.loc[df_xgb[column].notna(), df_xgb.columns != column],
+                                       targets=df_xgb.loc[df_xgb[column].notna(), column])
+
+            # Get the indices of the missing values
+            indices = df[df[column].isna()].index.tolist()
+
+            # Predict the missing values
+            predictions = model.predict(df_xgb.loc[indices, df_xgb.columns != column])
+
+            # Replace the missing values with the predictions
+            df.loc[indices, column] = predictions
+
+            # Save model
+            model.save_model(path)
+
+        return df
+
 
     def get_costs(self, by: str = "country", currency: str = "EUR") -> pd.DataFrame:
         ''' Scrape the costs by city or country from numbeo.com
@@ -51,12 +130,13 @@ class numbeoScraper:
         df = df.loc[:,~df.columns.duplicated()].copy()
         df = df.replace('-',np.NaN)
         
+        # Rename columns
         column_dict = {
             'Meal, Inexpensive Restaurant':'meal_inexp',
             'Meal for 2 People, Mid-range Restaurant, Three-course':'meal_mid',
             'McMeal at McDonalds (or Equivalent Combo Meal)':'meal_mcdo',
-            'Domestic Beer (0.5 liter draught)':'dom_beer',
-            'Imported Beer (0.33 liter bottle)':'imp_beer', 
+            'Domestic Beer (0.5 liter draught)':'beer_dom',
+            'Imported Beer (0.33 liter bottle)':'beer_imp', 
             'Coke/Pepsi (0.33 liter bottle)':'soda',
             'Water (0.33 liter bottle) ':'water_small', 
             'Milk (regular), (1 liter)':'milk',
@@ -115,11 +195,15 @@ class numbeoScraper:
         
         df.rename(columns=column_dict, inplace=True)
 
+        # Predict missing values
+        df = self.predict_missing_values(df)
+
         return df
 
-if __name__ == "__main__":
-    numbeoScraper = numbeoScraper()
-    costs_by_country = numbeoScraper.get_costs(by = "country", currency = "EUR")
-    costs_by_city = numbeoScraper.get_costs(by = "city", currency = "EUR")
-    print(costs_by_country)
-    print(costs_by_city)
+"""
+numbeoScraper = numbeoScraper()
+costs_by_country = numbeoScraper.get_costs(by = "country", currency = "EUR")
+costs_by_city = numbeoScraper.get_costs(by = "city", currency = "EUR")
+print(costs_by_country)
+print(costs_by_city)
+"""
