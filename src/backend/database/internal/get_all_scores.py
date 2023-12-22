@@ -48,25 +48,24 @@ df = pd.DataFrame(dummy_data)
 
 
 db.connect()
-db.insert_data(df, 'core_location_scores')
+db.insert_data(df, 'core_scores')
 db.disconnect()
 """
 
 
-####----| Assign scores to each location and fill in core_location_scores |----####
+####----| Assign scores to each location and fill in core_scores |----####
 
 ###----| Costs |----###
 
 class FillScores:
-    # Class for filling in the scores in the core_location_scores table
-    def __init__(self, db:Database, locations:pd.DataFrame) -> None:
+    # Class for filling in the scores in the core_scores table
+    def __init__(self, db:Database) -> None:
         ''' Initialize the class
-        Input:  - db: Database object
-                - locations: master data
+        Input:  db: Database object
         Output: None
         '''
         self.db = db
-        self.locations = locations
+        self.locations = db.fetch_data(total_object='core_locations')
 
 
     def cost_scores(self):
@@ -75,8 +74,8 @@ class FillScores:
                 - self.locations: master data
         Output: None
         '''        
-        # Get the scores
-        scores = CostScores(self.db).numbeo_scores()
+        # Get the cost of living scores
+        scores = CostScores(self.db).get()
 
         # Filter scores where location_id is not null and turn into int
         city_scores = scores[scores["location_id"].notnull()]
@@ -85,32 +84,35 @@ class FillScores:
         country_scores = scores[scores["location_id"].isnull()]
 
         # Merge city scores
-        city_data = self.locations.merge(city_scores[["location_id", "score"]], on=["location_id"], how='left')
+        city_data = self.locations.merge(
+            city_scores[["location_id", "dimension_id", "subcategory_id", "score"]],
+            on=["location_id"],
+            how="left")
 
-        # Filter out cities that do not have a score
+        # Filter out locations that do not have a score
         no_scores = city_data[city_data["score"].isnull()]
         city_data = city_data[city_data["score"].notnull()]
 
-        # Merge country scores
-        country_data = no_scores.merge(country_scores[["country", "score"]], on=["country"], how='left')
+        # Delete the columns in no_scores that were added in the merge
+        no_scores = no_scores.drop(["dimension_id", "subcategory_id", "score"], axis=1)
 
-        # If score_y is filled, use that, otherwise use score
-        country_data["score"] = np.where(
-            country_data["score_x"].isnull(),
-            country_data["score_y"],
-            country_data["score_x"]
-        )
+        # Merge country scores
+        country_data = no_scores.merge(
+            country_scores[["country", "dimension_id", "subcategory_id", "score"]],
+            on=["country"],
+            how="left")
+
+        # Filter out locations that do not have a score
+        country_data = country_data[country_data["score"].notnull()]
 
         # Combine the results of both merges
         location_scores = pd.concat([city_data, country_data])
 
         # Add dimension column and reorder
-        location_scores["dimension"] = "costs"
-        location_scores["subcategory"] = None
-        location_scores = location_scores[["location_id", "city", "country", "dimension", "subcategory", "score"]]
+        location_scores = location_scores[["location_id", "dimension_id", "subcategory_id", "score"]]
 
         return location_scores
-    
+
 
     def fill_scores(self, explicit:bool = False):
         ''' Fill in all scores
@@ -120,33 +122,34 @@ class FillScores:
         Output: None
         '''
         # Get the scores
-        cost_scores = self.cost_scores()
+        scores = self.cost_scores()
 
-        # Filter out rows where score is null
-        cost_scores = cost_scores[cost_scores["score"].notnull()]
+        # Filter out rows where dimension_id, subcategory_id or score is null
+        scores = scores[scores["dimension_id"].notnull()]
+        scores = scores[scores["subcategory_id"].notnull()]
+        scores = scores[scores["score"].notnull()]
 
         # Check for all location_ids if there is a score in the database. If true, replace. If not, add
-        for _, row in cost_scores.iterrows():
-            location_id = row["location_id"]
-            dimension = row["dimension"]
-            subcategory = row["subcategory"]
+        for _, row in scores.iterrows():
+            location_id = int(row["location_id"])
+            dimension_id = int(row["dimension_id"])
+            subcategory_id = int(row["subcategory_id"])
             score = row["score"]
 
-            # Check if there is a score for this location_id and dimension
-            sql = f"SELECT * FROM core_location_scores WHERE location_id = {location_id} AND dimension = '{dimension}' AND subcategory = '{subcategory}'"
-            if self.db.fetch_data(sql=sql)["location_id"] is None and not explicit:
+            # Check if there is a score for this location, dimension and subcategory
+            sql = f"SELECT location_id FROM core_scores WHERE location_id = {location_id} AND dimension_id = '{dimension_id}' AND subcategory_id = '{subcategory_id}'"
+            if self.db.fetch_data(sql=sql).empty or explicit:
                 # Add score
-                print(f"Adding {dimension} score for {row['city']}, {row['country']}...")
-                sql = f"INSERT INTO core_location_scores (location_id, dimension, subcategory, score) VALUES ({location_id}, '{dimension}', '{subcategory}', {score})"
+                print(f"Adding dimension_id {dimension_id} (subcategory_id {subcategory_id}) score for location_id {location_id}...")
+                sql = f"INSERT INTO core_scores (location_id, dimension_id, subcategory_id, score) VALUES ({location_id}, '{dimension_id}', '{subcategory_id}', {score})"
                 self.db.execute_sql(sql, commit=True)
             else:
                 # Update score
-                print(f"Updating {dimension} score for {row['city']}, {row['country']}...")
-                sql = f"UPDATE core_location_scores SET scores = {score} WHERE location_id = {location_id} AND dimension = '{dimension}' AND subcategory = '{subcategory}'"
+                print(f"Updating dimension_id {dimension_id} (subcategory_id {subcategory_id}) score for location_id {location_id}...")
+                sql = f"UPDATE core_scores SET score = {score} WHERE location_id = {location_id} AND dimension_id = '{dimension_id}' AND subcategory_id = '{subcategory_id}'"
                 self.db.execute_sql(sql, commit=True)
-    
+
 db = Database()
 db.connect()
-locations = db.fetch_data(total_object='core_locations')
-print(FillScores(db, locations).fill_scores())
+FillScores(db).fill_scores()
 db.disconnect()
