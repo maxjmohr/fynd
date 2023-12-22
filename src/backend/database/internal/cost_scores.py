@@ -12,12 +12,14 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 class CostScores:
+    "Class for calculating cost scores"
     def __init__(self, db:Database) -> None:
         ''' Initialize the class
-        Input:  - db: Database object
+        Input:  db: Database object
         Output: None
         '''
         self.db = db
+
 
     def numbeo_scores(self, num_clusters:int = 5):
         ''' Calculate the cost scores based on the Numbeo data
@@ -60,7 +62,28 @@ class CostScores:
         # Save model
         dump(kmeans, path)
 
-        return data[["location_id", "city", "country", "score"]]
+        # Add subcategory_id
+        subcategory_id = self.db.fetch_data(sql="SELECT subcategory_id FROM core_subcategories WHERE subcategory = 'cost_of_living'").iloc[0, 0]
+        data["subcategory_id"] = subcategory_id
+        assert data["subcategory_id"].notnull().all()
+
+        return data[["location_id", "city", "country", "subcategory_id", "score"]]
+
+
+    def get(self) -> pd.DataFrame:
+        ''' Get all scores
+        Input:  self: database and functions
+        Output: None
+        '''
+        # Collect all scores
+        data = self.numbeo_scores()
+
+        # Add dimension_id
+        dimension_id = self.db.fetch_data(sql="SELECT dimension_id FROM core_dimensions WHERE dimension = 'cost'").iloc[0, 0]
+        data["dimension_id"] = dimension_id
+        assert data["dimension_id"].notnull().all()
+
+        return data
 
 """
 # Connect to the database
