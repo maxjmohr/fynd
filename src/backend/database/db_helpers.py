@@ -167,7 +167,7 @@ class Database:
         '''
         # SQL query to drop the table
         if sql is None:
-            sql = f"DROP TABLE {object}"
+            sql = f"DROP TABLE {object} CASCADE"
 
         # Execute the SQL query
         self.execute_sql(sql, commit=commit)

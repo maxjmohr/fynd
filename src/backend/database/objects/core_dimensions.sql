@@ -1,22 +1,23 @@
 CREATE TABLE core_dimensions (
-    dimension_id        INTEGER NOT NULL,
-    dimension           VARCHAR(255) NOT NULL,
-    description         VARCHAR(255),
-    updated_at          TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc-01'),
-    PRIMARY KEY (dimension_id)
+    category_id     INTEGER NOT NULL,
+    dimension_id    INTEGER NOT NULL,
+    dimension       VARCHAR(255),
+    description     VARCHAR(255),
+    updated_at      TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc-01'),
+    PRIMARY KEY (dimension_id),
+    FOREIGN KEY (category_id) REFERENCES core_categories(category_id)
 );
 
-COMMENT ON TABLE core_dimensions IS 'Table stores dimensions and subcategories of the dimensions.';
+COMMENT ON TABLE core_dimensions IS 'The table contains the dimensions of the categories.';
 
-COMMENT ON COLUMN core_dimensions.dimension_id IS 'Primary key of the dimension table';
-COMMENT ON COLUMN core_dimensions.dimension IS 'Dimension of the score';
-COMMENT ON COLUMN core_dimensions.description IS 'Description of the dimension';
-COMMENT ON COLUMN core_dimensions.updated_at IS 'Timestamp of the last update of the dimension table';
+COMMENT ON COLUMN core_dimensions.category_id IS 'Unique identifier of the category.';
+COMMENT ON COLUMN core_dimensions.dimension_id IS 'Unique identifier of the dimension.';
+COMMENT ON COLUMN core_dimensions.dimension IS 'Name of the dimension.';
+COMMENT ON COLUMN core_dimensions.description IS 'Description of the dimension.';
+COMMENT ON COLUMN core_dimensions.updated_at IS 'Timestamp of the last update.';
 
--- Create the master data
-INSERT INTO core_dimensions (dimension_id, dimension, description, updated_at)
-VALUES (1, 'safety', 'Safety', now()),
-       (2, 'weather', 'Weather', now()),
-       (3, 'culture', 'Culture', now()),
-       (4, 'cost', 'Cost dimension includes travel costs, accommodation costs and cost of living.', now()),
-       (5, 'geography', 'Geography', now());
+-- Create subcategories for cost
+INSERT INTO core_dimensions (category_id, dimension_id, dimension, description, updated_at)
+VALUES (4, 41, 'travel', 'Travel costs as part of cost dimension', now()),
+       (4, 42, 'accommodation', 'Accommodation costs as part of cost dimension', now()),
+       (4, 43, 'cost_of_living', 'Cost of living as part of cost dimension', now());

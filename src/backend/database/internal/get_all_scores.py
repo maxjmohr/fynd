@@ -85,7 +85,7 @@ class FillScores:
 
         # Merge city scores
         city_data = self.locations.merge(
-            city_scores[["location_id", "dimension_id", "subcategory_id", "score"]],
+            city_scores[["location_id", "category_id", "dimension_id", "score"]],
             on=["location_id"],
             how="left")
 
@@ -94,11 +94,11 @@ class FillScores:
         city_data = city_data[city_data["score"].notnull()]
 
         # Delete the columns in no_scores that were added in the merge
-        no_scores = no_scores.drop(["dimension_id", "subcategory_id", "score"], axis=1)
+        no_scores = no_scores.drop(["category_id", "dimension_id", "score"], axis=1)
 
         # Merge country scores
         country_data = no_scores.merge(
-            country_scores[["country", "dimension_id", "subcategory_id", "score"]],
+            country_scores[["country", "category_id", "dimension_id", "score"]],
             on=["country"],
             how="left")
 
@@ -109,7 +109,7 @@ class FillScores:
         location_scores = pd.concat([city_data, country_data])
 
         # Add dimension column and reorder
-        location_scores = location_scores[["location_id", "dimension_id", "subcategory_id", "score"]]
+        location_scores = location_scores[["location_id", "category_id", "dimension_id", "score"]]
 
         return location_scores
 
@@ -124,29 +124,29 @@ class FillScores:
         # Get the scores
         scores = self.cost_scores()
 
-        # Filter out rows where dimension_id, subcategory_id or score is null
+        # Filter out rows where category_id, dimension_id or score is null
+        scores = scores[scores["category_id"].notnull()]
         scores = scores[scores["dimension_id"].notnull()]
-        scores = scores[scores["subcategory_id"].notnull()]
         scores = scores[scores["score"].notnull()]
 
         # Check for all location_ids if there is a score in the database. If true, replace. If not, add
         for _, row in scores.iterrows():
             location_id = int(row["location_id"])
+            category_id = int(row["category_id"])
             dimension_id = int(row["dimension_id"])
-            subcategory_id = int(row["subcategory_id"])
             score = row["score"]
 
             # Check if there is a score for this location, dimension and subcategory
-            sql = f"SELECT location_id FROM core_scores WHERE location_id = {location_id} AND dimension_id = '{dimension_id}' AND subcategory_id = '{subcategory_id}'"
+            sql = f"SELECT location_id FROM core_scores WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}'"
             if self.db.fetch_data(sql=sql).empty or explicit:
                 # Add score
-                print(f"Adding dimension_id {dimension_id} (subcategory_id {subcategory_id}) score for location_id {location_id}...")
-                sql = f"INSERT INTO core_scores (location_id, dimension_id, subcategory_id, score) VALUES ({location_id}, '{dimension_id}', '{subcategory_id}', {score})"
+                print(f"Adding category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
+                sql = f"INSERT INTO core_scores (location_id, category_id, dimension_id, score) VALUES ({location_id}, '{category_id}', '{dimension_id}', {score})"
                 self.db.execute_sql(sql, commit=True)
             else:
                 # Update score
-                print(f"Updating dimension_id {dimension_id} (subcategory_id {subcategory_id}) score for location_id {location_id}...")
-                sql = f"UPDATE core_scores SET score = {score} WHERE location_id = {location_id} AND dimension_id = '{dimension_id}' AND subcategory_id = '{subcategory_id}'"
+                print(f"Updating category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
+                sql = f"UPDATE core_scores SET score = {score} WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}'"
                 self.db.execute_sql(sql, commit=True)
 
 db = Database()
