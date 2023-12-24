@@ -62,12 +62,12 @@ class CostScores:
         # Save model
         dump(kmeans, path)
 
-        # Add subcategory_id
-        subcategory_id = self.db.fetch_data(sql="SELECT subcategory_id FROM core_subcategories WHERE subcategory = 'cost_of_living'").iloc[0, 0]
-        data["subcategory_id"] = subcategory_id
-        assert data["subcategory_id"].notnull().all()
+        # Add dimension_id
+        dimension_id = self.db.fetch_data(sql="SELECT dimension_id FROM core_dimensions WHERE dimension = 'cost_of_living'").iloc[0, 0]
+        data["dimension_id"] = dimension_id
+        assert data["dimension_id"].notnull().all()
 
-        return data[["location_id", "city", "country", "subcategory_id", "score"]]
+        return data[["location_id", "city", "country", "dimension_id", "score"]]
 
 
     def get(self) -> pd.DataFrame:
@@ -78,10 +78,10 @@ class CostScores:
         # Collect all scores
         data = self.numbeo_scores()
 
-        # Add dimension_id
-        dimension_id = self.db.fetch_data(sql="SELECT dimension_id FROM core_dimensions WHERE dimension = 'cost'").iloc[0, 0]
-        data["dimension_id"] = dimension_id
-        assert data["dimension_id"].notnull().all()
+        # Add category_id
+        category_id = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category = 'cost'").iloc[0, 0]
+        data["category_id"] = category_id
+        assert data["category_id"].notnull().all()
 
         return data
 

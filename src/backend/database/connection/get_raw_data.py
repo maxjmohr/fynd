@@ -5,9 +5,9 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
-from data.safety_pipeline import create_country_safety_df
-from data.safety_pipeline import create_city_safety_df
-from data.culture import cultural_profile
+#from data.safety_pipeline import create_country_safety_df
+#from data.safety_pipeline import create_city_safety_df
+#from data.culture import cultural_profile
 from data import geography
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
@@ -443,11 +443,11 @@ def fill_raw_geography(location):
 # Dictonary that maps names of database tables to functions which fill these tables with data
 table_fill_function_dict = {
     #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
-    "raw_safety_city": [fill_raw_safety_city, 2],
+    #"raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
     #"raw_culture": [fill_raw_culture, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    #"raw_weather_historical": [fill_raw_weather_historical, 6],
+    "raw_weather_historical": [fill_raw_weather_historical, 6],
     #"raw_geography": [fill_raw_geography 7]
     }
 
@@ -472,7 +472,7 @@ db.connect()
 # Create tables
 #create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
 # Fill tables
-#fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
+fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
 
 # Create logging
 # create_log_db_tables(log_tables)
