@@ -8,6 +8,7 @@ from data.costs import numbeoScraper
 from data.safety_pipeline import create_country_safety_df
 from data.safety_pipeline import create_city_safety_df
 from data.culture import cultural_profile
+from data.health import get_health_info
 from data import geography
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
@@ -437,18 +438,37 @@ def fill_raw_geography(location):
     return None
 
 
+####----| HEALTH |----####
+# creates dataframe ready to be inserted into the raw_health_country table
+def fill_raw_health(locations: pd.DataFrame, table_name: str, db: Database):
+
+    # Run update on country information
+    get_health_info()
+
+    # Read in the csv file
+    health_country_df = pd.read_csv("../../../res/master_data/health_info.csv")
+
+    # If information could be found, insert it into the database
+    if len(health_country_df) > 0:
+        db.insert_data(health_country_df, table_name, if_exists="replace")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 ####----| STEP 4: EXECUTE STEPS 1, 2 AND 3 |----####    
 
 # Dictonary that maps names of database tables to functions which fill these tables with data
 table_fill_function_dict = {
     #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
-    "raw_safety_city": [fill_raw_safety_city, 2],
+    #"raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
     #"raw_culture": [fill_raw_culture, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
     #"raw_weather_historical": [fill_raw_weather_historical, 6],
     #"raw_geography": [fill_raw_geography 7]
+    "raw_health" : [fill_raw_health, 8]
     }
 
 # List that consists of names of log tables that need to be created 
@@ -463,16 +483,18 @@ table_process_id_dict = {
     5: ["raw_weather_current_future", "Inserts current and future weather data for given locations.", 30],
     6: ["raw_weather_historical", "Inserts historical weather data for given locations.", 30],
     7: ["fill_raw_geography", "Inserts geography data for given locations.", 30],
+    8: ["fill_raw_health", "Inserts health data and travel information for all countries", 30]
 }
 
 # Connect to database
 db = Database()
 db.connect()
+#print(db.fetch_data("raw_safety_country"))
 
 # Create tables
 #create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
 # Fill tables
-#fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
+fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
 
 # Create logging
 # create_log_db_tables(log_tables)
