@@ -139,3 +139,11 @@
     right: 20px;
     font-size: 2em;
 }
+
+
+/* home page */
+
+.home-prev-locations-container {
+    background-color: lightblue;
+    width: 80%;
+}

@@ -47,6 +47,9 @@ class CoreLocations(models.Model):
         managed = False
         db_table = 'core_locations'
 
+    def __str__(self):
+        return self.city
+
 
 class CoreScores(models.Model):
     location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')

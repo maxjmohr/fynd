@@ -1,17 +1,29 @@
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, FormView
 from django.views.generic.detail import DetailView
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
+from django import forms
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from .models import CoreScores, CoreLocations
 from .filters import LocationsFilterset
+from .forms import PreviousLocationsForm
 from .compute_relevance import compute_relevance
 import numpy as np
 import pandas as pd
 from django_pandas.io import read_frame
 
 
-class HomePageView(TemplateView):
+class HomePageView(FormView):
     template_name = 'home.html'
+    form_class = PreviousLocationsForm
+    success_url = '/list'
+
+    def form_valid(self, form):
+        location_ids = form.cleaned_data['locations'].values_list('location_id', flat=True)
+        self.request.session['previous_locations'] = list(location_ids)
+        return super().form_valid(form)
+
 
 class LocationsListView(ListView):
     template_name = 'list.html'
@@ -40,8 +52,11 @@ class LocationsListView(ListView):
             scores[dim] = scores.iloc[:,0] * np.random.uniform(0, 0.1, len(scores))
         # --------------------------------------------
             
-        # User input #FIXME replace with actual user input from form
-        previous_locations = [20560154, 61941371, 237395083]
+        # Previous locations user input
+        previous_locations = self.request.session.get('previous_locations', [])
+
+        # FIXME remove locations for which we don't have scores
+        previous_locations = [i for i in previous_locations if i in scores.index]
 
         # Compute relevance score
         relevance = compute_relevance(

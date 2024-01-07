@@ -11,4 +11,13 @@ Home
 {% block content %}
 <h1>HomePage</h1>
 
+<div class="home-prev-locations-container">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Go">
+    </form>
+</div>
+
+
 {% endblock %}

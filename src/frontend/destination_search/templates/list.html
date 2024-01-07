@@ -13,10 +13,28 @@ Locations
 
 <!--- Filter form -->
 <div class="filters-container">
-  <form action="" method="get">
-    {{ filterset.form.as_p }}
-    <input type="submit" />
+  <form method="post">
+    {% csrf_token %}
+    <select name="locations" class="location-select" multiple="multiple">
+      {% for location in previous_locations %}
+        <option value="{{ location.location_id }}" selected>{{ location.city }}</option>
+      {% endfor %}
+    </select>
+    <input type="submit" value="Submit">
   </form>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <script>
+  $(document).ready(function() {
+    $('.location-select').select2({
+      placeholder: 'Select a location',
+      ajax: {
+        url: '/api/locations',
+        dataType: 'json'
+      }
+    });
+  });
+  </script>
 </div>
 
 <!--- Results -->
