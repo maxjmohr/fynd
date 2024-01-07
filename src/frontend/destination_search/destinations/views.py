@@ -69,8 +69,6 @@ class LocationsListView(ListView):
         sort_column, sort_order = sort_options.get(self.sort_param, ('relevance', False))
         locations = locations.sort_values(by=sort_column, ascending=sort_order)
 
-        print(locations.columns)
-
         # Convert DataFrame back to list of dictionaries
         return locations.reset_index().to_dict('records')
     
