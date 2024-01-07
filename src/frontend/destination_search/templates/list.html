@@ -57,12 +57,16 @@
             <div class="location-list-item-container">
 
               <div class="location-list-item-image-container">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Willmette_how.jpg" alt="{{ location.city }} image" height="100px" width="100px">
+                <a href="{% url 'location_detail' location_id=location.location_id %}">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/39/Willmette_how.jpg" alt="{{ location.city }} image" height="100px" width="100px">
+                </a>
               </div>
-
+              
               <div class="location-list-item-info-container">
                 <div class="location-list-item-title">
-                  <span class="location-list-item-city-name"> {{ location.city }} </span>
+                  <a href="{% url 'location_detail' location_id=location.location_id %}">
+                    <span class="location-list-item-city-name"> {{ location.city }} </span>
+                  </a>
                   <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:2 }} km)</span>
                 </div>
                 <br>

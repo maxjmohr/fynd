@@ -1,5 +1,6 @@
-from django.shortcuts import render
 from django.views.generic import TemplateView, ListView
+from django.views.generic.detail import DetailView
+from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from .models import CoreScores, CoreLocations
 from .filters import LocationsFilterset
@@ -91,6 +92,22 @@ class LocationsListView(ListView):
         context.update({
             'object_list': page,
         })
+
+        return context
+
+
+class LocationDetailView(DetailView):
+    model = CoreLocations
+    template_name = 'location_detail.html'
+    pk_url_kwarg = 'location_id'
+    context_object_name = 'location'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        location = get_object_or_404(CoreLocations, pk=self.kwargs['location_id'])
+
+        # Add any additional data to the context here. For example:
+        # context['graph_data'] = self.get_graph_data(location)
 
         return context
 
