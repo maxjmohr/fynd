@@ -6,6 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 from database.internal.cost_scores import CostScores
+from database.internal.safety_scores import SafetyScores
 from faker import Faker
 import numpy as np
 import pandas as pd
@@ -68,15 +69,16 @@ class FillScores:
         self.locations = db.fetch_data(total_object='core_locations')
 
 
-    def cost_scores(self):
+    def cost_scores(self) -> pd.DataFrame:
         ''' Fill in the cost scores
         Input:  - self.db: Database object
                 - self.locations: master data
-        Output: None
+        Output: location scores
         '''        
         # Get the cost of living scores
         scores = CostScores(self.db).get()
 
+        #####---| City level scores |---#####
         # Filter scores where location_id is not null and turn into int
         city_scores = scores[scores["location_id"].notnull()]
         city_scores["location_id"] = city_scores["location_id"].astype(int)
@@ -89,6 +91,7 @@ class FillScores:
             on=["location_id"],
             how="left")
 
+        ######---| Country level scores |---#####
         # Filter out locations that do not have a score
         no_scores = city_data[city_data["score"].isnull()]
         city_data = city_data[city_data["score"].notnull()]
@@ -105,6 +108,56 @@ class FillScores:
         # Filter out locations that do not have a score
         country_data = country_data[country_data["score"].notnull()]
 
+        ######---| Combine the results |---#####
+        # Combine the results of both merges
+        location_scores = pd.concat([city_data, country_data])
+
+        # Add dimension column and reorder
+        location_scores = location_scores[["location_id", "category_id", "dimension_id", "score"]]
+
+        return location_scores
+
+
+    def safety_scores(self) -> pd.DataFrame:
+        ''' Fill in the safety scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the safety scores
+        scores = SafetyScores(self.db).get()
+
+        #####---| City level scores |---#####
+        # Filter scores where location_id is not null and turn into int
+        city_scores = scores[scores["location_id"].notnull()]
+        city_scores["location_id"] = city_scores["location_id"].astype(int)
+        # Filter scores where location_id is null
+        country_scores = scores[scores["location_id"].isnull()]
+
+        # Merge city scores
+        city_data = self.locations.merge(
+            city_scores[["location_id", "category_id", "dimension_id", "score"]],
+            on=["location_id"],
+            how="left")
+
+        ######---| Country level scores |---#####
+        # Filter out locations that do not have a score
+        no_scores = city_data[city_data["score"].isnull()]
+        city_data = city_data[city_data["score"].notnull()]
+
+        # Delete the columns in no_scores that were added in the merge
+        no_scores = no_scores.drop(["category_id", "dimension_id", "score"], axis=1)
+
+        # Merge country scores
+        country_data = no_scores.merge(
+            country_scores[["country", "category_id", "dimension_id", "score"]],
+            on=["country"],
+            how="left")
+
+        # Filter out locations that do not have a score
+        country_data = country_data[country_data["score"].notnull()]
+
+        ######---| Combine the results |---#####
         # Combine the results of both merges
         location_scores = pd.concat([city_data, country_data])
 
@@ -123,10 +176,10 @@ class FillScores:
         '''
         # Get the scores
         scores = self.cost_scores()
+        scores = pd.concat([scores, self.safety_scores()])
 
-        # Filter out rows where category_id, dimension_id or score is null
+        # Filter out rows where category_id or score is null
         scores = scores[scores["category_id"].notnull()]
-        scores = scores[scores["dimension_id"].notnull()]
         scores = scores[scores["score"].notnull()]
 
         # Check for all location_ids if there is a score in the database. If true, replace. If not, add
