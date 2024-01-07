@@ -5,8 +5,8 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
-#from data.safety_pipeline import create_country_safety_df
-#from data.safety_pipeline import create_city_safety_df
+#from data.safety import create_country_safety_df
+#from data.safety import create_city_safety_df
 #from data.culture import cultural_profile
 from data import geography
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
