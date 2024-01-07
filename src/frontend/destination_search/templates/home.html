@@ -9,15 +9,22 @@ Home
 {% endblock %}
 
 {% block content %}
-<h1>HomePage</h1>
 
 <div class="home-prev-locations-container">
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Go">
-    </form>
-</div>
+    <div class="home-prev-locations-text">
+        <p>Search for locations you have previously visited. You can select multiple locations.</p>
+    </div>
 
+    <div class="home-form-container">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                {{ field.errors }}
+                {{ field }}
+            {% endfor %}
+            <input type="submit" value="Go">
+        </form>
+    </div>
+</div>
 
 {% endblock %}

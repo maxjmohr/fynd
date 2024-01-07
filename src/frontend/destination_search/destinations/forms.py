@@ -13,7 +13,7 @@ class PreviousLocationsForm(forms.Form):
         queryset=CoreLocations.objects.only('location_id', 'city'),
         to_field_name='location_id',
         widget=LocationWidget(attrs={
-            'data-placeholder': 'Select previous location(s)...',
+            'data-placeholder': 'Select location(s)...',
             'data-minimum-input-length': 1
         }),
         required=False

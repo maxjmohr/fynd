@@ -4,7 +4,7 @@
     --customgrey: #6c757d;
 }
 
-
+/* Generic ------------------------------------------------------------------*/
 .page {
     background-color: lightsalmon;
 }
@@ -37,6 +37,8 @@
     flex-wrap: nowrap;
     background-color: orange;
 }
+
+/* Location list ------------------------------------------------------------*/
 
 .filters-container {
     position: sticky;
@@ -141,9 +143,36 @@
 }
 
 
-/* home page */
+/* Home page ----------------------------------------------------------------*/
 
 .home-prev-locations-container {
     background-color: lightblue;
     width: 80%;
+    align-self: center;
+}
+
+.home-prev-locations-text {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.home-form-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.home-form-container form {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-items: stretch;
+}
+
+.home-form-container input[type="submit"] {
+    width: auto;
+    margin-left: 10px;
+    font-weight: bold;
+    padding: 5px 10px;
 }
