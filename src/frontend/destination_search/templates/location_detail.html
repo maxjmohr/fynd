@@ -1,3 +1,14 @@
-<!-- location_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}
+{{ location.city }} - Location Detail
+{% endblock %}
+
+{% block header %}
+Location Detail
+{% endblock %}
+
+{% block content %}
 <h1>{{ location.city }}</h1>
-<!-- Add more details about the location here -->
+
+{% endblock %}

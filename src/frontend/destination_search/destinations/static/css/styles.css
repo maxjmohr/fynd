@@ -28,7 +28,7 @@
 
 .content-container {
     width: calc(min(1200px, 100% - 20px));
-    /*height: calc(100vh - 50px - 20px);*/
+    min-height: calc(100vh - 50px - 20px);
     margin: 0 auto;
     display: flex;
     flex-direction: row;
