@@ -1,3 +1,5 @@
+{% load my_tags %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,11 +41,11 @@
           <div class="sort-label">Sort by:</div>
           <form action="" method="get" id="sortForm" style="display: flex; align-items: center;">
             <select class="form-control ml-2" id="sort" name="sort" onchange="document.getElementById('sortForm').submit();">
-              <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (Descending)</option>
-              <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to Start (Ascending)</option>
-              <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to Start (Descending)</option>
-              <option value="name_asc" {% if current_sort_order == 'name_asc' %}selected{% endif %}>Name (Ascending)</option>
-              <option value="name_desc" {% if current_sort_order == 'name_desc' %}selected{% endif %}>Name (Descending)</option>
+              <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (descending)</option>
+              <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to start (ascending)</option>
+              <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to start (descending)</option>
+              <option value="name_asc" {% if current_sort_order == 'name_asc' %}selected{% endif %}>Name (ascending)</option>
+              <option value="name_desc" {% if current_sort_order == 'name_desc' %}selected{% endif %}>Name (descending)</option>
             </select>
           </form>
         </div>
@@ -77,13 +79,15 @@
           {% endfor %}
         </div>
 
+        {% load my_tags %}
+
         <!-- Pagination controls -->
         <div class="pagination-container">
           <nav aria-label="Page navigation">
             <ul class="pagination">
               {% if object_list.has_previous %}
                 <li class="page-item">
-                  <a class="page-link" href="?page={{ object_list.previous_page_number }}&sort={{ current_sort_order }}" aria-label="Previous">
+                  <a class="page-link" href="?{% param_replace page=object_list.previous_page_number %}" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                   </a>
                 </li>
@@ -96,7 +100,7 @@
               {% endif %}
 
               {% if object_list.number > 2 %}
-                <li class="page-item"><a class="page-link" href="?page=1&sort={{ current_sort_order }}">1</a></li>
+                <li class="page-item"><a class="page-link" href="?{% param_replace page=1 %}">1</a></li>
               {% endif %}
 
               {% if object_list.number > 3 %}
@@ -105,7 +109,7 @@
 
               {% for i in object_list.paginator.page_range %}
                 {% if i >= object_list.number|add:"-1" and i <= object_list.number|add:"1" %}
-                  <li class="page-item {% if object_list.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}&sort={{ current_sort_order }}">{{ i }}</a></li>
+                  <li class="page-item {% if object_list.number == i %}active{% endif %}"><a class="page-link" href="?{% param_replace page=i %}">{{ i }}</a></li>
                 {% endif %}
               {% endfor %}
 
@@ -114,12 +118,12 @@
               {% endif %}     
 
               {% if object_list.number < object_list.paginator.num_pages|add:"-1" %}
-                <li class="page-item"><a class="page-link" href="?page={{ object_list.paginator.num_pages }}&sort={{ current_sort_order }}">{{ object_list.paginator.num_pages }}</a></li>
+                <li class="page-item"><a class="page-link" href="?{% param_replace page=object_list.paginator.num_pages %}">{{ object_list.paginator.num_pages }}</a></li>
               {% endif %}
 
               {% if object_list.has_next %}
                 <li class="page-item">
-                  <a class="page-link" href="?page={{ object_list.next_page_number }}&sort={{ current_sort_order }}" aria-label="Next">
+                  <a class="page-link" href="?{% param_replace page=object_list.next_page_number %}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                   </a>
                 </li>
