@@ -1,35 +1,93 @@
-/* Define some colors */
+/* Define some colors and other variables */
 :root {
-    --customblue: #007bff;
+    --accent1: #007bff;
     --customgrey: #6c757d;
+
+    --content-width: calc(min(1200px, 100% - 20px));
 }
 
-/* Generic ------------------------------------------------------------------*/
+/* Base ---------------------------------------------------------------------*/
 .page {
     background-color: lightsalmon;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-container {
+    width: var(--content-width);
+    margin: 0 auto;
 }
 
 .header-container {
     position: sticky;
     top: 0;
     width: 100%;
-    height: 50px;
-    background-color: var(--customblue);
+    height: auto;
+    background-color: var(--accent1);
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.2);   
     z-index: 1;
 }
 
-.footer-container {
-    width: 100%;
-    height: 20px;
-    text-align: center;
-    background-color: var(--customblue);
-    font-size: 0.8em;
+.header-content-container {
+    height: 100%;
 }
 
-.content-container {
-    width: calc(min(1200px, 100% - 20px));
-    min-height: calc(100vh - 50px - 20px);
-    margin: 0 auto;
+.nav-link {
+    border-bottom: 3px solid transparent;
+    position: relative;
+}
+
+.nav-link.active-link {
+    border-bottom: 3px solid var(--accent1);
+    color: var(--accent1) !important;
+    border-radius: 0;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: rgba(100, 100, 100, 0.8);
+    color: #fff;
+    text-align: center;
+    font-size: 0.8em;
+    padding: 5px 0;
+    border-radius: 6px;
+
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    top: 100%; /* Place the tooltip below the link */
+    left: 50%;
+    margin-left: -60px; /* Use half the width to center the tooltip */
+
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.nav-link:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.footer-container {
+    height: 30px;
+    background-color: var(--accent1);
+}
+
+.footer-content-container {
+    height: 100%;
+    font-size: 0.8em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: turquoise;
+}
+
+.main-container {
+    flex-grow: 1;
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -142,27 +200,78 @@
     font-size: 2em;
 }
 
-
 /* Home page ----------------------------------------------------------------*/
 
-.home-prev-locations-container {
+.home-overview-container {
+    align-self: center;
+}
+.intro-text {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.box-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    border-radius: 12px;
+    background-color: #f0f0f0;
+    text-decoration: none;
+    color: black;
+    position: relative;
+    overflow: hidden;
+}
+
+.box h2 {
+    /*z-index: 1;*/
+}
+
+.box-text {
+    position: absolute;
+    top: 0; /* Align to the top */
+    left: 0; /* Align to the left */
+    text-align: left; /* Left-align the text */
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    width: 100%;
+    height: 100%; /* Make the text fill the whole box */
+    transition: transform 0.3s;
+    transform: translateY(100%); /* Start from the bottom */
+}
+
+.box:hover .box-text {
+    transform: translateY(0); /* Move to the top on hover */
+}
+
+/* Discover page ------------------------------------------------------------*/
+
+.discover-prev-locations-container {
     background-color: lightblue;
     width: 80%;
     align-self: center;
 }
 
-.home-prev-locations-text {
+.discover-prev-locations-text {
     margin-bottom: 10px;
     text-align: center;
 }
 
-.home-form-container {
+.discover-form-container {
     width: 100%;
     display: flex;
     align-items: center;
 }
 
-.home-form-container form {
+.discover-form-container form {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -170,9 +279,63 @@
     align-items: stretch;
 }
 
-.home-form-container input[type="submit"] {
+.discover-form-container input[type="submit"] {
     width: auto;
     margin-left: 10px;
     font-weight: bold;
     padding: 5px 10px;
+}
+
+/* Search page --------------------------------------------------------------*/
+.search-container {
+    background-color: lightblue;
+    width: 80%;
+    align-self: center;
+    
+}
+
+.search-text {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.search-form-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.search-form-container form {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-items: stretch;
+}
+
+.search-form-container input[type="submit"] {
+    width: auto;
+    margin-left: 10px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    box-shadow: none;
+    border-style: solid;
+    border-color: rgba(68, 68, 68, 0.4); /* FIXME: use custom variable */
+    border-width: 1px;
+    background-color: rgb(235, 235, 235); /* FIXME: use custom variable */
+}
+
+.search .select2-selection.select2-selection--single {
+    height: 36px;
+    line-height: 36px;
+}
+
+
+.search .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+}
+
+.search .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 34px;
 }

@@ -1,29 +1,30 @@
 {% extends "base.html" %}
 
 {% block title %}
-Home
+DestinationFinder
 {% endblock %}
 
-{% block header %}
-Home
-{% endblock %}
+{% block main %}
 
-{% block content %}
+<div class="home-overview-container">
+    <p class="intro-text">Welcome to DestinationFinder. Choose an option below to get started.</p>
 
-<div class="home-prev-locations-container">
-    <div class="home-prev-locations-text">
-        <p>Search for locations you have previously visited. You can select multiple locations.</p>
-    </div>
+    <div class="box-container">
+        <a href="/discover" class="box">
+            <h2>Discover</h2>
+            <div class="box-text">
+                <p>Find new places to explore.</p>
+                <p>You have no idea where you should go on your next trip? No problem! Just use our <i>discover</i> tool to get a list of destinations most relevant to your characteristics. Maybe you discover destinations you might not have considered?</p>
+            </div>
+        </a>
 
-    <div class="home-form-container">
-        <form method="post">
-            {% csrf_token %}
-            {% for field in form %}
-                {{ field.errors }}
-                {{ field }}
-            {% endfor %}
-            <input type="submit" value="Go">
-        </form>
+        <a href="/search" class="box">
+            <h2>Search</h2>
+            <div class="box-text">
+                <p>Search for a specific destination.</p>
+                <p>You want to get some information on a destination you already have in mind? With the <i>search</i> you can find a destination in our database and elaborate our data in detail.</p>
+            </div>
+        </a>
     </div>
 </div>
 

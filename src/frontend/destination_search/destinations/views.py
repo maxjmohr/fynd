@@ -3,13 +3,14 @@ from django.views.generic import TemplateView, ListView, FormView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.core.paginator import Paginator
 from django import forms
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from .models import CoreScores, CoreLocations
 from .filters import LocationsFilterset
-from .forms import PreviousLocationsForm
+from .forms import PreviousLocationsForm, SearchLocationForm
 from .compute_relevance import compute_relevance
 import numpy as np
 import pandas as pd
@@ -38,6 +39,34 @@ class HomePageView2(View):
             # Save form data in session
             request.session['previous_locations'] = request.POST
             return redirect('locations_list')
+    
+
+class DiscoverView(FormView):
+    template_name = 'discover.html'
+    form_class = PreviousLocationsForm
+    success_url = '/list'
+
+    def form_valid(self, form):
+        location_ids = form.cleaned_data['locations'].values_list('location_id', flat=True)
+        self.request.session['previous_locations'] = list(location_ids)
+        return super().form_valid(form)
+
+
+class SearchView(FormView):
+    template_name = 'search.html'
+    form_class = SearchLocationForm
+
+    def form_valid(self, form):
+        location = form.cleaned_data['location']
+        self.request.session['searched_location'] = location.location_id
+        return HttpResponseRedirect(reverse('location_detail', args=[location.location_id]))
+
+class CompareView(TemplateView):
+    template_name = 'compare.html'
+
+class AboutView(TemplateView):
+    template_name = 'about.html'
+
 
 class LocationsListView(View):
     template_name = 'list.html'
@@ -53,11 +82,11 @@ class LocationsListView(View):
         self.sort_param = self.request.GET.get('sort', 'relevance_desc')
 
         # Perform calculations and get queryset
-        self.object_list = self.get_queryset()
+        object_list = self.get_queryset()
 
         # Create a Paginator
         self.paginator = Paginator(
-            object_list=self.object_list,
+            object_list=object_list,
             per_page=50
         )
 
@@ -94,14 +123,8 @@ class LocationsListView(View):
             .rename_axis(None, axis=1)
         )
 
-        #FIXME --------------------------------------
-        # Convert scores to float
-        scores = scores.astype(float)
-        # Add some dummy dimensions
-        np.random.seed(123)
-        for dim in ['41', '23', '11', '12', '31']:
-            scores[dim] = scores.iloc[:,0] * np.random.uniform(0, 0.1, len(scores))
-        # --------------------------------------------
+        #FIXME
+        scores.fillna(-1, inplace=True)
             
         # Previous locations user input
         previous_locations = self.request.session.get('previous_locations', [])

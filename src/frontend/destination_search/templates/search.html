@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+Discover destinations
+{% endblock %}
+
+{% block main %}
+
+<div class="search-container">
+    <div class="search-text">
+        <p>Search for a specific location and hit "GO". You will be redirected to a page with more details about this location.</p>
+    </div>
+
+    <div class="search-form-container">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                {{ field.errors }}
+                {{ field }}
+            {% endfor %}
+            <input type="submit" value="Go">
+        </form>
+    </div>
+</div>
+
+{% endblock %}
