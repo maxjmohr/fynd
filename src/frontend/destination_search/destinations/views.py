@@ -41,7 +41,6 @@ class HomePageView2(View):
 
 class LocationsListView(View):
     template_name = 'list.html'
-    paginate_by = 50
 
     def get(self, request, *args, **kwargs):
         # Handle form data
@@ -50,14 +49,17 @@ class LocationsListView(View):
         }
         self.previous_locations_form = PreviousLocationsForm(previous_data if previous_data else None)
 
-        # Perform calculations and get queryset
-        self.object_list = self.get_queryset()
-
         # Get sorting parameter
         self.sort_param = self.request.GET.get('sort', 'relevance_desc')
 
+        # Perform calculations and get queryset
+        self.object_list = self.get_queryset()
+
         # Create a Paginator
-        self.paginator = Paginator(self.object_list, self.paginate_by)
+        self.paginator = Paginator(
+            object_list=self.object_list,
+            per_page=50
+        )
 
         # Get the page number from the GET parameters
         page_number = self.request.GET.get('page')
@@ -140,7 +142,7 @@ class LocationsListView(View):
         # SORT ----------------------------------------------------------------
         
         # Get sorting parameter
-        self.sort_param = self.request.GET.get('sort', 'relevance_desc')
+        #self.sort_param = self.request.GET.get('sort', 'relevance_desc')
 
         # Sort locations based on sort parameter
         sort_options = {
@@ -160,11 +162,10 @@ class LocationsListView(View):
     
     def get_context_data(self, **kwargs):
         context = {
-            'object_list': self.page,
+            'location_list': self.page,
             'previous_locations_form': self.previous_locations_form,
             'current_sort_order': self.sort_param,
         }
-
         return context
 
 
