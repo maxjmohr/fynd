@@ -353,7 +353,7 @@ old_loc = db.fetch_data(total_object="core_locations")
 db.disconnect()
 new_master_data = master_data[~(master_data['city'].isin(old_loc['city']))]
 # Save master data
-master_data.to_csv("res/master_data/new_cities_master_data.csv", index=False)
+new_master_data.to_csv("res/master_data/new_cities_master_data.csv", index=False)
 
 
 ## Store data in database
