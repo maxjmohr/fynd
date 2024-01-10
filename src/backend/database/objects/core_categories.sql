@@ -20,4 +20,6 @@ VALUES (1, 'safety', 'Safety', now()),
        (2, 'weather', 'Weather', now()),
        (3, 'culture', 'Culture', now()),
        (4, 'cost', 'Cost dimension includes travel costs, accommodation costs and cost of living.', now()),
-       (5, 'geography', 'Geography', now());
+       (5, 'geography', 'Geography', now()),
+       (6, 'health', 'Health', now())
+;

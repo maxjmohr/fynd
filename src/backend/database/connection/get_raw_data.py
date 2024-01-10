@@ -170,7 +170,7 @@ def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, 
 ####----| STEP 3: FILL TABLES |----####
 
 ####----| COSTS |----####
-def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the costs by city or country from numbeo.com
     Input:  - location data
             - table_name: name of the table to insert the data into
@@ -179,8 +179,8 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     '''
     # Connect to database
     db.delete_data(total_object=table_name, commit=True)
-
     ns = numbeoScraper()
+
     ###-- City costs --###
     costs_city = ns.get_costs(by="city")
     
@@ -196,9 +196,6 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
         # Update the costs_city DataFrame with the extracted city and country
         costs_city["city"] = split_columns[0]
         costs_city["country"] = split_columns[2]
-    
-    # Known issue: Czech Republic (change country value to Czechia)
-    costs_city["country"] = costs_city["country"].replace("Czech Republic", "Czechia")
 
     # Get location_id for each city
     costs_city["location_id"] = costs_city.apply(lambda row: locations[(locations["city"] == row["city"]) & (locations["country"] == row["country"])]["location_id"].values[0] if not locations[(locations["city"] == row["city"]) & (locations["country"] == row["country"])].empty else np.nan, axis=1)
@@ -220,6 +217,7 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
         ]
     costs_city = costs_city.reindex(columns=column_order)
 
+
     ###-- Country costs --###
     costs_country = ns.get_costs(by="country")
     
@@ -227,14 +225,20 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     costs_country["location_id"] = None
     costs_country["city"] = None
 
-    # Known issue: Czech Republic (change country value to Czechia)
-    costs_city["country"] = costs_city["country"].replace("Czech Republic", "Czechia")
-
     # Reorder columns
     costs_country = costs_country.reindex(columns=column_order)
 
-    ###-- Merge costs --###
+    ###-- Merge costs and slight adaption--###
     costs = pd.concat([costs_city, costs_country], ignore_index=True)
+
+    # Known issues: Change some country names
+    costs["country"] = costs["country"].replace("Czech Republic", "Czechia")
+    costs["country"] = costs["country"].replace("Bosnia And Herzegovina", "Bosnia and Herzegovina")
+
+    # Known issue: Hong Kong (change country and city values where country = "Hong Kong (China)")
+    costs.loc[costs["country"] == "Hong Kong (China)", "country"] = "China"
+    costs.loc[costs["country"] == "Hong Kong (China)", "city"] = "Hong Kong"
+
 
     ###-- Append to database table --###
     if len(costs) > 0:
@@ -246,10 +250,15 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     return end_datetime
 
 
-####----| SAFETY |----####
-# creates dataframe ready to be inserted into the raw_safety_city table
-def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database):
 
+####----| SAFETY |----####
+def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the safety information for a city
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     # For each location call create_city_safety_df to get safety information for this location
     for _, row in locations.iterrows():
         safety_city_df = create_city_safety_df(row["city"])
@@ -263,9 +272,14 @@ def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database)
 
     return end_datetime
 
-# creates dataframe ready to be inserted into the raw_safety_country table
-def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database):
 
+def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the safety information for a country
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     # Get safety information for all countries
     safety_country_df = create_country_safety_df()
 
@@ -279,9 +293,15 @@ def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Databa
     return end_datetime
 
 
+
 ####----| CULTURE |----####
-# creates dataframe ready to be inserted into the raw_culture table
-def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the cultural profile for a location
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     for _, row in locations.iterrows():
         culture_df = cultural_profile(row["lat"]+","+row["lon"])
         culture_df = culture_df.convert_dtypes()
@@ -295,8 +315,9 @@ def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
     return end_datetime
 
 
+
 ####----| WEATHER |----####
-def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the current and future weather data for a location
     Input: 	- location data
             - table_name: name of the table to insert the data into
@@ -351,7 +372,7 @@ def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db
     return end_datetime
 
 
-def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the historical weather data for a location (aggregated by month and year)
     Input: 	- location data
             - table_name: name of the table to insert the data into
@@ -431,6 +452,7 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         return end_datetime
 
 
+
 ####----| GEOGRAPHY |----####
 # creates dataframe ready to be inserted into the raw_geography table
 def fill_raw_geography(location):
@@ -442,12 +464,12 @@ def fill_raw_geography(location):
 
 # Dictonary that maps names of database tables to functions which fill these tables with data
 table_fill_function_dict = {
-    #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
+    "raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
     #"raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
     #"raw_culture": [fill_raw_culture, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    "raw_weather_historical": [fill_raw_weather_historical, 6],
+    #"raw_weather_historical": [fill_raw_weather_historical, 6],
     #"raw_geography": [fill_raw_geography 7]
     }
 

@@ -6,10 +6,8 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 
-from joblib import dump, load
 import pandas as pd
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 class CostScores:
     "Class for calculating cost scores"
@@ -21,7 +19,7 @@ class CostScores:
         self.db = db
 
 
-    def numbeo_scores(self, num_clusters:int = 5):
+    def numbeo_scores(self):
         ''' Calculate the cost scores based on the Numbeo data
         Input:  - self.db: Database object
                 - num_clusters: number of clusters to use for K-means clustering
@@ -30,44 +28,46 @@ class CostScores:
         # Fetch the data
         data = self.db.fetch_data(total_object="raw_costs_numbeo")
 
-        # Select relevant features
+        # Select relevant features and trim data
         features = data.drop(["location_id", "city", "country", "updated_at"], axis=1)
+        data = data[["location_id", "city", "country"]]
 
-        # Standardize the features
-        scaler = StandardScaler()
-        scaled_features = scaler.fit_transform(features)
+        # Dict to assign costs to correct group
+        cost_map = self.db.fetch_data(sql="SELECT dimension_id, description FROM core_dimensions WHERE category_id = 4 AND dimension_id not in (41,42)").to_dict()
+        cost_map = {cost_map['dimension_id'][i]: eval(cost_map['description'][i]) for i in range(len(cost_map['dimension_id']))}
 
-        # Load model if it exists
-        current_script_directory = os.path.dirname(os.path.abspath(__file__))
-        path = os.path.join(current_script_directory, "../../../../res/models/costs_scores_numbeo_kmeans.model")
-        # Ensure that the directory structure exists
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        if os.path.exists(path):
-            kmeans = load(path)
-        else:
-            kmeans = KMeans(n_clusters=num_clusters, random_state=666)
+        # Calculate scores for each location
+        results = pd.DataFrame()
+        for idx, row in data.iterrows():
 
-        # Apply K-means clustering
-        data["cluster"] = kmeans.fit_predict(scaled_features)
+            # Calculate scores for each dimension
+            for dimension_id, columns in cost_map.items():
+                # Select relevant features and initialize dimension results
+                relevant_features = features.loc[idx, columns]
+                loc_results = pd.DataFrame()
+                loc_results["location_id"] = [row["location_id"]]
+                loc_results["city"] = [row["city"]]
+                loc_results["country"] = [row["country"]]
 
-        # Calculate scores based on the inverse of the distance to cluster centroids
-        cluster_distances = kmeans.transform(scaled_features)
-        min_distances = cluster_distances.min(axis=0)
-        data["score"] = 1 / (cluster_distances.min(axis=1) / min_distances.max()) # Inverse relationship
+                # Calculate scores based on the sum of cost variables (cheaper has higher score)
+                loc_results["score"] = -relevant_features.sum()
 
-        # Normalize scores between 0 and 5 using Min-Max scaling
-        min_max_scaler = MinMaxScaler(feature_range=(0, 5))
-        data["score"] = min_max_scaler.fit_transform(data[["score"]])
+                # Add dimension_id
+                loc_results["dimension_id"] = dimension_id
 
-        # Save model
-        dump(kmeans, path)
+                # Add results to location results
+                results = pd.concat([results, loc_results], axis=0)
 
-        # Add dimension_id
-        dimension_id = self.db.fetch_data(sql="SELECT dimension_id FROM core_dimensions WHERE dimension = 'cost_of_living'").iloc[0, 0]
-        data["dimension_id"] = dimension_id
-        assert data["dimension_id"].notnull().all()
+            assert results["dimension_id"].notnull().all()
 
-        return data[["location_id", "city", "country", "dimension_id", "score"]]
+        # Normalize scores between 0 and 1 using Min-Max scaling for each dimension
+        for dimension_id in results["dimension_id"].unique():
+            results.loc[results["dimension_id"] == dimension_id, "score"] = \
+                MinMaxScaler(feature_range=(0, 1)).fit_transform(
+                    results.loc[results["dimension_id"] == dimension_id, ["score"]]
+                )
+
+        return results[["location_id", "city", "country", "dimension_id", "score"]]
 
 
     def get(self) -> pd.DataFrame:
@@ -90,9 +90,10 @@ class CostScores:
 db = Database()
 db.connect()
 
-data = CostScores(db).numbeo_scores()
+data = CostScores(db).get()
 
 # Display the result
-print(data[["location_id", "city", "country", "score"]].sort_values(by="score", ascending=False).tail(50))
+print(data[["location_id", "city", "country", "category_id", "dimension_id", "score"]].sort_values(by="score", ascending=False).head(50))
 
-db.disconnect()"""
+db.disconnect()
+"""
