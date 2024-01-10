@@ -1,10 +1,12 @@
+from django.views import View
 from django.views.generic import TemplateView, ListView, FormView
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django import forms
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .models import CoreScores, CoreLocations
 from .filters import LocationsFilterset
 from .forms import PreviousLocationsForm
@@ -23,18 +25,65 @@ class HomePageView(FormView):
         location_ids = form.cleaned_data['locations'].values_list('location_id', flat=True)
         self.request.session['previous_locations'] = list(location_ids)
         return super().form_valid(form)
+    
+class HomePageView2(View):
+    template_name = 'home3.html'
+    def get(self, request, *args, **kwargs):
+        previous_locations_form = PreviousLocationsForm()
+        return render(request, 'home.html', {'form': previous_locations_form})
 
+    def post(self, request, *args, **kwargs):
+        previous_locations_form = PreviousLocationsForm(request.POST)
+        if previous_locations_form.is_valid():
+            # Save form data in session
+            request.session['previous_locations'] = request.POST
+            return redirect('locations_list')
 
-class LocationsListView(ListView):
+class LocationsListView(View):
     template_name = 'list.html'
     paginate_by = 50
 
     def get(self, request, *args, **kwargs):
-        self.user_input = request.GET  # get user input from request parameters
-        self.sort_param = request.GET.get('sort', 'relevance_desc')  # get sort parameter from request
-        return super().get(request, *args, **kwargs)
+        # Handle form data
+        previous_data = {
+            'locations': request.session.get('previous_locations', None)
+        }
+        self.previous_locations_form = PreviousLocationsForm(previous_data if previous_data else None)
+
+        # Perform calculations and get queryset
+        self.object_list = self.get_queryset()
+
+        # Get sorting parameter
+        self.sort_param = self.request.GET.get('sort', 'relevance_desc')
+
+        # Create a Paginator
+        self.paginator = Paginator(self.object_list, self.paginate_by)
+
+        # Get the page number from the GET parameters
+        page_number = self.request.GET.get('page')
+
+        # Get the page of objects
+        self.page = self.paginator.get_page(page_number)
+
+        # Render the template with the context data
+        context = self.get_context_data()
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        self.object = None #FIXME why?
+        self.previous_locations_form = PreviousLocationsForm(request.POST)
+
+        if self.previous_locations_form.is_valid():
+            # Save the data in the session
+            self.object = self.previous_locations_form.save() #FIXME why?
+            request.session['previous_locations'] = self.previous_locations_form.cleaned_data['locations'].values_list('location_id', flat=True)
+            return redirect('locations_list')
+        else:
+            return self.get(request, *args, **kwargs)
 
     def get_queryset(self):
+
+        # RELEVANCE SCORES ----------------------------------------------------
 
         # Fetch score data, convert to DataFrame and pivot
         scores = (
@@ -64,8 +113,12 @@ class LocationsListView(ListView):
             scores=scores
         )
 
+        # ---------------------------------------------------------------------
+
         # Get distance to user start location #FIXME replace with actual user input
         distance_to_start = relevance * np.random.uniform(0, 100, len(relevance))
+
+        # ASSEMBLE DATA -------------------------------------------------------
 
         # Join locations with relevance and distance_to_start
         cols = ['location_id', 'city', 'country', 'country_code']
@@ -73,6 +126,21 @@ class LocationsListView(ListView):
         locations = locations.set_index('location_id')
         locations['relevance'] = relevance
         locations['distance_to_start'] = distance_to_start
+
+        # FILTER --------------------------------------------------------------
+
+        # Get the distance range from the session
+        min_distance = self.request.session.get('min_distance', None)
+        max_distance = self.request.session.get('max_distance', None)
+
+        # If a distance range is set, filter the DataFrame
+        if min_distance is not None and max_distance is not None:
+            locations = locations[(locations['distance_to_start'] >= min_distance) & (locations['distance_to_start'] <= max_distance)]
+
+        # SORT ----------------------------------------------------------------
+        
+        # Get sorting parameter
+        self.sort_param = self.request.GET.get('sort', 'relevance_desc')
 
         # Sort locations based on sort parameter
         sort_options = {
@@ -82,31 +150,20 @@ class LocationsListView(ListView):
             'name_asc': ('city', True),
             'name_desc': ('city', False),
         }
-        sort_column, sort_order = sort_options.get(self.sort_param, ('relevance', False))
+        sort_column, sort_order = sort_options.get(self.sort_param)
         locations = locations.sort_values(by=sort_column, ascending=sort_order)
+
+        # ---------------------------------------------------------------------
 
         # Convert DataFrame back to list of dictionaries
         return locations.reset_index().to_dict('records')
     
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Set current_sort_order in the context
-        context['current_sort_order'] = self.sort_param
-
-        # Create a Paginator
-        paginator = Paginator(self.get_queryset(), self.paginate_by)
-
-        # Get the page number from the GET parameters
-        page_number = self.request.GET.get('page')
-
-        # Get the page of objects
-        page = paginator.get_page(page_number)
-
-        # Update the context
-        context.update({
-            'object_list': page,
-        })
+        context = {
+            'object_list': self.page,
+            'previous_locations_form': self.previous_locations_form,
+            'current_sort_order': self.sort_param,
+        }
 
         return context
 
