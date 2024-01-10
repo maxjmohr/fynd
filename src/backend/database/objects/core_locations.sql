@@ -1,5 +1,5 @@
 CREATE TABLE core_locations (
-    location_id         INTEGER PRIMARY KEY NOT NULL,
+    location_id         INTEGER NOT NULL,
     city                VARCHAR(255) NOT NULL,
     county              VARCHAR(255),
     state               VARCHAR(255),
@@ -15,7 +15,8 @@ CREATE TABLE core_locations (
     box_top_right_lat   NUMERIC(10,7),
     box_top_right_lon   NUMERIC(10,7),
     geojson             JSONB,
-    updated_at          TIMESTAMP
+    updated_at          TIMESTAMP,
+    PRIMARY KEY (location_id)
 );
 
 COMMENT ON TABLE core_locations IS 'Table stores geographical master data of all locations.';

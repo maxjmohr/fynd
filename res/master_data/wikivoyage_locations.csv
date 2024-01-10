@@ -510,6 +510,19 @@ Manuel Antonio National Park,Costa Rica,other_destination
 Monteverde and Santa Elena Cloud Forest Reserves,Costa Rica,other_destination
 Rincón de la Vieja Volcano National Park,Costa Rica,other_destination
 Tortuguero National Park,Costa Rica,other_destination
+Zagreb,Croatia,city
+Dubrovnik,Croatia,city
+Osijek,Croatia,city
+Pula,Croatia,city
+Rijeka,Croatia,city
+Split,Croatia,city
+Zadar,Croatia,city
+Cres,Croatia,city
+Hvar,Croatia,other_destination
+Korčula,Croatia,other_destination
+Žumberak,Croatia,other_destination
+Plitvice National Park,Croatia,other_destination
+Krka National Park,Croatia,other_destination
 Havana,Cuba,city
 Baracoa,Cuba,city
 Camagüey,Cuba,city
@@ -810,6 +823,24 @@ Lopé National Park,Gabon,other_destination
 Mayumba National Park,Gabon,other_destination
 Minkebe National Park,Gabon,other_destination
 Mwagne National Park,Gabon,other_destination
+Tbilisi,Georgia,city
+Akhaltsikhe,Georgia,city
+Batumi,Georgia,city
+Borjomi,Georgia,city
+Gori,Georgia,city
+Kutaisi,Georgia,city
+Mtskheta,Georgia,city
+Sighnaghi,Georgia,city
+Georgian Military Highway,Georgia,other_destination
+Kakheti,Georgia,other_destination
+Mount Kazbeg,Georgia,other_destination
+David Gareja Monastery Complex,Georgia,other_destination
+Shatili,Georgia,other_destination
+Mazeri,Georgia,other_destination
+Mestia,Georgia,other_destination
+Vardzia,Georgia,other_destination
+Ushguli,Georgia,other_destination
+Uplistsikhe,Georgia,other_destination
 Berlin,Germany,city
 Bremen,Germany,city
 Cologne,Germany,city
@@ -1182,18 +1213,14 @@ Baikonur,Kazakhstan,other_destination
 Karkaraly National Park,Kazakhstan,other_destination
 Talgar,Kazakhstan,other_destination
 Zailiysky Alatau,Kazakhstan,other_destination
-Western Kenya,Kenya,city
-Eastern Kenya,Kenya,city
-Central Kenya,Kenya,city
-Coastal Kenya,Kenya,city
 Nairobi,Kenya,city
 Mombasa,Kenya,city
 Kisumu,Kenya,city
 Lamu,Kenya,city
-Malindi,Kenya,other_destination
-Meru,Kenya,other_destination
-Nakuru,Kenya,other_destination
-Mtwapa,Kenya,other_destination
+Lodwar,Kenya,city
+Malindi,Kenya,city
+Meru,Kenya,city
+Nakuru,Kenya,city
 Kakamega Rainforest,Kenya,other_destination
 Aberdare National Park,Kenya,other_destination
 Sibiloi National Park,Kenya,other_destination
@@ -1366,6 +1393,22 @@ Esch-sur-Alzette,Luxembourg,city
 Mondorf-les-Bains,Luxembourg,city
 Vianden,Luxembourg,city
 Schengen,Luxembourg,other_destination
+Skopje,North Macedonia,city
+Bitola,North Macedonia,city
+Kratovo,North Macedonia,city
+Kruševo,North Macedonia,city
+Ohrid,North Macedonia,city
+Prilep,North Macedonia,city
+Štip,North Macedonia,city
+Strumica,North Macedonia,city
+Galičica National Park,North Macedonia,other_destination
+Mariovo,North Macedonia,other_destination
+Mavrovo National Park,North Macedonia,other_destination
+Pelister National Park,North Macedonia,other_destination
+Prespa,North Macedonia,other_destination
+Staro Nagoričane,North Macedonia,other_destination
+Stobi,North Macedonia,other_destination
+Vevčani,North Macedonia,other_destination
 Antananarivo,Madagascar,city
 Ambalavao,Madagascar,city
 Ambositra,Madagascar,city
@@ -1632,6 +1675,23 @@ Curaçao,Netherlands Antilles,city
 Saba,Netherlands Antilles,city
 Sint Eustatius,Netherlands Antilles,city
 Sint Maarten,Netherlands Antilles,city
+Amsterdam,Netherlands,city
+Delft,Netherlands,city
+Groningen,Netherlands,city
+The Hague,Netherlands,city
+Leiden,Netherlands,city
+Maastricht,Netherlands,city
+Nijmegen,Netherlands,city
+Rotterdam,Netherlands,city
+Efteling,Netherlands,other_destination
+Hoge Veluwe National Park,Netherlands,other_destination
+Keukenhof,Netherlands,other_destination
+Kinderdijk,Netherlands,other_destination
+Schokland,Netherlands,other_destination
+South Limburg,Netherlands,other_destination
+Texel,Netherlands,other_destination
+Zaanse Schans,Netherlands,other_destination
+Zaanstreek-Waterland,Netherlands,other_destination
 Nouméa,New Caledonia,city
 Bourail,New Caledonia,city
 Le Mont-Dore,New Caledonia,city
@@ -2026,6 +2086,7 @@ Postojna,Slovenia,city
  Škocjan Caves,Slovenia,other_destination
 Triglav National Park,Slovenia,other_destination
 Soča Valley,Slovenia,other_destination
+East Rennell,Solomon Islands,city
 Garowe,Somalia,city
 Bosaso,Somalia,city
 Mogadishu,Somalia,city
@@ -2501,3 +2562,5 @@ Kariba,Zimbabwe,other_destination
 Matobo,Zimbabwe,other_destination
 Mutoroshanga Ethel Mine,Zimbabwe,other_destination
 Chinhoyi Caves,Zimbabwe,other_destination
+Singapore,Singapore,city
+Hong Kong,China,city

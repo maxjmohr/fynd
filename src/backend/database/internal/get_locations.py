@@ -3,7 +3,7 @@ import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-import db_helpers
+from db_helpers import Database
 
 from Countrydetails import countries
 import geojson
@@ -37,9 +37,13 @@ class WikivoyageScraper:
         "Initialize the class: get url and all countries"
         self.url = "https://en.wikivoyage.org/wiki"
         self.countries = countries.all_countries().countries()
-        # Change the country names for North Korea and South Korea
+        # Change some country names
+        self.countries[self.countries.index("Croatia (Hrvatska)")] = "Croatia"
+        self.countries[self.countries.index("Georgia")] = "Georgia_(country)"
         self.countries[self.countries.index("Korea North")] = "North Korea"
         self.countries[self.countries.index("Korea South")] = "South Korea"
+        self.countries[self.countries.index("Macedonia")] = "North Macedonia"
+        self.countries[self.countries.index("Netherlands The")] = "Netherlands"
 
     def get_destinations(self, save:bool = True) -> pd.DataFrame:
         ''' Get the destinations from Wikivoyage
@@ -63,6 +67,10 @@ class WikivoyageScraper:
             # XPath expression to get city and other destination names
             results = list(tree.xpath('//span[@class="fn org listing-name"]/a/text()'))
 
+            # Change some country names
+            if country == "Georgia_(country)":
+                country = "Georgia"
+
             # Add location names to dictionary
             data_dict = {}
             if country not in data_dict:
@@ -80,7 +88,11 @@ class WikivoyageScraper:
                 for location_type, names in locations.items():
                     for name in names:
                         data_list.append({"name": name, "country": country, "type": location_type})
-            
+
+        # Store some exceptions
+        data_list.append({"name": "Singapore", "country": "Singapore", "type": "city"})
+        data_list.append({"name": "Hong Kong", "country": "China", "type": "city"})
+
         # Store and save dataframe
         data = pd.DataFrame(data_list)
         if save:
@@ -322,6 +334,9 @@ def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
 if os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == False:
     print("File with locations already exists. Reading file...")
     cities = only_cities(pd.read_csv("res/master_data/wikivoyage_locations.csv"))
+elif os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == True:
+    print("File with locations already exists but explicitely updating file...")
+    cities = only_cities(WikivoyageScraper().get_destinations(save=True))
 else:
     print("File with locations does not exist yet. Creating file...")
     cities = only_cities(WikivoyageScraper().get_destinations(save=True))
@@ -329,10 +344,25 @@ else:
 ## Get master data
 master_data = get_master_data(cities, shape="polygon")
 
+# Check cities that don't exist in db yet
+# Go through csv and compare to db as cities might be named differently
+# Delete/update accordingly
+db = Database()
+db.connect()
+old_loc = db.fetch_data(total_object="core_locations")
+db.disconnect()
+new_master_data = master_data[~(master_data['city'].isin(old_loc['city']))]
+# Save master data
+master_data.to_csv("res/master_data/new_cities_master_data.csv", index=False)
+
 
 ## Store data in database
-#conn, cur, engine = db_helpers.connect_to_db()
-#db_helpers.create_db_object(conn, cur, object="core_locations")
-#db_helpers.insert_data(engine, master_data, table="core_locations", if_exists="replace", updated_at=True)
-# print(db_helpers.fetch_data(engine, total_object="core_locations"))
-#db_helpers.disconnect_from_db(conn, cur, engine)
+"""
+db = Database()
+db.connect()
+db.drop_db_object(object="core_locations")
+db.create_db_object(object="core_locations")
+db.insert_data(master_data, table="core_locations", if_exists="replace", updated_at=True)
+print(db.fetch_data(total_object="core_locations"))
+db.disconnect()
+"""
