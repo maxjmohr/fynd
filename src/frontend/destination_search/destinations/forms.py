@@ -19,6 +19,7 @@ class SelectSingleLocationWidget(s2forms.ModelSelect2Widget):
 
 
 class TravellersInputForm(forms.Form):
+
     previous_locations = forms.ModelMultipleChoiceField(
         queryset=CoreLocations.objects.only('location_id', 'city'),
         to_field_name='location_id',
@@ -29,12 +30,19 @@ class TravellersInputForm(forms.Form):
         required=True,
         help_text="Search for locations you have previously visited. You can select multiple previous_locations. We'll use this information to compute the relevance of destinations for you."
     )
+
     date_range = forms.CharField(
         widget=forms.TextInput(attrs={'class': 'daterangepicker', 'placeholder': 'Select dates of travel...'}),
         help_text="Select the start and end dates of your travel. We'll use this to tailor the weather and price information. If you are not sure about the dates, you can also provide a borader range or just input the current date.",
-        required=False
+        required=True
     )
-    start_location = forms.CharField(help_text="Enter your start location. We'll use this to compute the distance to each destination and the cost of travel.")
+    
+    start_location = forms.CharField(
+        widget=forms.TextInput(attrs={'placeholder': 'Enter your start location...'}),
+        help_text="Enter your start location. We'll use this to compute the distance to each destination and the cost of travel."
+    )
+    start_location_lat = forms.CharField(widget=forms.HiddenInput(), required=False)
+    start_location_lon = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     def clean_date_range(self):
         date_range = self.cleaned_data.get('date_range')
@@ -42,11 +50,7 @@ class TravellersInputForm(forms.Form):
             dates = date_range.split(' - ')
             if len(dates) != 2:
                 raise forms.ValidationError("Invalid date range.")
-            try:
-                start_date = datetime.strptime(dates[0], '%d/%m/%Y')
-                end_date = datetime.strptime(dates[1], '%d/%m/%Y')
-            except ValueError:
-                raise forms.ValidationError("Invalid date format. Expected DD/MM/YYYY.")
+            start_date, end_date = dates
             return start_date, end_date
         return None, None
 

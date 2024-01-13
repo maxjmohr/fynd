@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
 
+    <!-- jQuery UI CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
     <!-- Django-Select2 CSS -->
     {{ form.media.css }}<style> input, select {width: 100%} </style>
 
@@ -13,7 +16,7 @@
 
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
-    
+
 </head>
 <body class="{{ request.path|slugify }}">
 
@@ -122,6 +125,10 @@
             });
         });
     </script>
+    
+    <!-- jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
+    {% block scripts %}{% endblock %}
 </body>
 </html>

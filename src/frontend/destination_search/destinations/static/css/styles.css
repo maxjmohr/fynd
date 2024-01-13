@@ -307,6 +307,10 @@ input[name="date_range"] {
     z-index: 100000;
 }
 
+.ui-autocomplete {
+    z-index: 100000;
+}
+
 /* Search page --------------------------------------------------------------*/
 .search-container {
     background-color: lightblue;

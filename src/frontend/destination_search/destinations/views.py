@@ -34,6 +34,8 @@ class DiscoverView(FormView):
         self.request.session['start_date'] = start_date
         self.request.session['end_date'] = end_date
         self.request.session['start_location'] = form.cleaned_data['start_location']
+        self.request.session['start_location_lat'] = form.cleaned_data['start_location_lat']
+        self.request.session['start_location_lon'] = form.cleaned_data['start_location_lon']
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -41,7 +43,8 @@ class DiscoverView(FormView):
             'locations': self.request.session['previous_locations'],
             'start_date': self.request.session['start_date'],
             'end_date': self.request.session['end_date'],
-            'start_location': self.request.session['start_location'],
+            'start_location_lon': self.request.session['start_location_lon'],
+            'start_location_lat': self.request.session['start_location_lat']
         }
         url = reverse('locations_list')
         query_string = urlencode(data)
