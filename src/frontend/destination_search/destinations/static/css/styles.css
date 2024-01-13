@@ -254,36 +254,39 @@
 
 /* Discover page ------------------------------------------------------------*/
 
-.discover-prev-locations-container {
+.discover-form-container {
     background-color: lightblue;
     width: 80%;
-    align-self: center;
+    margin: 80px 0px;
 }
 
-.discover-prev-locations-text {
+.discover-form-infotext {
     margin-bottom: 10px;
-    text-align: center;
-}
-
-.discover-form-container {
-    width: 100%;
-    display: flex;
-    align-items: center;
+    background-color: lightpink;
+    margin-bottom: 10px;
 }
 
 .discover-form-container form {
     width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    align-items: stretch;
+    background-color: yellow;
 }
 
-.discover-form-container input[type="submit"] {
-    width: auto;
-    margin-left: 10px;
+.question-box {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: lightgreen;
+}
+
+.submit-button {
+    display: block;
+    width: 100px;
+    margin-left: auto;
+    margin-top: 10px;
     font-weight: bold;
-    padding: 5px 10px;
 }
 
 /* Search page --------------------------------------------------------------*/

@@ -10,10 +10,11 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from .models import CoreScores, CoreLocations
 from .filters import LocationsFilterset
-from .forms import PreviousLocationsForm, SearchLocationForm
+from .forms import *
 from .compute_relevance import compute_relevance
 import numpy as np
 import pandas as pd
+from urllib.parse import urlencode
 from django_pandas.io import read_frame
 
 class HomeView(TemplateView):
@@ -21,13 +22,30 @@ class HomeView(TemplateView):
 
 class DiscoverView(FormView):
     template_name = 'discover.html'
-    form_class = PreviousLocationsForm
+    form_class = TravellersInputForm
     success_url = '/list'
 
     def form_valid(self, form):
-        location_ids = form.cleaned_data['locations'].values_list('location_id', flat=True)
-        self.request.session['previous_locations'] = list(location_ids)
+        self.request.session['previous_locations'] = list(
+            form.cleaned_data['previous_locations']
+            .values_list('location_id', flat=True)
+        )
+        self.request.session['start_date'] = form.cleaned_data['start_date']
+        self.request.session['end_date'] = form.cleaned_data['end_date']
+        self.request.session['start_location'] = form.cleaned_data['start_location']
         return super().form_valid(form)
+
+    def get_success_url(self):
+        data = {
+            'locations': self.request.session['previous_locations'],
+            'start_date': self.request.session['start_date'],
+            'end_date': self.request.session['end_date'],
+            'start_location': self.request.session['start_location'],
+        }
+        url = reverse('locations_list')
+        query_string = urlencode(data)
+        url = f"{url}?{query_string}"
+        return url
 
 
 class SearchView(FormView):
@@ -56,7 +74,7 @@ class LocationsListView(View):
         previous_data = {
             'locations': request.session.get('previous_locations', None)
         }
-        self.previous_locations_form = PreviousLocationsForm(previous_data if previous_data else None)
+        #self.previous_locations_form = PreviousLocationsForm(previous_data if previous_data else None)
 
         # Get sorting parameter
         self.sort_param = self.request.GET.get('sort', 'relevance_desc')
@@ -82,7 +100,7 @@ class LocationsListView(View):
 
     def post(self, request, *args, **kwargs):
         self.object = None #FIXME why?
-        self.previous_locations_form = PreviousLocationsForm(request.POST)
+        #self.previous_locations_form = PreviousLocationsForm(request.POST)
 
         if self.previous_locations_form.is_valid():
             # Save the data in the session
