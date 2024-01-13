@@ -30,8 +30,9 @@ class DiscoverView(FormView):
             form.cleaned_data['previous_locations']
             .values_list('location_id', flat=True)
         )
-        self.request.session['start_date'] = form.cleaned_data['start_date']
-        self.request.session['end_date'] = form.cleaned_data['end_date']
+        start_date, end_date = form.cleaned_data.get('date_range')
+        self.request.session['start_date'] = start_date
+        self.request.session['end_date'] = end_date
         self.request.session['start_location'] = form.cleaned_data['start_location']
         return super().form_valid(form)
 
