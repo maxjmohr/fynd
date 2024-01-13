@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 from django_pandas.io import read_frame
 
+class HomeView(TemplateView):
+    template_name = 'home.html'
 
 class DiscoverView(FormView):
     template_name = 'discover.html'
@@ -37,8 +39,10 @@ class SearchView(FormView):
         self.request.session['searched_location'] = location.location_id
         return HttpResponseRedirect(reverse('location_detail', args=[location.location_id]))
 
+
 class CompareView(TemplateView):
     template_name = 'compare.html'
+
 
 class AboutView(TemplateView):
     template_name = 'about.html'
