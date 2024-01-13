@@ -17,30 +17,6 @@ import pandas as pd
 from django_pandas.io import read_frame
 
 
-class HomePageView(FormView):
-    template_name = 'home.html'
-    form_class = PreviousLocationsForm
-    success_url = '/list'
-
-    def form_valid(self, form):
-        location_ids = form.cleaned_data['locations'].values_list('location_id', flat=True)
-        self.request.session['previous_locations'] = list(location_ids)
-        return super().form_valid(form)
-    
-class HomePageView2(View):
-    template_name = 'home3.html'
-    def get(self, request, *args, **kwargs):
-        previous_locations_form = PreviousLocationsForm()
-        return render(request, 'home.html', {'form': previous_locations_form})
-
-    def post(self, request, *args, **kwargs):
-        previous_locations_form = PreviousLocationsForm(request.POST)
-        if previous_locations_form.is_valid():
-            # Save form data in session
-            request.session['previous_locations'] = request.POST
-            return redirect('locations_list')
-    
-
 class DiscoverView(FormView):
     template_name = 'discover.html'
     form_class = PreviousLocationsForm
