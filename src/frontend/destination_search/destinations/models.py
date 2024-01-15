@@ -49,6 +49,17 @@ class CoreLocations(models.Model):
 
     def __str__(self):
         return self.city
+    
+
+class CoreLocationsImages(models.Model):
+    location_id = models.IntegerField(primary_key=True)
+    img_url = models.CharField(max_length=1024, blank=True, null=True)
+    source = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'core_locations_images'
 
 
 class CoreScores(models.Model):

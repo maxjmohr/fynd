@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django import forms
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
-from .models import CoreScores, CoreLocations
+from .models import CoreScores, CoreLocations, CoreLocationsImages
 from .filters import LocationsFilterset
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -187,6 +187,11 @@ class LocationsListView(View):
         }
         sort_column, sort_order = sort_options.get(self.sort_param)
         locations = locations.sort_values(by=sort_column, ascending=sort_order)
+
+        # THUMBNAILS ----------------------------------------------------------
+        thumbnails = read_frame(CoreLocationsImages.objects.values('location_id', 'img_url'))
+        thumbnails.set_index('location_id', inplace=True)
+        locations['thumbnail_url'] = thumbnails['img_url']
 
         # ---------------------------------------------------------------------
 

@@ -151,13 +151,18 @@
 }
 
 .location-list-item-image-container {
-    flex-grow: 0;
-    flex-shrink: 0;
-    flex-basis: 100px;
+    width: 100px;
+    height: 100px;
     border-radius: 10px;
-    overflow: hidden;
     margin-right: 10px;
+    overflow: hidden;
 }
+
+.location-list-item-image-container img {
+    object-fit: cover;
+    min-width: 100%;
+    min-height: 100%;
+  }
 
 .location-list-item-info-container {
     flex: 1;
