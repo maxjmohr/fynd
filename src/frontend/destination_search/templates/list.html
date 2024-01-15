@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load my_tags %}
+{% load humanize %}
 
 {% block title %}
 Results
@@ -26,7 +27,7 @@ Results
   <div class="sort-container">
     <div class="sort-label">Sort by:</div>
     <form action="" method="get" id="sortForm" style="display: flex; align-items: center;">
-      <select class="form-control ml-2" id="sort" name="sort" onchange="document.getElementById('sortForm').submit();">
+      <select class="form-control ml-2" id="sort" name="sort" onchange="submitForm(event);">
         <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (descending)</option>
         <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to start (ascending)</option>
         <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to start (descending)</option>
@@ -53,7 +54,7 @@ Results
             <a href="{% url 'location_detail' location_id=location.location_id %}">
               <span class="location-list-item-city-name"> {{ location.city }} </span>
             </a>
-            <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:2 }} km)</span>
+            <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:"0"|intcomma }} km)</span>
           </div>
           <br>
           <div class=".location-list-item-country-name">
@@ -129,5 +130,19 @@ Results
   </div>
 
 </div>
+
+
+<!-- Preserve form values from all forms on the page -->
+<script>
+  function submitForm(e) {
+    e.preventDefault();
+    var url = new URL(window.location.href);
+    var formData = new FormData(e.target.form);
+    for (var pair of formData.entries()) {
+      url.searchParams.set(pair[0], pair[1]);
+    }
+    window.location.href = url.href;
+  }
+  </script>
 
 {% endblock %}
