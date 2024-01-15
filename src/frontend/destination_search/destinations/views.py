@@ -12,10 +12,24 @@ from .models import CoreScores, CoreLocations
 from .filters import LocationsFilterset
 from .forms import *
 from .compute_relevance import compute_relevance
+from .compute_haversine import haversine
 import numpy as np
 import pandas as pd
 from urllib.parse import urlencode
 from django_pandas.io import read_frame
+
+
+def encode_url_parameters(params: dict) -> str:
+    """Encode GET parameters for use in URL."""
+    encoded_params = []
+    for key, value in params.items():
+        if isinstance(value, list):
+            for item in value:
+                encoded_params.append((key, item))
+        else:
+            encoded_params.append((key, value))
+    return urlencode(encoded_params)
+
 
 class HomeView(TemplateView):
     template_name = 'home.html'
@@ -40,14 +54,14 @@ class DiscoverView(FormView):
 
     def get_success_url(self):
         data = {
-            'locations': self.request.session['previous_locations'],
             'start_date': self.request.session['start_date'],
             'end_date': self.request.session['end_date'],
             'start_location_lon': self.request.session['start_location_lon'],
-            'start_location_lat': self.request.session['start_location_lat']
+            'start_location_lat': self.request.session['start_location_lat'],
+            'previous_locations': self.request.session['previous_locations']
         }
         url = reverse('locations_list')
-        query_string = urlencode(data)
+        query_string = encode_url_parameters(data)
         url = f"{url}?{query_string}"
         return url
 
@@ -74,11 +88,9 @@ class LocationsListView(View):
     template_name = 'list.html'
 
     def get(self, request, *args, **kwargs):
-        # Handle form data
-        previous_data = {
-            'locations': request.session.get('previous_locations', None)
-        }
-        #self.previous_locations_form = PreviousLocationsForm(previous_data if previous_data else None)
+
+        # Get parameters from the request
+        self.params = self.request.GET.dict()
 
         # Get sorting parameter
         self.sort_param = self.request.GET.get('sort', 'relevance_desc')
@@ -100,23 +112,43 @@ class LocationsListView(View):
 
         # Render the template with the context data
         context = self.get_context_data()
+
         return render(request, self.template_name, context)
-
-    def post(self, request, *args, **kwargs):
-        self.object = None #FIXME why?
-        #self.previous_locations_form = PreviousLocationsForm(request.POST)
-
-        if self.previous_locations_form.is_valid():
-            # Save the data in the session
-            self.object = self.previous_locations_form.save() #FIXME why?
-            request.session['previous_locations'] = self.previous_locations_form.cleaned_data['locations'].values_list('location_id', flat=True)
-            return redirect('locations_list')
-        else:
-            return self.get(request, *args, **kwargs)
 
     def get_queryset(self):
 
+        # GET LOCATIONS -------------------------------------------------------
+        cols = ['location_id', 'city', 'country', 'country_code', 'lat', 'lon']
+        locations = read_frame(CoreLocations.objects.values(*cols))
+        locations.set_index('location_id', inplace=True)
+
+        # DISTANCE TO START LOCATION ------------------------------------------
+
+        #FIXME
+        start_location_lat = self.params.get('start_location_lat')
+        start_location_lon = self.params.get('start_location_lon')
+        locations['distance_to_start'] = haversine(
+            lon1=float(start_location_lon),
+            lat1=float(start_location_lat),
+            lon2=locations['lon'].astype(float), #FIXME dtype
+            lat2=locations['lat'].astype(float) #FIXME dtype
+        )
+        
+        # FILTER --------------------------------------------------------------
+
+        # Get the distance range from the session #FIXME get from GET request
+        min_distance = self.request.session.get('min_distance', None)
+        max_distance = self.request.session.get('max_distance', None)
+
+        # If a distance range is set, filter the DataFrame
+        if min_distance is not None and max_distance is not None:
+            locations = locations[(locations['distance_to_start'] >= min_distance) & (locations['distance_to_start'] <= max_distance)]
+
         # RELEVANCE SCORES ----------------------------------------------------
+
+        # Get dates of travel
+        start_date = self.params.get('start_date')
+        end_date = self.params.get('end_date')
 
         # Fetch score data, convert to DataFrame and pivot
         scores = (
@@ -125,49 +157,25 @@ class LocationsListView(View):
             .rename_axis(None, axis=1)
         )
 
+        #FIXME filter for valid dates based on start_date and end_date
+
+        # Add distance_to_start to scores
+        scores['distance_to_start'] = locations['distance_to_start']  #FIXME check if correctly joined
+
         #FIXME
         scores.fillna(-1, inplace=True)
             
         # Previous locations user input
-        previous_locations = self.request.session.get('previous_locations', [])
+        previous_locations = self.request.GET.getlist('previous_locations')
+        previous_locations = [int(loc_id) for loc_id in previous_locations]
 
-        # FIXME remove locations for which we don't have scores
-        previous_locations = [i for i in previous_locations if i in scores.index]
-
-        # Compute relevance score
-        relevance = compute_relevance(
+        # Compute relevance score and add to DataFrame (correctly joined by pandas index)
+        locations['relevance'] = compute_relevance(
             previous_locations=previous_locations,
             scores=scores
         )
 
-        # ---------------------------------------------------------------------
-
-        # Get distance to user start location #FIXME replace with actual user input
-        distance_to_start = relevance * np.random.uniform(0, 100, len(relevance))
-
-        # ASSEMBLE DATA -------------------------------------------------------
-
-        # Join locations with relevance and distance_to_start
-        cols = ['location_id', 'city', 'country', 'country_code']
-        locations = read_frame(CoreLocations.objects.values(*cols))
-        locations = locations.set_index('location_id')
-        locations['relevance'] = relevance
-        locations['distance_to_start'] = distance_to_start
-
-        # FILTER --------------------------------------------------------------
-
-        # Get the distance range from the session
-        min_distance = self.request.session.get('min_distance', None)
-        max_distance = self.request.session.get('max_distance', None)
-
-        # If a distance range is set, filter the DataFrame
-        if min_distance is not None and max_distance is not None:
-            locations = locations[(locations['distance_to_start'] >= min_distance) & (locations['distance_to_start'] <= max_distance)]
-
         # SORT ----------------------------------------------------------------
-        
-        # Get sorting parameter
-        #self.sort_param = self.request.GET.get('sort', 'relevance_desc')
 
         # Sort locations based on sort parameter
         sort_options = {
@@ -188,7 +196,6 @@ class LocationsListView(View):
     def get_context_data(self, **kwargs):
         context = {
             'location_list': self.page,
-            'previous_locations_form': self.previous_locations_form,
             'current_sort_order': self.sort_param,
         }
         return context
