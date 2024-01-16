@@ -118,8 +118,12 @@ class FillScores:
         # Combine the results of both merges
         location_scores = pd.concat([city_data, country_data])
 
-        # Add dimension column and reorder
-        location_scores = location_scores[["location_id", "category_id", "dimension_id", "score"]]
+        # Add start_date and end_date column
+        location_scores["start_date"] = "2024-01-01"
+        location_scores["end_date"] = "2099-12-31"
+
+        # Reorder
+        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
 
         return location_scores
 
@@ -169,8 +173,12 @@ class FillScores:
         # Combine the results of both merges
         location_scores = pd.concat([city_data, country_data])
 
-        # Add dimension column and reorder
-        location_scores = location_scores[["location_id", "category_id", "dimension_id", "score"]]
+        # Add start_date and end_date column
+        location_scores["start_date"] = "2024-01-01"
+        location_scores["end_date"] = "2099-12-31"
+
+        # Reorder
+        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
 
         return location_scores
 
@@ -200,19 +208,21 @@ class FillScores:
             location_id = int(row["location_id"])
             category_id = int(row["category_id"])
             dimension_id = int(row["dimension_id"])
+            start_date = row["start_date"]
+            end_date = row["end_date"]
             score = row["score"]
 
             # Check if there is a score for this location, dimension and subcategory
-            sql = f"SELECT location_id FROM core_scores WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}'"
+            sql = f"SELECT location_id FROM core_scores WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}' AND start_date = '{start_date}' AND end_date = '{end_date}'"
             if self.db.fetch_data(sql=sql).empty or explicit or only_add:
                 # Add score
                 print(f"Adding category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
-                sql = f"INSERT INTO core_scores (location_id, category_id, dimension_id, score) VALUES ({location_id}, '{category_id}', '{dimension_id}', {score})"
+                sql = f"INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, score) VALUES ({location_id}, '{category_id}', '{dimension_id}', {start_date}, {end_date}, {score})"
                 self.db.execute_sql(sql, commit=True)
             else:
                 # Update score
                 print(f"Updating category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
-                sql = f"UPDATE core_scores SET score = {score} WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}'"
+                sql = f"UPDATE core_scores SET score = {score} WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}' AND start_date = '{start_date}' AND end_date = '{end_date}'"
                 self.db.execute_sql(sql, commit=True)
 
 
