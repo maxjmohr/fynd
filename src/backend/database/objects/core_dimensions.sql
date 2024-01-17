@@ -19,6 +19,15 @@ COMMENT ON COLUMN core_dimensions.updated_at IS 'Timestamp of the last update.';
 -- Create subcategories
 INSERT INTO core_dimensions (category_id, dimension_id, dimension, description, updated_at)
 VALUES  (1, 11, 'safety', 'Safety indicators as part of safety dimension', now()),
+        (2, 21, 'temperature_max', 'Maximum average temperature', now()),
+        (2, 22, 'temperature_min', 'Minimum average temperature', now()),
+        (2, 23, 'sunshine_duration', 'Sunshine duration', now()),
+        (2, 24, 'daylight_duration', 'Daylight duration', now()),
+        (2, 25, 'precipitation_duration', 'Precipitation hours', now()),
+        (2, 26, 'precipitation_sum', 'Precipitation sum', now()),
+        (2, 27, 'rain_sum', 'Rain sum', now()),
+        (2, 28, 'snowfall_sum', 'Snowfall sum', now()),
+        (2, 29, 'wind_speed_max', 'Maximum wind speed', now()),
         (3, 31, 'arts_and_entertainment', 'Part of culture dimension', now()),
         (3, 32, 'restaurants', 'Part of culture dimension', now()),
         (3, 33, 'bars', 'Part of culture dimension', now()),
