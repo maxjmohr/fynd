@@ -9,11 +9,13 @@ from data.costs import numbeoScraper
 #from data.safety import create_city_safety_df
 #from data.culture import cultural_profile
 from data import geography
+#from data.culture import FourSquareData
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
+import openmeteo_requests
 import pandas as pd
 
 ###----| STEPS |----###
@@ -302,8 +304,44 @@ def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database) -> 
             - db: Database objects
     Output: None
     '''
+    # Read API key from file
+    current_script_directory = os.path.dirname(os.path.abspath(__file__))
+    path = "../../../res/api_keys/api_key_fsq.txt"
+    with open(os.path.join(current_script_directory, path), "r") as f:
+        apikey = f.read()
+
+    # Get categories to search places for
+    path = "../../../res/master_data/fsq_categories.csv"
+    categories = pd.read_csv(os.path.join(current_script_directory, path))
+    categories_levels = (
+        categories
+        .category_label
+        .str.split(' > ', expand=True)
+        .rename(columns={i: f'category_level_{i}' for i in range(6)})
+    )
+    categories = pd.concat([categories.category_id, categories_levels], axis=1)
+
+    # Select culture categories
+    culture_categories = [
+        'Arts and Entertainment',
+        'Dining and Drinking',
+        'Event'
+    ]
+
+    # Get according category ids
+    culture_category_ids = (
+        categories
+        .query('category_level_0.isin(@culture_categories) ')
+        .category_id
+        .unique()
+    )
+
+    # Initialize FourSquareData class
+    fsq = FourSquareData(apikey)
+
+    # Iterate through each location and save data to database
     for _, row in locations.iterrows():
-        culture_df = cultural_profile(row["lat"]+","+row["lon"])
+        culture_df = fsq.get(row, culture_category_ids)
         culture_df = culture_df.convert_dtypes()
 
         if len(culture_df) > 0:
@@ -388,18 +426,48 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         # Get the current state from the database
         current_state = db.fetch_data(table_name)
 
-        # For each location get the oldest year and month for which we have data and append it to the dataframe
-        current_state = current_state.groupby(["location_id"]).agg({"year": "min", "month": "min"}).reset_index()
+        # If any previous data is missing (e.g. data on 2022 but not on 2023), use the date of the first "gap"
+        # Build list that contains all possible years and months from the maximum to the minimum
+        possible_years_months = [(year, month) for year in range(2023, 2022-1, -1) for month in range(12, 0, -1)]
 
-        # If locations are missing in current_state, add them with the year 2023 and month 01
+        # Check for each location if we have data on all possible years and months
+        for location in current_state["location_id"].unique():
+            existing_years_months = set(zip(
+                current_state[current_state["location_id"] == location]["year"],
+                current_state[current_state["location_id"] == location]["month"]
+                ))
+            missing_years_months = set(possible_years_months) - existing_years_months
+
+            # Get maximum year and month for which we don't have data yet
+            max_year_month = max(missing_years_months, key=lambda x: (x[0], x[1]))
+            max_year = max_year_month[0] if max_year_month[1] != 12 else max_year_month[0] + 1
+            max_month = max_year_month[1]+1 if max_year_month[1] != 12 else 1
+
+            #print(location, max_year, max_month)
+
+            if max_year is not None:
+                # Delete all other rows of this location except for the one with the maximum year and month
+                current_state = current_state[(current_state["location_id"] != location) |
+                                              ((current_state["location_id"] == location) & (current_state["year"] == max_year) & (current_state["month"] == max_month))]
+            else:
+                # Else leave the last period to be deleted later
+                current_state = current_state[(current_state["location_id"] != location) |
+                                              ((current_state["location_id"] == location) & (current_state["year"] == 2099) & (current_state["month"] == 99))]
+
+        # If locations are totally missing in current_state, add them
         for _, row in locations.iterrows():
-            if not row["location_id"] in current_state["location_id"].values:
-                current_state = pd.concat([current_state, pd.DataFrame({"location_id": row["location_id"], "year": 2023, "month": 1}, index=[0])], ignore_index=True)
-        
+            if row["location_id"] not in current_state["location_id"].unique():
+                current_state = pd.concat([
+                    current_state,
+                    pd.DataFrame({"location_id": row["location_id"], "year": 2024, "month": 1}, index=[0])
+                    ],
+                    ignore_index=True
+                )
+
         # Order by latest year and month
         current_state = current_state.sort_values(by=["year", "month"], ascending=False)
-        # Filter out all locations where we have data until January 2018
-        current_state = current_state[(current_state["year"] != 2018) | (current_state["month"] != 1)]
+        # Filter out all locations where we have data until January 2022
+        current_state = current_state[((current_state["year"] != 2099) & (current_state["month"] != 99))]
 
         for _, row in current_state.iterrows():
 
@@ -464,12 +532,12 @@ def fill_raw_geography(location):
 
 # Dictonary that maps names of database tables to functions which fill these tables with data
 table_fill_function_dict = {
-    "raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
+    #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
     #"raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
     #"raw_culture": [fill_raw_culture, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    #"raw_weather_historical": [fill_raw_weather_historical, 6],
+    "raw_weather_historical": [fill_raw_weather_historical, 6],
     #"raw_geography": [fill_raw_geography 7]
     }
 
