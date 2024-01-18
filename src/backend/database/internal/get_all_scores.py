@@ -141,43 +141,15 @@ class FillScores:
         # Get the safety scores
         scores = SafetyScores(self.db).get()
 
-        #####---| City level scores |---#####
-        # Filter scores where location_id is not null and turn into int
-        city_scores = scores[scores["location_id"].notnull()]
-        city_scores["location_id"] = city_scores["location_id"].astype(int)
-        # Filter scores where location_id is null
-        country_scores = scores[scores["location_id"].isnull()]
+        # Make sure that country_code and iso2 are both strings and have no leading or trailing whitespaces
+        self.locations["country_code"] = self.locations["country_code"].str.strip()
+        scores["iso2"] = scores["iso2"].str.strip()
 
-        # Merge city scores
-        city_data = self.locations.merge(
-            city_scores[["location_id", "category_id", "dimension_id", "score"]],
-            on=["location_id"],
-            how="left")
-
-        ######---| Country level scores |---#####
-        # Filter out locations that do not have a score
-        no_scores = city_data[city_data["score"].isnull()]
-        city_data = city_data[city_data["score"].notnull()]
-
-        # Delete the columns in no_scores that were added in the merge
-        no_scores = no_scores.drop(["category_id", "dimension_id", "score"], axis=1)
-
-        # Merge country scores
-        country_data = no_scores.merge(
-            country_scores[["country", "category_id", "dimension_id", "score"]],
-            on=["country"],
-            how="left")
-
-        # Filter out locations that do not have a score
-        country_data = country_data[country_data["score"].notnull()]
-
-        ######---| Combine the results |---#####
-        # Combine the results of both merges
-        location_scores = pd.concat([city_data, country_data])
-
-        # Add start_date and end_date column
-        location_scores["start_date"] = "2024-01-01"
-        location_scores["end_date"] = "2099-12-31"
+        # Assign each location by country_code to score
+        location_scores = self.locations.merge(
+            scores[["iso2", "category_id", "dimension_id", "start_date", "end_date", "score"]],
+            left_on=["country_code"], right_on=["iso2"],
+            how="inner")
 
         # Reorder
         location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
@@ -203,7 +175,6 @@ class FillScores:
                 - self.locations: master data
                 - which_scores: dict, which scores to fill in
                 - explicitely_update: bool, whether to explicitly add scores to the database or not (and perhaps update existing scores)
-                - only_add: bool, whether to only add scores to the database (and not update existing scores)
         Output: None
         '''
         # Get the scores
@@ -212,7 +183,8 @@ class FillScores:
             # Execute the function
             print(f"Getting scores for category {category}...")
             results = function()
-            scores = pd.concat([scores, results], axis=0)
+            if not results.empty:
+                scores = pd.concat([scores, results], axis=0)
 
         # Filter out rows where category_id or score is null
         scores = scores[scores["category_id"].notnull()]
@@ -291,8 +263,8 @@ db = Database()
 db.connect()
 which_scores = {
     #'cost': FillScores(db).cost_scores
-    #,'safety': FillScores(db).safety_scores
-    'weather': FillScores(db).weather_scores
+    'safety': FillScores(db).safety_scores
+    #'weather': FillScores(db).weather_scores
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()

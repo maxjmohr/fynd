@@ -5,14 +5,73 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from database.db_helpers import Database
-
-from joblib import dump, load
+from datetime import datetime
 import pandas as pd
-from sklearn.cluster import DBSCAN
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
 class SafetyScores:
+    "Class for calculating safety scores"
+    def __init__(self, db:Database) -> None:
+        ''' Initialize the class
+        Input:  db: Database object
+        Output: None
+        '''
+        self.db = db
+
+    def get(self) -> pd.DataFrame:
+        ''' Calculate the safety scores on country level
+        Input:  - self.db: Database object
+                - num_clusters: number of clusters to use for K-means clustering
+        Output: None
+        '''
+        # Fetch the data
+        data = self.db.fetch_data(total_object="raw_safety_country")
+
+        # Add start_date and end_date
+        data["start_date"] = datetime(2023, 1, 1).date()
+        data["end_date"] = datetime(2099, 12, 31).date()
+
+        # Bring into long format
+        data = data.melt(
+            id_vars=["iso2", "country_name", "start_date", "end_date"],
+            value_vars=["crime_rate", "ecological_threat", "peace_index", "personal_freedom",
+                        "political_stability", "rule_of_law", "terrorism_index"],
+            var_name="dimension_id",
+            value_name="score"
+            )
+
+        # Get dimension_id for each column
+        sql = """
+            SELECT d.dimension_id, d.dimension
+            FROM
+                core_dimensions d
+                INNER JOIN core_categories c ON d.category_id = c.category_id
+            WHERE c.category = 'safety'
+            """
+        dimension_map = self.db.fetch_data(sql=sql)
+        dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
+        data["dimension_id"] = data["dimension_id"] \
+            .map(dimension_map)
+
+        # Normalize scores between 0 and 1 using Min-Max scaling for each dimension
+        for dimension_id in data["dimension_id"].unique():
+            data.loc[data["dimension_id"] == dimension_id, "score"] = \
+                MinMaxScaler(feature_range=(0, 1)).fit_transform(
+                    data.loc[data["dimension_id"] == dimension_id, ["score"]]
+                )
+
+        # Add category_id
+        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category = 'safety'").iloc[0, 0]
+
+        return data[["iso2", "country_name", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+
+
+
+
+
+# First idea of calculating safety scores
+class OldSafetyScores:
     "Class for calculating safety scores"
     def __init__(self, db:Database) -> None:
         ''' Initialize the class
@@ -65,12 +124,12 @@ class SafetyScores:
         data["score"] = min_max_scaler.fit_transform(data[["score"]])
 
         # Add category id
-        category_id = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category = 'safety'").iloc[0, 0]
-        data["category_id"] = category_id
+        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category = 'safety'").iloc[0, 0]
         assert data["category_id"].notnull().all()
 
         # Add empty dimension id
-        data["dimension_id"] = None
+        data["dimension_id"] = self.db.fetch_data(sql="SELECT dimension_id FROM core_dimensions WHERE dimension = 'safety'").iloc[0, 0]
+        assert data["dimension_id"].notnull().all()
 
         return data
 
