@@ -6,6 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 from database.internal.cost_scores import CostScores
+from database.internal.health_scores import HealthScores
 from database.internal.safety_scores import SafetyScores
 from database.internal.weather_scores import WeatherScores
 from datetime import datetime
@@ -141,10 +142,6 @@ class FillScores:
         # Get the safety scores
         scores = SafetyScores(self.db).get()
 
-        # Make sure that country_code and iso2 are both strings and have no leading or trailing whitespaces
-        self.locations["country_code"] = self.locations["country_code"].str.strip()
-        scores["iso2"] = scores["iso2"].str.strip()
-
         # Assign each location by country_code to score
         location_scores = self.locations.merge(
             scores[["iso2", "category_id", "dimension_id", "start_date", "end_date", "score"]],
@@ -152,9 +149,7 @@ class FillScores:
             how="inner")
 
         # Reorder
-        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
-
-        return location_scores
+        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
 
 
 ###----| Weather |----###
@@ -167,6 +162,34 @@ class FillScores:
         '''
         # Get the weather scores
         return WeatherScores(self.db).get()
+
+
+###----| Health |----###
+
+    def health_scores(self) -> pd.DataFrame:
+        ''' Fill in the health scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the weather scores
+        scores = HealthScores(self.db).get()
+
+        # Change country_name for certain countries to fit
+        scores["country_name"] = scores["country_name"].replace({
+            "Taiwan, China": "Taiwan",
+            "Czech Republic": "Czechia",
+            "Macedonia": "North Macedonia"
+        })
+
+        # Assign each location by country_code to score
+        location_scores = self.locations.merge(
+            scores[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score"]],
+            left_on=["country"], right_on=["country_name"],
+            how="inner")
+
+        # Reorder
+        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
 
 
     def fill_scores(self, which_scores:dict, explicitely_update:bool = False):
@@ -263,8 +286,9 @@ db = Database()
 db.connect()
 which_scores = {
     #'cost': FillScores(db).cost_scores
-    'safety': FillScores(db).safety_scores
+    #'safety': FillScores(db).safety_scores
     #'weather': FillScores(db).weather_scores
+    'health': FillScores(db).health_scores
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()

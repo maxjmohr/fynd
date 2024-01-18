@@ -53,5 +53,5 @@ VALUES  (1, 11, 'crime_rate', 'The crime rate provides insights into the prevale
         (4, 48, 'retail_products_costs', NULL, '["jeans", "dress", "shoes_running", "shoes_business"]', now()),
         (5, 51, 'landmarks', 'Part of geography dimension', NULL, now()),
         (6, 61, 'reachability', 'xxx', NULL, now()),
-        (7, 71, 'health', 'Part of health dimension', NULL, now())
+        (7, 71, 'health', 'The health dimension measures the degree to which a reasonable quality of life is experienced by all, including material resources, shelter, basic service and connectivity.', NULL, now())
 ;

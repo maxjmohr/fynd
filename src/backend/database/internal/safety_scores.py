@@ -21,9 +21,8 @@ class SafetyScores:
 
     def get(self) -> pd.DataFrame:
         ''' Calculate the safety scores on country level
-        Input:  - self.db: Database object
-                - num_clusters: number of clusters to use for K-means clustering
-        Output: None
+        Input:  self.db: Database object
+        Output: scores for each country
         '''
         # Fetch the data
         data = self.db.fetch_data(total_object="raw_safety_country")
