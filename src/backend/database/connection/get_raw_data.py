@@ -447,8 +447,6 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
                 max_year = None
                 max_month = None
 
-            #print(location, max_year, max_month)
-
             if max_year is not None:
                 # Delete all other rows of this location except for the one with the maximum year and month
                 current_state = current_state[(current_state["location_id"] != location) |
@@ -471,7 +469,7 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         # Order by latest year and month
         current_state = current_state.sort_values(by=["year", "month"], ascending=False)
         # Filter out all locations where we have data until January 2022
-        current_state = current_state[((current_state["year"] != 2022) & (current_state["month"] != 1))]
+        current_state = current_state[~((current_state["year"] == 2022) & (current_state["month"] == 1))]
 
         for _, row in current_state.iterrows():
 
