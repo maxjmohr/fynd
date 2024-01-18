@@ -43,6 +43,12 @@ class WeatherScores:
                                          "snowfall_sum": "mean",
                                          "wind_speed_max": "mean"}) \
             .reset_index(inplace=False)
+        # Change signs of certain scores
+        data["temperature_min"] = -data["temperature_min"]
+        data["precipitation_sum"] = -data["precipitation_sum"]
+        data["rain_sum"] = -data["rain_sum"]
+        data["snowfall_sum"] = -data["snowfall_sum"]
+        data["wind_speed_max"] = -data["wind_speed_max"]
 
         # Duplicate month columns for end_date
         data["end_date"] = data["month"]

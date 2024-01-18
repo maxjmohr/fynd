@@ -7,6 +7,8 @@ sys.path.append(parent_dir)
 from database.db_helpers import Database
 from database.internal.cost_scores import CostScores
 from database.internal.safety_scores import SafetyScores
+from database.internal.weather_scores import WeatherScores
+from datetime import datetime
 from faker import Faker
 import numpy as np
 import pandas as pd
@@ -183,54 +185,114 @@ class FillScores:
         return location_scores
 
 
-    def fill_scores(self, which_scores:dict, explicit:bool = False, only_add:bool = False):
+###----| Weather |----###
+
+    def weather_scores(self) -> pd.DataFrame:
+        ''' Fill in the weather scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the weather scores
+        return WeatherScores(self.db).get()
+
+
+    def fill_scores(self, which_scores:dict, explicitely_update:bool = False):
         ''' Fill in all scores
         Input:  - self.db: Database object
                 - self.locations: master data
                 - which_scores: dict, which scores to fill in
-                - explicit: bool, whether to explicitly add scores to the database or not (and perhaps update existing scores)
+                - explicitely_update: bool, whether to explicitly add scores to the database or not (and perhaps update existing scores)
                 - only_add: bool, whether to only add scores to the database (and not update existing scores)
         Output: None
         '''
         # Get the scores
-        scores_list = []
-        for _, value in which_scores.items():
-            scores_list.append(value)
-
-        scores = pd.concat(scores_list)
+        scores = pd.DataFrame(columns=["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"])
+        for category, function in which_scores.items():
+            # Execute the function
+            print(f"Getting scores for category {category}...")
+            results = function()
+            scores = pd.concat([scores, results], axis=0)
 
         # Filter out rows where category_id or score is null
         scores = scores[scores["category_id"].notnull()]
         scores = scores[scores["score"].notnull()]
 
-        # Check for all location_ids if there is a score in the database. If true, replace. If not, add
-        for _, row in scores.iterrows():
-            location_id = int(row["location_id"])
-            category_id = int(row["category_id"])
-            dimension_id = int(row["dimension_id"])
-            start_date = row["start_date"]
-            end_date = row["end_date"]
-            score = row["score"]
+        # Make sure that the columns are correct dtypes
+        scores["location_id"] = scores["location_id"].astype(int)
+        scores["category_id"] = scores["category_id"].astype(int)
+        scores["dimension_id"] = scores["dimension_id"].astype(int)
+        scores["start_date"] = pd.to_datetime(scores["start_date"], format='%Y-%m-%d')
+        scores["end_date"] = pd.to_datetime(scores["end_date"], format='%Y-%m-%d')
 
-            # Check if there is a score for this location, dimension and subcategory
-            sql = f"SELECT location_id FROM core_scores WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}' AND start_date = '{start_date}' AND end_date = '{end_date}'"
-            if self.db.fetch_data(sql=sql).empty or explicit or only_add:
-                # Add score
-                print(f"Adding category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
-                sql = f"INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, score) VALUES ({location_id}, '{category_id}', '{dimension_id}', {start_date}, {end_date}, {score})"
+        # Replace all current scores with new scores
+        if explicitely_update:
+            print("Explicitely updating scores...")
+            # Delete the currently saved scores
+            for dimension_id in scores["dimension_id"].unique():
+                print(f"Deleting all scores for dimension_id {dimension_id}...")
+                sql = f"""
+                    DELETE
+                    FROM core_scores
+                    WHERE dimension_id = '{dimension_id}'
+                    """
                 self.db.execute_sql(sql, commit=True)
-            else:
-                # Update score
-                print(f"Updating category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
-                sql = f"UPDATE core_scores SET score = {score} WHERE location_id = {location_id} AND category_id = '{category_id}' AND dimension_id = '{dimension_id}' AND start_date = '{start_date}' AND end_date = '{end_date}'"
-                self.db.execute_sql(sql, commit=True)
+
+            # Insert the scores
+            print("Inserting new scores...")
+            self.db.insert_data(data=scores, table="core_scores")
+
+        # Else: check for all location_ids if there is a score in the database. If true, replace. If not, add
+        else:
+            for _, row in scores.iterrows():
+                location_id = row["location_id"]
+                category_id = row["category_id"]
+                dimension_id = row["dimension_id"]
+                start_date = row["start_date"]
+                end_date = row["end_date"]
+                score = row["score"]
+
+                # Check if there is a score for this location, dimension and subcategory
+                sql = f"""
+                    SELECT location_id
+                    FROM core_scores
+                    WHERE
+                        location_id = {location_id}
+                        AND category_id = '{category_id}'
+                        AND dimension_id = '{dimension_id}'
+                        AND start_date = '{start_date}'
+                        AND end_date = '{end_date}'
+                    """
+                if self.db.fetch_data(sql=sql).empty:
+                    # Add score
+                    print(f"Adding category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
+                    sql = sql = f"""
+                        INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, score)
+                        VALUES ({location_id}, '{category_id}', '{dimension_id}', '{start_date}', '{end_date}', {score})
+                        """
+                    self.db.execute_sql(sql, commit=True)
+                else:
+                    # Update score
+                    print(f"Updating category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
+                    sql = f"""
+                        UPDATE core_scores
+                        SET score = {score}
+                        WHERE
+                            location_id = {location_id}
+                            AND category_id = '{category_id}'
+                            AND dimension_id = '{dimension_id}'
+                            AND start_date = '{start_date}'
+                            AND end_date = '{end_date}'
+                        """
+                    self.db.execute_sql(sql, commit=True)
 
 
 db = Database()
 db.connect()
 which_scores = {
-    'cost': FillScores(db).cost_scores()
-    ,'safety': FillScores(db).safety_scores()
+    #'cost': FillScores(db).cost_scores
+    #,'safety': FillScores(db).safety_scores
+    'weather': FillScores(db).weather_scores
 }
-FillScores(db).fill_scores(which_scores)
+FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()
