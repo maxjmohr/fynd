@@ -439,9 +439,13 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
             missing_years_months = set(possible_years_months) - existing_years_months
 
             # Get maximum year and month for which we don't have data yet
-            max_year_month = max(missing_years_months, key=lambda x: (x[0], x[1]))
-            max_year = max_year_month[0] if max_year_month[1] != 12 else max_year_month[0] + 1
-            max_month = max_year_month[1]+1 if max_year_month[1] != 12 else 1
+            if missing_years_months:
+                max_year_month = max(missing_years_months, key=lambda x: (x[0], x[1]))
+                max_year = max_year_month[0] if max_year_month[1] != 12 else max_year_month[0] + 1
+                max_month = max_year_month[1]+1 if max_year_month[1] != 12 else 1
+            else:
+                max_year = None
+                max_month = None
 
             #print(location, max_year, max_month)
 
@@ -452,7 +456,7 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
             else:
                 # Else leave the last period to be deleted later
                 current_state = current_state[(current_state["location_id"] != location) |
-                                              ((current_state["location_id"] == location) & (current_state["year"] == 2099) & (current_state["month"] == 99))]
+                                              ((current_state["location_id"] == location) & (current_state["year"] == 2022) & (current_state["month"] == 1))]
 
         # If locations are totally missing in current_state, add them
         for _, row in locations.iterrows():
@@ -467,7 +471,7 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         # Order by latest year and month
         current_state = current_state.sort_values(by=["year", "month"], ascending=False)
         # Filter out all locations where we have data until January 2022
-        current_state = current_state[((current_state["year"] != 2099) & (current_state["month"] != 99))]
+        current_state = current_state[((current_state["year"] != 2022) & (current_state["month"] != 1))]
 
         for _, row in current_state.iterrows():
 
