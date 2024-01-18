@@ -69,7 +69,14 @@ class WeatherScores:
                  value_name="score")
 
         # Get dimension_id for each column
-        dimension_map = self.db.fetch_data(sql="SELECT dimension_id, dimension FROM core_dimensions WHERE category_id = 2")
+        sql = """
+            SELECT d.dimension_id, d.dimension
+            FROM
+                core_dimensions d
+                INNER JOIN core_categories c ON d.category_id = c.category_id
+            WHERE c.category = 'weather'
+            """
+        dimension_map = self.db.fetch_data(sql=sql)
         dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
         data["dimension_id"] = data["dimension_id"] \
             .map(dimension_map)

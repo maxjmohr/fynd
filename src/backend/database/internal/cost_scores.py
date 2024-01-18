@@ -33,8 +33,17 @@ class CostScores:
         data = data[["location_id", "city", "country"]]
 
         # Dict to assign costs to correct group
-        cost_map = self.db.fetch_data(sql="SELECT dimension_id, description FROM core_dimensions WHERE category_id = 4 AND dimension_id not in (41,42)").to_dict()
-        cost_map = {cost_map['dimension_id'][i]: eval(cost_map['description'][i]) for i in range(len(cost_map['dimension_id']))}
+        sql = """
+            SELECT d.dimension_id, d.extras
+            FROM
+                core_dimensions d
+                INNER JOIN core_categories c ON d.category_id = c.category_id
+            WHERE
+                c.category = 'cost'
+                AND d.dimension not in ('travel_costs', 'accommodation_costs')
+            """
+        cost_map = self.db.fetch_data(sql=sql).to_dict()
+        cost_map = {cost_map['dimension_id'][i]: eval(cost_map['extras'][i]) for i in range(len(cost_map['dimension_id']))}
 
         # Calculate scores for each location
         results = pd.DataFrame()
