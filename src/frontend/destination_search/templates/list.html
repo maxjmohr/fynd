@@ -1,6 +1,5 @@
 {% extends "base.html" %}
-{% load my_tags %}
-{% load humanize %}
+{% load humanize %} <!-- for intcomma -->
 
 {% block title %}
 Results
@@ -8,15 +7,32 @@ Results
 
 {% block main %}
 
-<!--- Filter form -->
+<!--- Forms -->
 <div class="filters-container">
-  <form method="post">
-    {% csrf_token %}
-    {% for field in previous_locations_form %}
+  <form method="get" id="listForm" onsubmit="submitForm(event);">
+    <div class="form-group question-box">
+        <label for="{{ travellers_input_form.start_location.id_for_label }}">{{ travellers_input_form.start_location.help_text }}</label>
+        {{ travellers_input_form.start_location.errors }}
+        {{ travellers_input_form.start_location.as_widget }}
+        {{ travellers_input_form.start_location_lat.as_widget }}
+        {{ travellers_input_form.start_location_lon.as_widget }}
+    </div>
+    <div class="form-group question-box">
+        <label for="{{ travellers_input_form.date_range.id_for_label }}">{{ travellers_input_form.date_range.help_text }}</label>
+        {{ travellers_input_form.date_range.errors }}
+        {{ travellers_input_form.date_range.as_widget }}
+    </div>
+    <div class="form-group question-box">
+        <label for="{{ travellers_input_form.previous_locations.id_for_label }}">{{ travellers_input_form.previous_locations.help_text }}</label>
+        {{ travellers_input_form.previous_locations.errors }}
+        {{ travellers_input_form.previous_locations.as_widget }}
+    </div>
+
+    {% for field in filters_form %}
         {{ field.errors }}
         {{ field }}
     {% endfor %}
-    <input type="submit" value="Apply">
+    <input type="submit" value="Apply" class="submit-button">
   </form>
 </div>
 
@@ -27,7 +43,7 @@ Results
   <div class="sort-container">
     <div class="sort-label">Sort by:</div>
     <form action="" method="get" id="sortForm" style="display: flex; align-items: center;">
-      <select class="form-control ml-2" id="sort" name="sort" onchange="submitForm(event);">
+      <select class="form-control ml-2" id="sort" name="sort" onchange="setParam('sort', this.value);">
         <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (descending)</option>
         <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to start (ascending)</option>
         <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to start (descending)</option>
@@ -70,15 +86,13 @@ Results
     {% endfor %}
   </div>
 
-  {% load my_tags %}
-
   <!-- Pagination controls -->
   <div class="pagination-container">
     <nav aria-label="Page navigation">
       <ul class="pagination">
         {% if location_list.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?{% param_replace page=location_list.previous_page_number %}" aria-label="Previous">
+            <a class="page-link" href="#" onclick="setParam('page', {{ location_list.previous_page_number }}); return false;" aria-label="Previous">
               <span aria-hidden="true">&laquo;</span>
             </a>
           </li>
@@ -91,7 +105,7 @@ Results
         {% endif %}
 
         {% if location_list.number > 2 %}
-          <li class="page-item"><a class="page-link" href="?{% param_replace page=1 %}">1</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', 1); return false;">1</a></li>
         {% endif %}
 
         {% if location_list.number > 3 %}
@@ -100,7 +114,7 @@ Results
 
         {% for i in location_list.paginator.page_range %}
           {% if i >= location_list.number|add:"-1" and i <= location_list.number|add:"1" %}
-            <li class="page-item {% if location_list.number == i %}active{% endif %}"><a class="page-link" href="?{% param_replace page=i %}">{{ i }}</a></li>
+            <li class="page-item {% if location_list.number == i %}active{% endif %}"><a class="page-link" href="#" onclick="setParam('page', {{ i }}); return false;">{{ i }}</a></li>
           {% endif %}
         {% endfor %}
 
@@ -109,12 +123,12 @@ Results
         {% endif %}     
 
         {% if location_list.number < location_list.paginator.num_pages|add:"-1" %}
-          <li class="page-item"><a class="page-link" href="?{% param_replace page=location_list.paginator.num_pages %}">{{ location_list.paginator.num_pages }}</a></li>
+          <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', {{ location_list.paginator.num_pages }}); return false;">{{ location_list.paginator.num_pages }}</a></li>
         {% endif %}
 
         {% if location_list.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?{% param_replace page=location_list.next_page_number %}" aria-label="Next">
+            <a class="page-link" href="#" onclick="setParam('page', {{ location_list.next_page_number }}); return false;" aria-label="Next">
               <span aria-hidden="true">&raquo;</span>
             </a>
           </li>
@@ -136,13 +150,45 @@ Results
 <script>
   function submitForm(e) {
     e.preventDefault();
+
+    // Create a new URL object with the current URL
     var url = new URL(window.location.href);
-    var formData = new FormData(e.target.form);
+
+    // Iterate over all form inputs
+    var formData = new FormData(e.target);
     for (var pair of formData.entries()) {
-      url.searchParams.set(pair[0], pair[1]);
+      // If the parameter already exists, delete it
+      if (url.searchParams.has(pair[0])) {
+        url.searchParams.delete(pair[0]);
+      }
     }
+
+    // Iterate over all form inputs again to set the new values
+    for (var pair of formData.entries()) {
+      // Add the input's value as a parameter to the URL
+      url.searchParams.append(pair[0], pair[1]);
+    }
+
+    // Iterate over all existing URL parameters
+    for (var pair of new URLSearchParams(window.location.search).entries()) {
+      // If the parameter is not already present in the URL, add it
+      if (!url.searchParams.has(pair[0])) {
+        url.searchParams.append(pair[0], pair[1]);
+      }
+    }
+
+    // Navigate to the new URL
     window.location.href = url.href;
   }
-  </script>
+</script>
+
+<!-- Change single parameter value (sort dropdown, pagnav)-->
+<script>
+  function setParam(key, value) {
+    var url = new URL(window.location.href);
+    url.searchParams.set(key, value);
+    window.location.href = url.href;
+  }
+</script>
 
 {% endblock %}

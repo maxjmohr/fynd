@@ -55,6 +55,12 @@ class TravellersInputForm(forms.Form):
         return None, None
 
 
+class FiltersForm(forms.Form):
+    min_distance = forms.IntegerField(required=False)
+    max_distance = forms.IntegerField(required=False)
+    # Add more fields as per your requirements
+
+
 class SearchLocationForm(forms.Form):
     location = forms.ModelChoiceField(
         queryset=CoreLocations.objects.only('location_id', 'city'),

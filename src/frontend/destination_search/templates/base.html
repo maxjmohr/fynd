@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
     <!-- Django-Select2 CSS -->
-    {{ form.media.css }}<style> input, select {width: 100%} </style>
+    {{ travellers_input_form.media.css }}<style> input, select {width: 100%} </style>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
@@ -82,7 +82,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <!-- Django-Select2 JavaScript -->
-    {{ form.media.js }}
+    {{ travellers_input_form.media.js }}
     <!-- <script src="{% static 'django_select2/django_select2.js' %}"></script> -->
 
     <!-- Daterangepicker -->
@@ -129,6 +129,33 @@
     <!-- jQuery UI -->
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
-    {% block scripts %}{% endblock %}
+    <!-- jQuery UI autocomplete for start location -->
+    <script>
+        $(document).ready(function() {
+            $('#id_start_location').autocomplete({
+                source: function(request, response) {
+                    $.get('https://nominatim.openstreetmap.org/search', {
+                        q: request.term,
+                        format: 'json'
+                    }, function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.display_name,
+                                value: item.display_name,
+                                lat: item.lat,
+                                lon: item.lon
+                            };
+                        }));
+                    });
+                },
+                select: function(event, ui) {
+                    $('#id_start_location_lat').val(ui.item.lat);
+                    $('#id_start_location_lon').val(ui.item.lon);
+                },
+                minLength: 2
+            });
+        });
+    </script>
+
 </body>
 </html>

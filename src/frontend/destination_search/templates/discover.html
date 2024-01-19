@@ -13,53 +13,24 @@ Discover destinations
     <form method="post">
         {% csrf_token %}
         <div class="form-group question-box">
-            <label for="{{ form.start_location.id_for_label }}">{{ form.start_location.help_text }}</label>
-            {{ form.start_location.errors }}
-            {{ form.start_location.as_widget }}
-            {{ form.start_location_lat.as_widget }}
-            {{ form.start_location_lon.as_widget }}
+            <label for="{{ travellers_input_form.start_location.id_for_label }}">{{ travellers_input_form.start_location.help_text }}</label>
+            {{ travellers_input_form.start_location.errors }}
+            {{ travellers_input_form.start_location.as_widget }}
+            {{ travellers_input_form.start_location_lat.as_widget }}
+            {{ travellers_input_form.start_location_lon.as_widget }}
         </div>
         <div class="form-group question-box">
-            <label for="{{ form.date_range.id_for_label }}">{{ form.date_range.help_text }}</label>
-            {{ form.date_range.errors }}
-            {{ form.date_range.as_widget }}
+            <label for="{{ travellers_input_form.date_range.id_for_label }}">{{ travellers_input_form.date_range.help_text }}</label>
+            {{ travellers_input_form.date_range.errors }}
+            {{ travellers_input_form.date_range.as_widget }}
         </div>
         <div class="form-group question-box">
-            <label for="{{ form.previous_locations.id_for_label }}">{{ form.previous_locations.help_text }}</label>
-            {{ form.previous_locations.errors }}
-            {{ form.previous_locations.as_widget }}
+            <label for="{{ travellers_input_form.previous_locations.id_for_label }}">{{ travellers_input_form.previous_locations.help_text }}</label>
+            {{ travellers_input_form.previous_locations.errors }}
+            {{ travellers_input_form.previous_locations.as_widget }}
         </div>
         <input type="submit" value="Go" class="submit-button">
     </form>
 </div>
 
-{% endblock %}
-
-{% block scripts %}
-<script>
-$(document).ready(function() {
-    $('#id_start_location').autocomplete({
-        source: function(request, response) {
-            $.get('https://nominatim.openstreetmap.org/search', {
-                q: request.term,
-                format: 'json'
-            }, function(data) {
-                response($.map(data, function(item) {
-                    return {
-                        label: item.display_name,
-                        value: item.display_name,
-                        lat: item.lat,
-                        lon: item.lon
-                    };
-                }));
-            });
-        },
-        select: function(event, ui) {
-            $('#id_start_location_lat').val(ui.item.lat);
-            $('#id_start_location_lon').val(ui.item.lon);
-        },
-        minLength: 2
-    });
-});
-</script>
 {% endblock %}

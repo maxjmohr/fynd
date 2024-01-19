@@ -6,11 +6,10 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django import forms
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import render, redirect
 from django.db.models import Q
 from .models import CoreScores, CoreLocations, CoreLocationsImages
-from .filters import LocationsFilterset
 from .forms import *
 from .compute_relevance import compute_relevance
 from .compute_haversine import haversine
@@ -137,6 +136,11 @@ class DiscoverView(FormView):
         url = f"{url}?{query_string}"
         return url
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['travellers_input_form'] = context.pop('form')
+        return context
+
 
 class SearchView(FormView):
     template_name = 'search.html'
@@ -161,9 +165,20 @@ class LocationsListView(View):
 
     def get(self, request, *args, **kwargs):
 
+        # Form instance
+        self.travellers_input_form = TravellersInputForm(self.request.GET)
+        self.filters_form = FiltersForm(self.request.GET)
+
         # Get parameters from the request
         self.params = self.request.GET.dict()
-        del self.params['sort']
+        if 'sort' in self.params:
+            del self.params['sort']
+
+        # Merge the new parameters with the existing ones
+        new_params = QueryDict('', mutable=True)
+        new_params.update(self.params)
+
+        print(self.params)
 
         # Check if the queryset is in the session
         # and if GET parameters have changed (apart form sorting)
@@ -171,7 +186,6 @@ class LocationsListView(View):
         first_run = 'location_list' not in self.request.session
         params_changed = self.params != self.request.session.get('params', {})
         if first_run or params_changed:
-            print('first run or params changed')
             location_list = self.get_queryset()
             self.request.session['location_list'] = location_list.to_dict(orient='list')
             self.request.session['params'] = self.params
@@ -288,6 +302,8 @@ class LocationsListView(View):
         context = {
             'location_list': self.page,
             'current_sort_order': self.sort_param,
+            'travellers_input_form': self.travellers_input_form,
+            'filters_form': self.filters_form
         }
         return context
 
