@@ -8,6 +8,7 @@ from django.core.paginator import Paginator
 from django import forms
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.db.models import Q
 from .models import CoreScores, CoreLocations, CoreLocationsImages
 from .filters import LocationsFilterset
 from .forms import *
@@ -17,6 +18,8 @@ import numpy as np
 import pandas as pd
 from urllib.parse import urlencode
 from django_pandas.io import read_frame
+
+import time
 
 
 def encode_url_parameters(params: dict) -> str:
@@ -29,6 +32,74 @@ def encode_url_parameters(params: dict) -> str:
         else:
             encoded_params.append((key, value))
     return urlencode(encoded_params)
+
+
+def get_scores(
+        start_date: str,
+        end_date: str,
+        start_location_lat: str,
+        start_location_lon: str,
+        location_id: int = None):
+    
+    # Convert start and end date to datatime
+    start_date = pd.to_datetime(start_date, format='%d/%m/%Y')
+    end_date = pd.to_datetime(end_date, format='%d/%m/%Y')
+
+    # Convert start location to float
+    start_location_lat = float(start_location_lat)
+    start_location_lon = float(start_location_lon)
+    
+    # Get closest reference location for start location -----------------------
+    #FIXME
+
+    start_location_proxy = 'palceholder'
+
+
+    # Get filtered scores -----------------------------------------------------
+
+    # Filter
+    query = CoreScores.objects.filter(
+        Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
+    )
+
+    if location_id is not None:
+        query = query.filter(location_id__in=location_id)
+
+    # Define fileds to include in values() (negative selection)
+    all_fields = [f.name for f in CoreScores._meta.get_fields()]
+    exclude_fields = ['updated_at']
+    include_fields = [f for f in all_fields if f not in exclude_fields]
+
+    # Get as DataFrame
+    scores = read_frame(query.values(*include_fields))
+
+    # Convert 'start_date' and 'end_date' to datetime
+    scores['start_date'] = pd.to_datetime(scores['start_date'])
+    scores['end_date'] = pd.to_datetime(scores['end_date'])
+
+    # Average scores for multiple time intervals ------------------------------
+
+    # Calculate the number of days each score interval overlaps
+    # with the given travel interval
+    scores['overlap_days'] = scores.apply(
+        lambda row: min(row['end_date'], end_date) - 
+                    max(row['start_date'], start_date) + 
+                    pd.Timedelta(days=1), 
+        axis=1
+    ).dt.days
+
+    # Calculate the sum of the weighted scores
+    scores['score'] *= scores['overlap_days']
+    scores = (
+        scores
+        .groupby(['location_id', 'category_id', 'dimension_id'])
+        .agg({'score': 'sum', 'overlap_days': 'sum'})
+    )
+    scores['score'] /= scores['overlap_days']
+    scores.drop(columns=['overlap_days'], inplace=True)
+    scores.reset_index(inplace=True)
+
+    return scores, start_location_proxy
 
 
 class HomeView(TemplateView):
@@ -56,6 +127,7 @@ class DiscoverView(FormView):
         data = {
             'start_date': self.request.session['start_date'],
             'end_date': self.request.session['end_date'],
+            'start_location': self.request.session['start_location'],
             'start_location_lon': self.request.session['start_location_lon'],
             'start_location_lat': self.request.session['start_location_lat'],
             'previous_locations': self.request.session['previous_locations']
@@ -91,16 +163,38 @@ class LocationsListView(View):
 
         # Get parameters from the request
         self.params = self.request.GET.dict()
+        del self.params['sort']
 
-        # Get sorting parameter
+        # Check if the queryset is in the session
+        # and if GET parameters have changed (apart form sorting)
+        # If yes, (re)compute the queryset and store it in the session
+        first_run = 'location_list' not in self.request.session
+        params_changed = self.params != self.request.session.get('params', {})
+        if first_run or params_changed:
+            print('first run or params changed')
+            location_list = self.get_queryset()
+            self.request.session['location_list'] = location_list.to_dict(orient='list')
+            self.request.session['params'] = self.params
+        else:
+            location_list = pd.DataFrame(self.request.session['location_list'])
+        
+        # Sort the queryset based on the sort parameter
         self.sort_param = self.request.GET.get('sort', 'relevance_desc')
-
-        # Perform calculations and get queryset
-        object_list = self.get_queryset()
-
+        sort_options = {
+            'relevance_desc': ('relevance', False),
+            'distance_asc': ('distance_to_start', True),
+            'distance_desc': ('distance_to_start', False),
+            'name_asc': ('city', True),
+            'name_desc': ('city', False),
+        }
+        sort_column, sort_order = sort_options.get(self.sort_param)
+        location_list = location_list.sort_values(
+            by=sort_column, ascending=sort_order
+        )
+        
         # Create a Paginator
         self.paginator = Paginator(
-            object_list=object_list,
+            object_list=location_list.reset_index().to_dict('records'),
             per_page=50
         )
 
@@ -124,7 +218,6 @@ class LocationsListView(View):
 
         # DISTANCE TO START LOCATION ------------------------------------------
 
-        #FIXME
         start_location_lat = self.params.get('start_location_lat')
         start_location_lon = self.params.get('start_location_lon')
         locations['distance_to_start'] = haversine(
@@ -146,57 +239,50 @@ class LocationsListView(View):
 
         # RELEVANCE SCORES ----------------------------------------------------
 
-        # Get dates of travel
-        start_date = self.params.get('start_date')
-        end_date = self.params.get('end_date')
+        # Get scores
+        scores, start_location_proxy = get_scores(
+            start_date=self.params.get('start_date'),
+            end_date=self.params.get('end_date'),
+            start_location_lat=self.params.get('start_location_lat'),
+            start_location_lon=self.params.get('start_location_lon'),
+            location_id=None
+        )
 
-        # Fetch score data, convert to DataFrame and pivot
+        # Pivot scores (from long to wide)
         scores = (
-            read_frame(CoreScores.objects.values('location_id', 'dimension_id', 'score'))
+            scores
             .pivot(index='location_id', columns='dimension_id', values='score')
             .rename_axis(None, axis=1)
         )
 
-        #FIXME filter for valid dates based on start_date and end_date
-
         # Add distance_to_start to scores
-        scores['distance_to_start'] = locations['distance_to_start']  #FIXME check if correctly joined
+        #FIXME check if correctly joined
+        scores['distance_to_start'] = locations['distance_to_start']
 
-        #FIXME
+        #FIXME Replace missings
         scores.fillna(-1, inplace=True)
             
         # Previous locations user input
         previous_locations = self.request.GET.getlist('previous_locations')
         previous_locations = [int(loc_id) for loc_id in previous_locations]
 
-        # Compute relevance score and add to DataFrame (correctly joined by pandas index)
+        # Compute relevance score and add to DataFrame
+        # (correctly joined by pandas index)
         locations['relevance'] = compute_relevance(
             previous_locations=previous_locations,
             scores=scores
         )
 
-        # SORT ----------------------------------------------------------------
-
-        # Sort locations based on sort parameter
-        sort_options = {
-            'relevance_desc': ('relevance', False),
-            'distance_asc': ('distance_to_start', True),
-            'distance_desc': ('distance_to_start', False),
-            'name_asc': ('city', True),
-            'name_desc': ('city', False),
-        }
-        sort_column, sort_order = sort_options.get(self.sort_param)
-        locations = locations.sort_values(by=sort_column, ascending=sort_order)
-
         # THUMBNAILS ----------------------------------------------------------
-        thumbnails = read_frame(CoreLocationsImages.objects.values('location_id', 'img_url'))
+        thumbnails = read_frame(
+            CoreLocationsImages.objects.values('location_id', 'img_url')
+        )
         thumbnails.set_index('location_id', inplace=True)
         locations['thumbnail_url'] = thumbnails['img_url']
 
         # ---------------------------------------------------------------------
-
-        # Convert DataFrame back to list of dictionaries
-        return locations.reset_index().to_dict('records')
+        
+        return locations.reset_index()
     
     def get_context_data(self, **kwargs):
         context = {
