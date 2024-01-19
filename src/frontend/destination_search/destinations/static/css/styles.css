@@ -96,6 +96,48 @@
     background-color: orange;
 }
 
+/* Reoccurring elements -----------------------------------------------------*/
+
+.question-box {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: lightgreen;
+}
+
+.submit-button {
+    display: block;
+    width: 100px;
+    margin-left: auto;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+input[name="date_range"] {
+    width: 100%;
+    height: 37px;
+    display: block;
+    top: 0;
+    left: 0;
+    position: relative;
+    padding: 0px 5px;
+}
+
+.select2.select2-container.select2-container--default {
+    width: 100% !important;
+}
+
+.select2-dropdown {
+    z-index: 100000;
+}
+
+.ui-autocomplete {
+    z-index: 100000;
+}
+
 /* Location list ------------------------------------------------------------*/
 
 .filters-container {
@@ -274,46 +316,6 @@
 .discover-form-container form {
     width: 100%;
     background-color: yellow;
-}
-
-.question-box {
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    background-color: lightgreen;
-}
-
-.submit-button {
-    display: block;
-    width: 100px;
-    margin-left: auto;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
-input[name="date_range"] {
-    width: 100%;
-    height: 37px;
-    display: block;
-    top: 0;
-    left: 0;
-    position: relative;
-    padding: 0px 5px;
-}
-
-.discover .select2.select2-container.select2-container--default {
-    width: 100% !important;
-}
-
-.select2-dropdown {
-    z-index: 100000;
-}
-
-.ui-autocomplete {
-    z-index: 100000;
 }
 
 /* Search page --------------------------------------------------------------*/
