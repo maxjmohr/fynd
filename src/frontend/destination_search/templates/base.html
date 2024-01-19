@@ -92,20 +92,38 @@
 
     <script type="text/javascript">
     $(function() {
-        $('input[name="date_range"]').daterangepicker({
+        var start_date = $('input[name="start_date"]');
+        var end_date = $('input[name="end_date"]');
+
+        var date_range_picker = $('#date_range').daterangepicker({
             autoUpdateInput: false,
             minDate: moment(),
+            maxDate: moment().add(1, 'years'),
             locale: {
-                cancelLabel: 'Clear'
+                cancelLabel: 'Clear',
+                format: 'DD/MM/YYYY'
             }
         });
 
-        $('input[name="date_range"]').on('apply.daterangepicker', function(ev, picker) {
+        if (start_date.val() && end_date.val()) {
+            var startDate = moment(start_date.val(), 'YYYY-MM-DD');
+            var endDate = moment(end_date.val(), 'YYYY-MM-DD');
+
+            date_range_picker.data('daterangepicker').setStartDate(startDate);
+            date_range_picker.data('daterangepicker').setEndDate(endDate);
+            date_range_picker.val(startDate.format('DD/MM/YYYY') + ' - ' + endDate.format('DD/MM/YYYY'));
+        }
+
+        date_range_picker.on('apply.daterangepicker', function(ev, picker) {
             $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            start_date.val(picker.startDate.format('YYYY-MM-DD'));
+            end_date.val(picker.endDate.format('YYYY-MM-DD'));
         });
 
-        $('input[name="date_range"]').on('cancel.daterangepicker', function(ev, picker) {
+        date_range_picker.on('cancel.daterangepicker', function(ev, picker) {
             $(this).val('');
+            start_date.val('');
+            end_date.val('');
         });
     });
     </script>

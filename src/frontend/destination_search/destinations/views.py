@@ -41,8 +41,8 @@ def get_scores(
         location_id: int = None):
     
     # Convert start and end date to datatime
-    start_date = pd.to_datetime(start_date, format='%d/%m/%Y')
-    end_date = pd.to_datetime(end_date, format='%d/%m/%Y')
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
 
     # Convert start location to float
     start_location_lat = float(start_location_lat)
@@ -110,16 +110,19 @@ class DiscoverView(FormView):
     success_url = '/list'
 
     def form_valid(self, form):
-        self.request.session['previous_locations'] = list(
-            form.cleaned_data['previous_locations']
-            .values_list('location_id', flat=True)
-        )
-        start_date, end_date = form.cleaned_data.get('date_range')
-        self.request.session['start_date'] = start_date
-        self.request.session['end_date'] = end_date
-        self.request.session['start_location'] = form.cleaned_data['start_location']
-        self.request.session['start_location_lat'] = form.cleaned_data['start_location_lat']
-        self.request.session['start_location_lon'] = form.cleaned_data['start_location_lon']
+        form_data = {
+            'previous_locations': list(
+                form.cleaned_data['previous_locations']
+                .values_list('location_id', flat=True)
+            ),
+            'start_date': form.cleaned_data['start_date'],
+            'end_date': form.cleaned_data['end_date'],
+            'start_location': form.cleaned_data['start_location'],
+            'start_location_lat': form.cleaned_data['start_location_lat'],
+            'start_location_lon': form.cleaned_data['start_location_lon'],
+        }
+        self.request.session.update(form_data)
+
         return super().form_valid(form)
 
     def get_success_url(self):

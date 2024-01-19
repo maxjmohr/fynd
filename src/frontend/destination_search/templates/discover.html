@@ -20,9 +20,12 @@ Discover destinations
             {{ travellers_input_form.start_location_lon.as_widget }}
         </div>
         <div class="form-group question-box">
-            <label for="{{ travellers_input_form.date_range.id_for_label }}">{{ travellers_input_form.date_range.help_text }}</label>
-            {{ travellers_input_form.date_range.errors }}
-            {{ travellers_input_form.date_range.as_widget }}
+            <label for="{{ travellers_input_form.start_date.id_for_label }}">{{ travellers_input_form.start_date.help_text }}</label>
+            <input type="text" id="date_range" placeholder="Select start and end date...">
+            {{ travellers_input_form.start_date.errors }}
+            {{ travellers_input_form.start_date.as_widget }}
+            {{ travellers_input_form.end_date.errors }}
+            {{ travellers_input_form.end_date.as_widget }}
         </div>
         <div class="form-group question-box">
             <label for="{{ travellers_input_form.previous_locations.id_for_label }}">{{ travellers_input_form.previous_locations.help_text }}</label>
