@@ -51,7 +51,17 @@ VALUES  (1, 11, 'crime_rate', 'The crime rate provides insights into the prevale
         (4, 46, 'transportation_costs', NULL, '["transport_month", "transport_ticket", "taxi_start", "taxi_km", "taxi_hour", "gas"]', now()),
         (4, 47, 'social_activities_costs', NULL, '["gym", "tennis", "cinema"]', now()),
         (4, 48, 'retail_products_costs', NULL, '["jeans", "dress", "shoes_running", "shoes_business"]', now()),
-        (5, 51, 'landmarks', 'Part of geography dimension', NULL, now()),
+        (5, 51, 'tree_cover', 'The tree cover dimension provides insights into the percentage of land covered by trees, offering travelers a glimpse into the natural beauty and biodiversity of their chosen location.', NULL, now()),
+        (5, 52, 'shrubland', 'The shrubland share reveals the proportion of land covered by shrubland, giving travelers an understanding of the terrain and ecosystems they can expect to encounter during their journey.', NULL, now()),
+        (5, 53, 'grassland', 'The grassland dimension provides information on the percentage of land covered by grass, offering travelers an appreciation for open spaces and unique ecosystems.', NULL, now()),
+        (5, 54, 'cropland', 'This reveals the percentage of land dedicated to cultivation, providing a glimpse into the local farming practices and the role of agriculture in shaping the region.', NULL, now()),
+        (5, 55, 'built_up', 'Experience the urban environment with the built-up dimension, which indicates the percentage of land covered by human-made structures.', NULL, now()),
+        (5, 56, 'bare_sparse_vegetation', 'The bare sparse vegetation dimension reveals the percentage of land with limited plant cover, giving travelers insights into arid or semi-arid regions and their unique ecosystems.', NULL, now()),
+        (5, 57, 'snow_ice', 'This reveals the percentage of land covered by snow and ice, providing travelers with information on destinations where winter activities and breathtaking icy scenery await.', NULL, now()),
+        (5, 58, 'permanent_water', 'This reveals the percentage of land covered by lakes, rivers, and other water features, allowing travelers to plan activities around serene waterfronts.', NULL, now()),
+        (5, 59, 'herbaceous_wetland', 'This indicates the percentage of land covered by herbaceous wetlands, offering insights into the diverse flora and fauna associated with these vital ecosystems.', NULL, now()),
+        (5, 510, 'mangroves', 'This reveals the percentage of land covered by mangrove forests, providing travelers with a glimpse into unique coastal ecosystems and their ecological significance.', NULL, now()),
+        (5, 511, 'moss_lichen', 'The moss/lichen dimension indicates the percentage of land covered by these distinctive plant forms, offering travelers insights into regions with unique and visually captivating vegetation.', NULL, now()),
         (6, 61, 'reachability', 'xxx', NULL, now()),
         (7, 71, 'health', 'The health dimension measures the degree to which a reasonable quality of life is experienced by all, including material resources, shelter, basic service and connectivity.', NULL, now())
 ;

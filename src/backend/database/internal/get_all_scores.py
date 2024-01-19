@@ -6,6 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 from database.internal.cost_scores import CostScores
+from database.internal.geography_scores import GeographyScores
 from database.internal.health_scores import HealthScores
 from database.internal.safety_scores import SafetyScores
 from database.internal.weather_scores import WeatherScores
@@ -164,6 +165,21 @@ class FillScores:
         return WeatherScores(self.db).get()
 
 
+###----| Geography |----###
+#--| Land coverage |---#
+
+    def geography_coverage_scores(self) -> pd.DataFrame:
+        ''' Fill in the geography coverage scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the coverage scores
+        return GeographyScores(self.db).get_coverage_scores()
+
+#--| Landmarks |---#
+
+
 ###----| Health |----###
 
     def health_scores(self) -> pd.DataFrame:
@@ -288,7 +304,8 @@ which_scores = {
     #'cost': FillScores(db).cost_scores
     #'safety': FillScores(db).safety_scores
     #'weather': FillScores(db).weather_scores
-    'health': FillScores(db).health_scores
+    'geography_coverage': FillScores(db).geography_coverage_scores
+    #'health': FillScores(db).health_scores
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()
