@@ -8,15 +8,17 @@ from data.costs import numbeoScraper
 #from data.safety import create_country_safety_df
 #from data.safety import create_city_safety_df
 #from data.culture import cultural_profile
-from data import geography
+from data.geography import get_land_coverage
 #from data.culture import FourSquareData
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
+import ee
+import json
 import numpy as np
-import openmeteo_requests
 import pandas as pd
+import time
 
 ###----| STEPS |----###
 ## Step 1: Functions to create and fill tables in database
@@ -524,9 +526,39 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
 
 
 ####----| GEOGRAPHY |----####
-# creates dataframe ready to be inserted into the raw_geography table
-def fill_raw_geography(location):
-    return None
+def fill_raw_geography_coverage(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the land coverage for a location
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
+    # Initialize Earth Engine
+    ee.Initialize()
+
+    # Get current location_ids with land coverage data
+    current_state = db.fetch_data(table_name)
+
+    # Get list of locations that are missing in the current state
+    missing_locations = locations[~locations["location_id"].isin(current_state["location_id"])]
+
+    # Get land coverage for each location
+    for _, row in missing_locations.iterrows():
+
+        print(f"Getting land coverage for {row['city']}, {row['country']}...")
+        location_id = row["location_id"]
+        geojson = json.loads(row["geojson"])
+
+        land_coverage = get_land_coverage(location_id, geojson, "ESA")
+
+        # If information could be found for this location, insert it into the database
+        if len(land_coverage) > 0:
+            db.insert_data(land_coverage, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 
@@ -539,8 +571,8 @@ table_fill_function_dict = {
     #"raw_safety_country": [fill_raw_safety_country, 3],
     #"raw_culture": [fill_raw_culture, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    "raw_weather_historical": [fill_raw_weather_historical, 6],
-    #"raw_geography": [fill_raw_geography 7]
+    #"raw_weather_historical": [fill_raw_weather_historical, 6],
+    "raw_geography_coverage": [fill_raw_geography_coverage, 7]
     }
 
 # List that consists of names of log tables that need to be created 
