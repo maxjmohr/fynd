@@ -307,7 +307,6 @@ class LocationsListView(View):
             # Multiply with weights from number of dimensions per category
             # Categories are matched by index of pandas Series
             weights = weights * user_preferences_series
-        print(weights)
 
         # Multiply scores with weights
         scores = scores.merge(weights, on='category_id', how='left')
