@@ -24,24 +24,42 @@ class TravellersInputForm(forms.Form):
         queryset=CoreLocations.objects.only('location_id', 'city'),
         to_field_name='location_id',
         widget=SelectMultipleLocationsWidget(attrs={
-            'data-placeholder': 'Select location(s)...',
+            'data-placeholder': 'Select destination(s)...',
             'data-minimum-input-length': 1
         }),
         required=True,
-        help_text="Search for locations you have previously visited. You can select multiple previous_locations. We'll use this information to compute the relevance of destinations for you."
+        label='Previous destinations',
+        help_text=(
+            "Search for destinations you have previously visited."
+            " You can select multiple destinations."
+            " We'll use this information to compute the relevance of new destinations for you."
+        )
     )
 
     start_date = forms.CharField(
         widget=forms.HiddenInput(),
         required=True,
-        help_text="Select the start and end dates of your travel. We'll use this to tailor the weather and price information. If you are not sure about the dates, you can also provide a borader range or just input the current date.",
-    
+        label='Dates of travel',
+        help_text=(
+            "Select the start and end dates of your travel."
+            " We'll use this to tailor some of our scores."
+            " If you are not sure about the dates, you can also provide a borader range or just input the current date."
+        ),
     )
     end_date = forms.CharField(widget=forms.HiddenInput(), required=True)
     
     start_location = forms.CharField(
-        widget=forms.TextInput(attrs={'placeholder': 'Enter your start location...'}),
-        help_text="Enter your start location. We'll use this to compute the distance to each destination and the cost of travel."
+        widget=forms.TextInput(attrs={
+            'placeholder': 'Enter your start location...',
+            'class': 'input-box'
+        }),
+        required=True,
+        label='Start location',
+        help_text=(
+            "Enter your start location."
+            " We'll use this to compute the distance to each destination and tailor some of our scores, e.g. the cost of travel and the reachability."
+            " By now, our scores will work propely only for German locations."
+        )
     )
     start_location_lat = forms.CharField(widget=forms.HiddenInput(), required=False)
     start_location_lon = forms.CharField(widget=forms.HiddenInput(), required=False)

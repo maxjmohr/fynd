@@ -13,22 +13,25 @@ Discover destinations
     <form method="post">
         {% csrf_token %}
         <div class="form-group question-box">
-            <label for="{{ travellers_input_form.start_location.id_for_label }}">{{ travellers_input_form.start_location.help_text }}</label>
+            <label class="form-label form-label-header" for="{{ travellers_input_form.start_location.id_for_label }}">{{ travellers_input_form.start_location.label }}</label>
+            <p class="form-help-text-display">{{ travellers_input_form.start_location.help_text }}</p>
             {{ travellers_input_form.start_location.errors }}
             {{ travellers_input_form.start_location.as_widget }}
             {{ travellers_input_form.start_location_lat.as_widget }}
             {{ travellers_input_form.start_location_lon.as_widget }}
         </div>
         <div class="form-group question-box">
-            <label for="{{ travellers_input_form.start_date.id_for_label }}">{{ travellers_input_form.start_date.help_text }}</label>
-            <input type="text" id="date_range" placeholder="Select start and end date...">
+            <label class="form-label form-label-header" for="{{ travellers_input_form.start_date.id_for_label }}">{{ travellers_input_form.start_date.label }}</label>
+            <p class="form-help-text-display">{{ travellers_input_form.start_date.help_text }}</p>
+            <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
             {{ travellers_input_form.start_date.errors }}
             {{ travellers_input_form.start_date.as_widget }}
             {{ travellers_input_form.end_date.errors }}
             {{ travellers_input_form.end_date.as_widget }}
         </div>
         <div class="form-group question-box">
-            <label for="{{ travellers_input_form.previous_locations.id_for_label }}">{{ travellers_input_form.previous_locations.help_text }}</label>
+            <label class="form-label form-label-header" for="{{ travellers_input_form.previous_locations.id_for_label }}">{{ travellers_input_form.previous_locations.label }}</label>
+            <p class="form-help-text-display">{{ travellers_input_form.previous_locations.help_text }}</p>
             {{ travellers_input_form.previous_locations.errors }}
             {{ travellers_input_form.previous_locations.as_widget }}
         </div>

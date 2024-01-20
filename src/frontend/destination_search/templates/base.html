@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
 
+    <!-- Info icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
     <!-- jQuery UI CSS -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
@@ -173,6 +176,34 @@
                 minLength: 2
             });
         });
+    </script>
+
+    <!-- Info icon help text -->
+    <script>
+        var currentHelpBox = null;
+
+        function showHelpText(event, id) {
+            event.stopPropagation();
+            var helpTextBox = document.getElementById(id);
+            if (currentHelpBox && currentHelpBox !== helpTextBox) {
+                currentHelpBox.style.display = "none";
+            }
+            if (helpTextBox.style.display === "none") {
+                helpTextBox.style.display = "block";
+                currentHelpBox = helpTextBox;
+            } else {
+                helpTextBox.style.display = "none";
+                currentHelpBox = null;
+            }
+        }
+
+        // Close the help box when clicking anywhere else on the page
+        window.onclick = function(event) {
+            if (currentHelpBox) {
+                currentHelpBox.style.display = "none";
+                currentHelpBox = null;
+            }
+        }
     </script>
 
 </body>

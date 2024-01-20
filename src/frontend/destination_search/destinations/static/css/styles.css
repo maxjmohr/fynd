@@ -1,6 +1,8 @@
 /* Define some colors and other variables */
 :root {
     --accent1: #007bff;
+    --accent2: rgb(0, 39, 145);
+    --customlightgrey: #e2e2e2;
     --customgrey: #6c757d;
 
     --content-width: calc(min(1200px, 100% - 20px));
@@ -114,9 +116,66 @@
     margin-left: auto;
     margin-top: 10px;
     font-weight: bold;
+    color: white;
+    background-color: var(--accent1);
+    border-radius: 4px;
+    border: 1px solid var(--accent1);
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-input[name="date_range"] {
+.submit-button:active {
+    background-color: var(--accent2);
+    box-shadow: none;
+}
+
+.form-label {
+    color: black;
+}
+
+.form-label-header {
+    font-weight: bold;
+}
+
+.form-help-text-display {
+    color: rgb(40, 40, 40);
+}
+
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+.form-help-text-infobox {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    background-color: var(--light);
+    color: var(--customgrey);
+    border-radius: 4px;
+    border: 1px solid var(--customgrey);
+    padding: 5px;
+    font-size: 12px;
+    left: 100%;
+    top: 0;
+    margin-left: 10px;
+    width: 200px;
+}
+
+.form-help-text-infobox::before {
+    content: "";
+    position: absolute;
+    left: -14px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent var(--customgrey) transparent transparent;
+}
+
+.info-icon {
+    cursor: pointer;
+    color: var(--accent1);
+}
+
+.input-box {
     width: 100%;
     height: 37px;
     display: block;
@@ -124,6 +183,8 @@ input[name="date_range"] {
     left: 0;
     position: relative;
     padding: 0px 5px;
+    border-radius: 4px;
+    border: 1px solid rgb(170, 170, 170);
 }
 
 .select2.select2-container.select2-container--default {
@@ -144,7 +205,7 @@ input[name="date_range"] {
     position: sticky;
     top: 50px;
     width: 35%;
-    background-color: var(--customgrey);
+    background-color: lightblue;
     z-index: 1;
     border-radius: 0 0 10px 10px;
     padding: 10px;
@@ -275,10 +336,6 @@ input[name="date_range"] {
     color: black;
     position: relative;
     overflow: hidden;
-}
-
-.box h2 {
-    /*z-index: 1;*/
 }
 
 .box-text {
