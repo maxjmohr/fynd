@@ -2,7 +2,7 @@
 :root {
     --accent1: #007bff;
     --accent2: rgb(0, 39, 145);
-    --customlightgrey: #e2e2e2;
+    --customlightgrey: #f9f9f9;
     --customgrey: #6c757d;
 
     --content-width: calc(min(1200px, 100% - 20px));
@@ -96,6 +96,7 @@
     align-items: flex-start;
     flex-wrap: nowrap;
     background-color: orange;
+    margin-bottom: 20px;
 }
 
 /* Reoccurring elements -----------------------------------------------------*/
@@ -201,14 +202,30 @@
 
 /* Location list ------------------------------------------------------------*/
 
-.filters-container {
-    position: sticky;
-    top: 50px;
+.list .form-container {
     width: 35%;
     background-color: lightblue;
-    z-index: 1;
     border-radius: 0 0 10px 10px;
     padding: 10px;
+}
+
+.form-group-box {
+    background-color: var(--customlightgrey);
+    border: 1px solid var(--customgrey);
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.form-group-content {
+    padding: 10px;
+    margin-bottom: -16px;
+}
+
+.form-group-summary {
+    background-color: var(--customgrey);
+    color: white;
+    padding: 5px;
+    cursor: pointer;
 }
 
 .results-container {

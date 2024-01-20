@@ -8,62 +8,83 @@ Results
 {% block main %}
 
 <!--- Forms -->
-<div class="filters-container">
+<div class="form-container" id="formContainer">
     <form method="get" id="listForm" onsubmit="submitForm(event);">
-        <div class="form-group">
-            <div class="tooltip-container">
-                <label class="form-label" for="{{ travellers_input_form.start_location.id_for_label }}">
-                    {{ travellers_input_form.start_location.label }}
-                </label>
-                <span class="info-icon" onclick="showHelpText(event, 'start_location_help_text')">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                <div id="start_location_help_text" class="form-help-text-infobox">
-                    {{ travellers_input_form.start_location.help_text }}
+        <details class="form-group-box">
+            <summary class="form-group-summary">Travel characteristics</summary>
+            <div class="form-group-content">
+                <div class="form-group">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ travellers_input_form.start_location.id_for_label }}">
+                            {{ travellers_input_form.start_location.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'start_location_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="start_location_help_text" class="form-help-text-infobox">
+                            {{ travellers_input_form.start_location.help_text }}
+                        </div>
+                    </div>
+                    {{ travellers_input_form.start_location.errors }}
+                    {{ travellers_input_form.start_location.as_widget }}
+                    {{ travellers_input_form.start_location_lat.as_widget }}
+                    {{ travellers_input_form.start_location_lon.as_widget }}
+                </div>
+                <div class="form-group">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ travellers_input_form.start_date.id_for_label }}">
+                            {{ travellers_input_form.start_date.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'start_date_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="start_date_help_text" class="form-help-text-infobox">
+                            {{ travellers_input_form.start_date.help_text }}
+                        </div>
+                    </div>
+                    <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
+                    {{ travellers_input_form.start_date.errors }}
+                    {{ travellers_input_form.start_date.as_widget }}
+                    {{ travellers_input_form.end_date.errors }}
+                    {{ travellers_input_form.end_date.as_widget }}
+                </div>
+                <div class="form-group">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ travellers_input_form.previous_locations.id_for_label }}">
+                            {{ travellers_input_form.previous_locations.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'previous_locations_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="previous_locations_help_text" class="form-help-text-infobox">
+                            {{ travellers_input_form.previous_locations.help_text }}
+                        </div>
+                    </div>
+                    {{ travellers_input_form.previous_locations.errors }}
+                    {{ travellers_input_form.previous_locations.as_widget }}
                 </div>
             </div>
-            {{ travellers_input_form.start_location.errors }}
-            {{ travellers_input_form.start_location.as_widget }}
-            {{ travellers_input_form.start_location_lat.as_widget }}
-            {{ travellers_input_form.start_location_lon.as_widget }}
-        </div>
-        <div class="form-group">
-            <div class="tooltip-container">
-                <label class="form-label" for="{{ travellers_input_form.start_date.id_for_label }}">
-                    {{ travellers_input_form.start_date.label }}
-                </label>
-                <span class="info-icon" onclick="showHelpText(event, 'start_date_help_text')">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                <div id="start_date_help_text" class="form-help-text-infobox">
-                    {{ travellers_input_form.start_date.help_text }}
-                </div>
+        </details>
+
+        <details class="form-group-box"  open>
+            <summary class="form-group-summary">Filters</summary>
+            <div class="form-group-content">
+                {% for field in filters_form %}
+                    <div class="form-group">
+                        {{ field.errors }}
+                        {{ field }}
+                    </div>
+                {% endfor %}
             </div>
-            <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
-            {{ travellers_input_form.start_date.errors }}
-            {{ travellers_input_form.start_date.as_widget }}
-            {{ travellers_input_form.end_date.errors }}
-            {{ travellers_input_form.end_date.as_widget }}
-        </div>
-        <div class="form-group">
-            <div class="tooltip-container">
-                <label class="form-label" for="{{ travellers_input_form.previous_locations.id_for_label }}">
-                    {{ travellers_input_form.previous_locations.label }}
-                </label>
-                <span class="info-icon" onclick="showHelpText(event, 'previous_locations_help_text')">
-                    <i class="fas fa-info-circle"></i>
-                </span>
-                <div id="previous_locations_help_text" class="form-help-text-infobox">
-                    {{ travellers_input_form.previous_locations.help_text }}
-                </div>
+        </details>
+
+        <details class="form-group-box">
+            <summary class="form-group-summary">Preferences</summary>
+            <div class="form-group-content">
+                <p>Set weights for categories. These weights are used for relevance computation.</p>
             </div>
-            {{ travellers_input_form.previous_locations.errors }}
-            {{ travellers_input_form.previous_locations.as_widget }}
-        </div>
-        {% for field in filters_form %}
-                {{ field.errors }}
-                {{ field }}
-        {% endfor %}
+        </details>
+
         <input type="submit" value="Apply" class="submit-button">
     </form>
 </div>
@@ -221,6 +242,43 @@ Results
         url.searchParams.set(key, value);
         window.location.href = url.href;
     }
+</script>
+
+<!-- From container scrolling -->
+<script>
+    function adjustFormContainer() {
+        var formContainer = document.getElementById('formContainer');
+        var parentDiv = document.getElementById('mainContent');
+        var headerContainer = document.getElementById('headerContainer');
+        var rect = formContainer.getBoundingClientRect();
+        var parentRect = parentDiv.getBoundingClientRect();
+        var headerRect = headerContainer.getBoundingClientRect();
+        var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+        // Artifically adjust window height to add some space below the form container
+        windowHeight = windowHeight - 20;
+
+        if (rect.bottom > windowHeight) {
+            formContainer.style.position = 'relative';
+            formContainer.style.top = 'auto';
+        }
+        else {
+            if (rect.top < headerRect.bottom) {
+                formContainer.style.position = 'sticky';
+                formContainer.style.top = (windowHeight - rect.height) + 'px';
+            } 
+            else {
+                formContainer.style.position = 'sticky';
+                formContainer.style.top = headerRect.bottom + 'px';
+            }
+        }
+    };
+
+    // Run the function when the page is loaded
+    adjustFormContainer();
+
+    // Run the function when a scroll event is detected
+    window.addEventListener('scroll', adjustFormContainer);
 </script>
 
 {% endblock %}
