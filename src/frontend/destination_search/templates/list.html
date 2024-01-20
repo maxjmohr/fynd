@@ -9,218 +9,218 @@ Results
 
 <!--- Forms -->
 <div class="filters-container">
-  <form method="get" id="listForm" onsubmit="submitForm(event);">
-    <div class="form-group">
-      <div class="tooltip-container">
-        <label class="form-label" for="{{ travellers_input_form.start_location.id_for_label }}">
-          {{ travellers_input_form.start_location.label }}
-        </label>
-        <span class="info-icon" onclick="showHelpText(event, 'start_location_help_text')">
-          <i class="fas fa-info-circle"></i>
-        </span>
-        <div id="start_location_help_text" class="form-help-text-infobox">
-          {{ travellers_input_form.start_location.help_text }}
+    <form method="get" id="listForm" onsubmit="submitForm(event);">
+        <div class="form-group">
+            <div class="tooltip-container">
+                <label class="form-label" for="{{ travellers_input_form.start_location.id_for_label }}">
+                    {{ travellers_input_form.start_location.label }}
+                </label>
+                <span class="info-icon" onclick="showHelpText(event, 'start_location_help_text')">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                <div id="start_location_help_text" class="form-help-text-infobox">
+                    {{ travellers_input_form.start_location.help_text }}
+                </div>
+            </div>
+            {{ travellers_input_form.start_location.errors }}
+            {{ travellers_input_form.start_location.as_widget }}
+            {{ travellers_input_form.start_location_lat.as_widget }}
+            {{ travellers_input_form.start_location_lon.as_widget }}
         </div>
-      </div>
-      {{ travellers_input_form.start_location.errors }}
-      {{ travellers_input_form.start_location.as_widget }}
-      {{ travellers_input_form.start_location_lat.as_widget }}
-      {{ travellers_input_form.start_location_lon.as_widget }}
-    </div>
-    <div class="form-group">
-      <div class="tooltip-container">
-        <label class="form-label" for="{{ travellers_input_form.start_date.id_for_label }}">
-          {{ travellers_input_form.start_date.label }}
-        </label>
-        <span class="info-icon" onclick="showHelpText(event, 'start_date_help_text')">
-          <i class="fas fa-info-circle"></i>
-        </span>
-        <div id="start_date_help_text" class="form-help-text-infobox">
-          {{ travellers_input_form.start_date.help_text }}
+        <div class="form-group">
+            <div class="tooltip-container">
+                <label class="form-label" for="{{ travellers_input_form.start_date.id_for_label }}">
+                    {{ travellers_input_form.start_date.label }}
+                </label>
+                <span class="info-icon" onclick="showHelpText(event, 'start_date_help_text')">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                <div id="start_date_help_text" class="form-help-text-infobox">
+                    {{ travellers_input_form.start_date.help_text }}
+                </div>
+            </div>
+            <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
+            {{ travellers_input_form.start_date.errors }}
+            {{ travellers_input_form.start_date.as_widget }}
+            {{ travellers_input_form.end_date.errors }}
+            {{ travellers_input_form.end_date.as_widget }}
         </div>
-      </div>
-      <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
-      {{ travellers_input_form.start_date.errors }}
-      {{ travellers_input_form.start_date.as_widget }}
-      {{ travellers_input_form.end_date.errors }}
-      {{ travellers_input_form.end_date.as_widget }}
-    </div>
-    <div class="form-group">
-      <div class="tooltip-container">
-        <label class="form-label" for="{{ travellers_input_form.previous_locations.id_for_label }}">
-          {{ travellers_input_form.previous_locations.label }}
-        </label>
-        <span class="info-icon" onclick="showHelpText(event, 'previous_locations_help_text')">
-          <i class="fas fa-info-circle"></i>
-        </span>
-        <div id="previous_locations_help_text" class="form-help-text-infobox">
-          {{ travellers_input_form.previous_locations.help_text }}
+        <div class="form-group">
+            <div class="tooltip-container">
+                <label class="form-label" for="{{ travellers_input_form.previous_locations.id_for_label }}">
+                    {{ travellers_input_form.previous_locations.label }}
+                </label>
+                <span class="info-icon" onclick="showHelpText(event, 'previous_locations_help_text')">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+                <div id="previous_locations_help_text" class="form-help-text-infobox">
+                    {{ travellers_input_form.previous_locations.help_text }}
+                </div>
+            </div>
+            {{ travellers_input_form.previous_locations.errors }}
+            {{ travellers_input_form.previous_locations.as_widget }}
         </div>
-      </div>
-      {{ travellers_input_form.previous_locations.errors }}
-      {{ travellers_input_form.previous_locations.as_widget }}
-    </div>
-    {% for field in filters_form %}
-        {{ field.errors }}
-        {{ field }}
-    {% endfor %}
-    <input type="submit" value="Apply" class="submit-button">
-  </form>
+        {% for field in filters_form %}
+                {{ field.errors }}
+                {{ field }}
+        {% endfor %}
+        <input type="submit" value="Apply" class="submit-button">
+    </form>
 </div>
 
 <!--- Results -->
 <div class="results-container">
 
-  <!--- Sort-by dropdown -->
-  <div class="sort-container">
-    <div class="sort-label">Sort by:</div>
-    <form action="" method="get" id="sortForm" style="display: flex; align-items: center;">
-      <select class="form-control ml-2" id="sort" name="sort" onchange="setParam('sort', this.value);">
-        <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (descending)</option>
-        <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to start (ascending)</option>
-        <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to start (descending)</option>
-        <option value="name_asc" {% if current_sort_order == 'name_asc' %}selected{% endif %}>Name (ascending)</option>
-        <option value="name_desc" {% if current_sort_order == 'name_desc' %}selected{% endif %}>Name (descending)</option>
-      </select>
-    </form>
-  </div>
+    <!--- Sort-by dropdown -->
+    <div class="sort-container">
+        <div class="sort-label">Sort by:</div>
+        <form action="" method="get" id="sortForm" style="display: flex; align-items: center;">
+            <select class="form-control ml-2" id="sort" name="sort" onchange="setParam('sort', this.value);">
+                <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (descending)</option>
+                <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to start (ascending)</option>
+                <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to start (descending)</option>
+                <option value="name_asc" {% if current_sort_order == 'name_asc' %}selected{% endif %}>Name (ascending)</option>
+                <option value="name_desc" {% if current_sort_order == 'name_desc' %}selected{% endif %}>Name (descending)</option>
+            </select>
+        </form>
+    </div>
 
-  <!--- List of locations -->
-  <div class="location-list-container">
-    {% for location in location_list %}
+    <!--- List of locations -->
+    <div class="location-list-container">
+        {% for location in location_list %}
 
-      <div class="location-list-item-container">
+            <div class="location-list-item-container">
 
-        <div class="location-list-item-image-container">
-          <a href="{% url 'location_detail' location_id=location.location_id %}">
-            <img src=" {{location.thumbnail_url }} " alt="{{ location.city }} image" height="100px" width="100px">
-          </a>
-        </div>
-        
-        <div class="location-list-item-info-container">
-          <div class="location-list-item-title">
-            <a href="{% url 'location_detail' location_id=location.location_id %}">
-              <span class="location-list-item-city-name"> {{ location.city }} </span>
-            </a>
-            <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:"0"|intcomma }} km)</span>
-          </div>
-          <br>
-          <div class=".location-list-item-country-name">
-            <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
-            {{ location.country }}
-          </div>
+                <div class="location-list-item-image-container">
+                    <a href="{% url 'location_detail' location_id=location.location_id %}">
+                        <img src=" {{location.thumbnail_url }} " alt="{{ location.city }} image" height="100px" width="100px">
+                    </a>
+                </div>
+                
+                <div class="location-list-item-info-container">
+                    <div class="location-list-item-title">
+                        <a href="{% url 'location_detail' location_id=location.location_id %}">
+                            <span class="location-list-item-city-name"> {{ location.city }} </span>
+                        </a>
+                        <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:"0"|intcomma }} km)</span>
+                    </div>
+                    <br>
+                    <div class="location-list-item-country-name">
+                        <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                        {{ location.country }}
+                    </div>
 
-        </div>
-        <div class="location-list-item-relevance-container">
-          <div class="location-list-item-relevance">{{ location.relevance|floatformat:1  }}</div>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-
-  <!-- Pagination controls -->
-  <div class="pagination-container">
-    <nav aria-label="Page navigation">
-      <ul class="pagination">
-        {% if location_list.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="#" onclick="setParam('page', {{ location_list.previous_page_number }}); return false;" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" href="#" aria-label="Previous">
-              <span aria-hidden="true">&laquo;</span>
-            </a>
-          </li>
-        {% endif %}
-
-        {% if location_list.number > 2 %}
-          <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', 1); return false;">1</a></li>
-        {% endif %}
-
-        {% if location_list.number > 3 %}
-          <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
-        {% endif %}
-
-        {% for i in location_list.paginator.page_range %}
-          {% if i >= location_list.number|add:"-1" and i <= location_list.number|add:"1" %}
-            <li class="page-item {% if location_list.number == i %}active{% endif %}"><a class="page-link" href="#" onclick="setParam('page', {{ i }}); return false;">{{ i }}</a></li>
-          {% endif %}
+                </div>
+                <div class="location-list-item-relevance-container">
+                    <div class="location-list-item-relevance">{{ location.relevance|floatformat:1    }}</div>
+                </div>
+            </div>
         {% endfor %}
+    </div>
 
-        {% if location_list.number < location_list.paginator.num_pages|add:"-2" %}
-          <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
-        {% endif %}     
+    <!-- Pagination controls -->
+    <div class="pagination-container">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if location_list.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="setParam('page', {{ location_list.previous_page_number }}); return false;" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
 
-        {% if location_list.number < location_list.paginator.num_pages|add:"-1" %}
-          <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', {{ location_list.paginator.num_pages }}); return false;">{{ location_list.paginator.num_pages }}</a></li>
-        {% endif %}
+                {% if location_list.number > 2 %}
+                    <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', 1); return false;">1</a></li>
+                {% endif %}
 
-        {% if location_list.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="#" onclick="setParam('page', {{ location_list.next_page_number }}); return false;" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <a class="page-link" href="#" aria-label="Next">
-              <span aria-hidden="true">&raquo;</span>
-            </a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
-  </div>
+                {% if location_list.number > 3 %}
+                    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                {% endif %}
+
+                {% for i in location_list.paginator.page_range %}
+                    {% if i >= location_list.number|add:"-1" and i <= location_list.number|add:"1" %}
+                        <li class="page-item {% if location_list.number == i %}active{% endif %}"><a class="page-link" href="#" onclick="setParam('page', {{ i }}); return false;">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if location_list.number < location_list.paginator.num_pages|add:"-2" %}
+                    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                {% endif %}         
+
+                {% if location_list.number < location_list.paginator.num_pages|add:"-1" %}
+                    <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', {{ location_list.paginator.num_pages }}); return false;">{{ location_list.paginator.num_pages }}</a></li>
+                {% endif %}
+
+                {% if location_list.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="setParam('page', {{ location_list.next_page_number }}); return false;" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 
 </div>
 
 
 <!-- Preserve form values from all forms on the page -->
 <script>
-  function submitForm(e) {
-    e.preventDefault();
+    function submitForm(e) {
+        e.preventDefault();
 
-    // Create a new URL object with the current URL
-    var url = new URL(window.location.href);
+        // Create a new URL object with the current URL
+        var url = new URL(window.location.href);
 
-    // Iterate over all form inputs
-    var formData = new FormData(e.target);
-    for (var pair of formData.entries()) {
-      // If the parameter already exists, delete it
-      if (url.searchParams.has(pair[0])) {
-        url.searchParams.delete(pair[0]);
-      }
+        // Iterate over all form inputs
+        var formData = new FormData(e.target);
+        for (var pair of formData.entries()) {
+            // If the parameter already exists, delete it
+            if (url.searchParams.has(pair[0])) {
+                url.searchParams.delete(pair[0]);
+            }
+        }
+
+        // Iterate over all form inputs again to set the new values
+        for (var pair of formData.entries()) {
+            // Add the input's value as a parameter to the URL
+            url.searchParams.append(pair[0], pair[1]);
+        }
+
+        // Iterate over all existing URL parameters
+        for (var pair of new URLSearchParams(window.location.search).entries()) {
+            // If the parameter is not already present in the URL, add it
+            if (!url.searchParams.has(pair[0])) {
+                url.searchParams.append(pair[0], pair[1]);
+            }
+        }
+
+        // Navigate to the new URL
+        window.location.href = url.href;
     }
-
-    // Iterate over all form inputs again to set the new values
-    for (var pair of formData.entries()) {
-      // Add the input's value as a parameter to the URL
-      url.searchParams.append(pair[0], pair[1]);
-    }
-
-    // Iterate over all existing URL parameters
-    for (var pair of new URLSearchParams(window.location.search).entries()) {
-      // If the parameter is not already present in the URL, add it
-      if (!url.searchParams.has(pair[0])) {
-        url.searchParams.append(pair[0], pair[1]);
-      }
-    }
-
-    // Navigate to the new URL
-    window.location.href = url.href;
-  }
 </script>
 
 <!-- Change single parameter value (sort dropdown, pagnav)-->
 <script>
-  function setParam(key, value) {
-    var url = new URL(window.location.href);
-    url.searchParams.set(key, value);
-    window.location.href = url.href;
-  }
+    function setParam(key, value) {
+        var url = new URL(window.location.href);
+        url.searchParams.set(key, value);
+        window.location.href = url.href;
+    }
 </script>
 
 {% endblock %}
