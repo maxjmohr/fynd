@@ -9,7 +9,7 @@ from django import forms
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import render, redirect
 from django.db.models import Q
-from .models import CoreScores, CoreLocations, CoreLocationsImages
+from .models import CoreScores, CoreLocations, CoreLocationsImages, CoreDimensions
 from .forms import *
 from .compute_relevance import compute_relevance
 from .compute_haversine import haversine
@@ -75,7 +75,7 @@ def get_scores(
     include_fields = [f for f in all_fields if f not in exclude_fields]
 
     # Get as DataFrame
-    scores = read_frame(query.values(*include_fields))
+    scores = read_frame(query.values(*include_fields)).astype({'score': float})
 
     # Convert 'start_date' and 'end_date' to datetime
     scores['start_date'] = pd.to_datetime(scores['start_date'])
@@ -263,14 +263,56 @@ class LocationsListView(View):
 
         # RELEVANCE SCORES ----------------------------------------------------
 
+        # Previous locations user input
+        previous_locations = self.request.GET.getlist('previous_locations')
+        previous_locations = [int(loc_id) for loc_id in previous_locations]
+
         # Get scores
         scores, start_location_proxy = get_scores(
             start_date=self.params.get('start_date'),
             end_date=self.params.get('end_date'),
             start_location_lat=self.params.get('start_location_lat'),
             start_location_lon=self.params.get('start_location_lon'),
-            location_id=None
+            location_id=locations.index.tolist() + previous_locations
         )
+
+        # Rescale scores based on number of dimensions per category
+        n_dims_per_category = (
+            read_frame(CoreDimensions.objects.values('category_id'))
+            .category_id
+            .value_counts()
+            .rename('n_dims')
+        )
+        # Reverse such that scores of categories with more dimensions get lower weights
+        weights = 1/n_dims_per_category
+        weights.rename('weight', inplace=True)
+
+        # Incorporate user preferences
+        user_preferences = {
+            'CoreCategories object (1)': 0.88,
+            'CoreCategories object (2)': 0.34,
+            'CoreCategories object (3)': 0.12,
+            'CoreCategories object (4)': 0.55,
+            'CoreCategories object (5)': 0.66,
+            'CoreCategories object (6)': 0.77,
+            'CoreCategories object (7)': 0.89,
+            'distance_to_start': 1.89,
+        }
+        #user_preferences = None #FIXME
+        if user_preferences:
+            # Convert user preferences to pandas Series
+            user_preferences_series = pd.Series(user_preferences, name='weight')
+            user_preferences_series.index.name = 'category_id'
+
+            # Multiply with weights from number of dimensions per category
+            # Categories are matched by index of pandas Series
+            weights = weights * user_preferences_series
+        print(weights)
+
+        # Multiply scores with weights
+        scores = scores.merge(weights, on='category_id', how='left')
+        scores['score'] *= scores['weight']
+        scores.drop(columns=['weight'], inplace=True)
 
         # Pivot scores (from long to wide)
         scores = (
@@ -279,16 +321,17 @@ class LocationsListView(View):
             .rename_axis(None, axis=1)
         )
 
-        # Add distance_to_start to scores (scaled to [0,1])
-        print(scores.index.name, locations.index.name)
-        scores['distance_to_start'] = locations['distance_to_start']/locations['distance_to_start'].max()
+        # Add distance_to_start to scores
+        # (scaled to [0,1] and multiplied with user preference)
+        distance_to_start_score = (
+            locations['distance_to_start']/locations['distance_to_start'].max()
+        )
+        if user_preferences:
+            distance_to_start_score *= user_preferences['distance_to_start'] #FIXME
+        scores['distance_to_start'] = distance_to_start_score
 
         #FIXME Replace missings
         scores.fillna(-1, inplace=True)
-            
-        # Previous locations user input
-        previous_locations = self.request.GET.getlist('previous_locations')
-        previous_locations = [int(loc_id) for loc_id in previous_locations]
 
         # Compute relevance score and add to DataFrame
         # (correctly joined by pandas index)
