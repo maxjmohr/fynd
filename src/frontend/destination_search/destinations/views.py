@@ -254,8 +254,6 @@ class LocationsListView(View):
         min_distance = self.params.get('min_distance', None)
         max_distance = self.params.get('max_distance', None)
 
-        print(min_distance, max_distance)
-
         # If a distance range is set, filter the DataFrame
         if min_distance is not None and max_distance is not None:
             locations = locations[
@@ -281,9 +279,9 @@ class LocationsListView(View):
             .rename_axis(None, axis=1)
         )
 
-        # Add distance_to_start to scores
-        #FIXME check if correctly joined
-        scores['distance_to_start'] = locations['distance_to_start']
+        # Add distance_to_start to scores (scaled to [0,1])
+        print(scores.index.name, locations.index.name)
+        scores['distance_to_start'] = locations['distance_to_start']/locations['distance_to_start'].max()
 
         #FIXME Replace missings
         scores.fillna(-1, inplace=True)
