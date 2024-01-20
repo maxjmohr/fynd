@@ -66,8 +66,16 @@ class TravellersInputForm(forms.Form):
 
 
 class FiltersForm(forms.Form):
-    min_distance = forms.IntegerField(required=False)
-    max_distance = forms.IntegerField(required=False)
+    min_distance = forms.DecimalField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Distance from start location',
+        help_text="Distance (as the crow flies) from your start location to the destination."
+    )
+    max_distance = forms.DecimalField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
 
 
 class SearchLocationForm(forms.Form):

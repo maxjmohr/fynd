@@ -69,12 +69,24 @@ Results
         <details class="form-group-box"  open>
             <summary class="form-group-summary">Filters</summary>
             <div class="form-group-content">
-                {% for field in filters_form %}
-                    <div class="form-group">
-                        {{ field.errors }}
-                        {{ field }}
+                <div class="form-group">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_distance.id_for_label }}">
+                            {{ filters_form.min_distance.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_distance_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_distance_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_distance.help_text }}
+                        </div>
                     </div>
-                {% endfor %}
+                    <div class="range-slider-with-histogram" id="distance_to_start_range"></div>
+                    {{ filters_form.min_distance.errors }}
+                    {{ filters_form.min_distance.as_widget }}
+                    {{ filters_form.max_distance.errors }}
+                    {{ filters_form.max_distance.as_widget }}
+                </div>
             </div>
         </details>
 
@@ -198,6 +210,10 @@ Results
 
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+
 
 <!-- Preserve form values from all forms on the page -->
 <script>
@@ -279,6 +295,14 @@ Results
 
     // Run the function when a scroll event is detected
     window.addEventListener('scroll', adjustFormContainer);
+</script>
+
+<!-- Range sliders -->
+<script>
+    $(function() {
+        var data = {{ distance_to_start_hist_data|safe }};
+        rangeSlider("distance_to_start_range", "id_min_distance", "id_max_distance", data, d3.format(",.0f"), " km");
+    });
 </script>
 
 {% endblock %}

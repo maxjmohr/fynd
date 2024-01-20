@@ -33,6 +33,11 @@ def encode_url_parameters(params: dict) -> str:
     return urlencode(encoded_params)
 
 
+def create_hist_for_slider(data: pd.Series, bins:  int = 30):
+    hist, bin_edges = np.histogram(data, bins=30)
+    return {'heights': hist.tolist(), 'binLimits': bin_edges.tolist()}
+
+
 def get_scores(
         start_date: str,
         end_date: str,
@@ -181,8 +186,6 @@ class LocationsListView(View):
         new_params = QueryDict('', mutable=True)
         new_params.update(self.params)
 
-        print(self.params)
-
         # Check if the queryset is in the session
         # and if GET parameters have changed (apart form sorting)
         # If yes, (re)compute the queryset and store it in the session
@@ -243,16 +246,22 @@ class LocationsListView(View):
             lon2=locations['lon'].astype(float), #FIXME dtype
             lat2=locations['lat'].astype(float) #FIXME dtype
         )
+        self.request.session['distance_to_start_hist_data'] = create_hist_for_slider(locations['distance_to_start'])
         
         # FILTER --------------------------------------------------------------
 
         # Get the distance range from the session #FIXME get from GET request
-        min_distance = self.request.session.get('min_distance', None)
-        max_distance = self.request.session.get('max_distance', None)
+        min_distance = self.params.get('min_distance', None)
+        max_distance = self.params.get('max_distance', None)
+
+        print(min_distance, max_distance)
 
         # If a distance range is set, filter the DataFrame
         if min_distance is not None and max_distance is not None:
-            locations = locations[(locations['distance_to_start'] >= min_distance) & (locations['distance_to_start'] <= max_distance)]
+            locations = locations[
+                (locations['distance_to_start'] >= float(min_distance))
+                & (locations['distance_to_start'] <= float(max_distance))
+            ]
 
         # RELEVANCE SCORES ----------------------------------------------------
 
@@ -306,7 +315,8 @@ class LocationsListView(View):
             'location_list': self.page,
             'current_sort_order': self.sort_param,
             'travellers_input_form': self.travellers_input_form,
-            'filters_form': self.filters_form
+            'filters_form': self.filters_form,
+            'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
         }
         return context
 

@@ -200,6 +200,46 @@
     z-index: 100000;
 }
 
+.range-slider-with-histogram {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: calc(100% - 16px);
+    margin-top: 25px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.range-slider-histogram-content {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.range-slider-label {
+    color: var(--customgrey);
+    font-size: 0.8em;
+}
+
+.ui-slider {
+    background: none;
+    border: var(--customgrey);
+    height: 3px;
+}
+
+.ui-slider .ui-slider-handle {
+    width: 16px;
+    height: 16px;
+    background-color: var(--customgrey);
+    border: none;
+    border-radius: 50%;
+    top: -9px;
+}
+
+.ui-slider .ui-slider-range {
+    background-color: var(--customgrey);
+}
+
 /* Location list ------------------------------------------------------------*/
 
 .list .form-container {

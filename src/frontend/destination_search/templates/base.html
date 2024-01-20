@@ -206,5 +206,117 @@
         }
     </script>
 
+    <!-- Slider widget with histogram -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        function rangeSlider(containerId, minFieldId, maxFieldId, data, format, suffix) {
+
+            // Define the svg variable at the top of the function
+            var svg;
+
+            // Function to update the colors of the bars
+            function updateBarColors(min, max) {
+                svg.selectAll(".bar rect")
+                    .attr("fill", function(d, i) {
+                        var binLimit = data.binLimits[i];
+                        return (binLimit >= min && binLimit <= max) ? "steelblue" : "#ccc";
+                    });
+            }
+
+            // Create the divs for the histogram, the slider, and the min/max labels
+            var container = $("#" + containerId);
+            var histogramId = containerId + "_histogram";
+            var sliderId = containerId + "_slider";
+            var minLabelId = containerId + "_min_label";
+            var maxLabelId = containerId + "_max_label";
+            container.append('<div id="' + histogramId + '" style="margin-bottom: 2px;"></div>');
+            container.append('<div id="' + sliderId + '" style="margin-bottom: 10px;"></div>');
+            container.append(
+                '<div style="display: flex; justify-content: space-between;">' +
+                    '<div class="range-slider-label" id="' + minLabelId + '"></div>' +
+                    '<div class="range-slider-label" id="' + maxLabelId + '"></div>' +
+                '</div>'
+            );
+
+            // Extract the min and max values from the data
+            var minValue = Math.min(...data.binLimits);
+            var maxValue = Math.max(...data.binLimits);
+
+            // Create a new format function that adds the suffix
+            var formatWithSuffix = function(value) {
+                return format(value) + suffix;
+            };
+
+            // Check if there are any values from the GET request
+            var getMinValue = $("#"+minFieldId).val();
+            var getMaxValue = $("#"+maxFieldId).val();
+
+            // If values exist in the GET request, use them. 
+            // Otherwise, use min and max values from the data.
+            sliderMinValue = getMinValue ? getMinValue : minValue;
+            sliderMaxValue = getMaxValue ? getMaxValue : maxValue;
+
+            // Initialize the min/max labels
+            $("#" + minLabelId).text(formatWithSuffix(sliderMinValue));
+            $("#" + maxLabelId).text(formatWithSuffix(sliderMaxValue));
+
+            // Set initial values for min and max distance form fields
+            $("#" + minFieldId).val(sliderMinValue);
+            $("#" + maxFieldId).val(sliderMaxValue);
+
+            // Create the slider
+            $("#" + sliderId).slider({
+                range: true,
+                min: minValue,
+                max: maxValue,
+                values: [sliderMinValue, sliderMaxValue],
+                slide: function(event, ui) {
+                    $("#" + minFieldId).val(ui.values[0]);
+                    $("#" + maxFieldId).val(ui.values[1]);
+                    $("#" + minLabelId).text(formatWithSuffix(ui.values[0]));
+                    $("#" + maxLabelId).text(formatWithSuffix(ui.values[1]));
+
+                    // Update the colors of the bars
+                    updateBarColors(ui.values[0], ui.values[1]);
+                }
+            });
+
+            // Calculate the maximum height
+            var maxHeight = Math.max(...data.heights);
+
+            // Define the overall height of the histogram
+            var histogramHeight = 30;
+
+            // Create the histogram
+            svg = d3.select("#" + histogramId).append("svg")
+                .attr("viewBox", `0 0 ${data.heights.length * 10} ${histogramHeight}`)
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .classed("range-slider-histogram-content", true);
+
+            var barWidth = 10;
+
+            var bar = svg.selectAll(".bar")
+                .data(data.heights)
+                .enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function(d, i) {
+                    return "translate(" + i * barWidth + "," + (histogramHeight - d * histogramHeight / maxHeight) + ")"; // Scale the y position
+                });
+
+            // Update the width and height of each bar
+            bar.append("rect")
+                .attr("x", 1)
+                .attr("width", barWidth - 1)
+                .attr("height", function(d) { return d * histogramHeight / maxHeight; }) // Scale the height
+                .attr("fill", "steelblue"); // Set the initial color here
+
+            // Update the colors of the bars initially
+            updateBarColors(sliderMinValue, sliderMaxValue);
+
+        }
+    </script>
+
+    {% block javascripts %}{% endblock %}
+
 </body>
 </html>
