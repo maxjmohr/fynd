@@ -12,6 +12,38 @@
     <div>
         <div class="location-name">{{ location.city }}</div>
     </div>
+
+    <div class="tabs">
+        {% for category in categories %}
+        <button class="tablinks" onclick="openCategory(event, '{{category.category}}')">{{ category.category }}</button>
+        {% endfor %}
+    </div>
+
+    {% for category in categories %}
+    <div id="{{category.category}}" class="tabcontent">
+        <p>{{ category.description }}</p>
+    </div>
+    {% endfor %}
 </div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+<script>
+function openCategory(evt, categoryName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(categoryName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+</script>
 
 {% endblock %}

@@ -9,7 +9,13 @@ from django import forms
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import render, redirect
 from django.db.models import Q
-from .models import CoreScores, CoreLocations, CoreLocationsImages, CoreDimensions
+from .models import (
+    CoreScores,
+    CoreLocations,
+    CoreLocationsImages,
+    CoreDimensions,
+    CoreCategories,
+)
 from .forms import *
 from .compute_relevance import compute_relevance
 from .compute_haversine import haversine
@@ -392,11 +398,15 @@ class LocationDetailView(DetailView):
 
         print(image)
 
+        categories = read_frame(CoreCategories.objects.all()).to_dict('records')
+        print(categories)
+
         context.update({
             #'start_location_proxy': start_location_proxy,
             #'scores': scores,
             'image': image,
             'location': location,
+            'categories': categories,
         })
 
         # Add any additional data to the context here. For example:
