@@ -369,7 +369,35 @@ class LocationDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Get location
         location = get_object_or_404(CoreLocations, pk=self.kwargs['location_id'])
+
+        # Add scores to context
+        if False:
+            scores, start_location_proxy = get_scores(
+                start_date=self.request.session['start_date'],
+                end_date=self.request.session['end_date'],
+                start_location_lat=self.request.session['start_location_lat'],
+                start_location_lon=self.request.session['start_location_lon'],
+                location_id=[location.location_id]
+            )
+
+        # Add thumbnails to context
+        image = read_frame(
+            CoreLocationsImages.objects
+            .filter(location_id=location.location_id)
+            .values('img_url')
+        ).img_url.item()
+
+        print(image)
+
+        context.update({
+            #'start_location_proxy': start_location_proxy,
+            #'scores': scores,
+            'image': image,
+            'location': location,
+        })
 
         # Add any additional data to the context here. For example:
         # context['graph_data'] = self.get_graph_data(location)

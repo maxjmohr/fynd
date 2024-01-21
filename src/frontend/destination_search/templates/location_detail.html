@@ -5,6 +5,13 @@
 {% endblock %}
 
 {% block main %}
-<h1>{{ location.city }}</h1>
+<div class="details-page-container">
+    <div class="location-image-container">
+        <img class="location-image" src="{{ image }}" alt="{{ location.city }} image" width="100%" height="100%">
+    </div>
+    <div>
+        <div class="location-name">{{ location.city }}</div>
+    </div>
+</div>
 
 {% endblock %}
