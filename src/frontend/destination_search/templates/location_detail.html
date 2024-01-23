@@ -17,6 +17,7 @@
         {% for category in categories %}
         <button class="tablinks" onclick="openCategory(event, '{{category.category}}')">{{ category.category }}</button>
         {% endfor %}
+        <button class="tablinks" onclick="openCategory(event, 'Comparison to your previous destinations')">Comparison to your previous destinations</button>
     </div>
 
     {% for category in categories %}
@@ -24,6 +25,10 @@
         <p>{{ category.description }}</p>
     </div>
     {% endfor %}
+    <div id="Comparison to your previous destinations" class="tabcontent">
+        <p>Comparison to your previous destinations</p>
+    </div>
+    
 </div>
 
 {% endblock %}
