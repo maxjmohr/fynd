@@ -396,10 +396,7 @@ class LocationDetailView(DetailView):
             .values('img_url')
         ).img_url.item()
 
-        print(image)
-
         categories = read_frame(CoreCategories.objects.all()).to_dict('records')
-        print(categories)
 
         context.update({
             #'start_location_proxy': start_location_proxy,
