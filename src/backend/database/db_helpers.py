@@ -5,7 +5,7 @@ import psycopg2
 from sqlalchemy import create_engine
 
 class Database:
-    def __init__(self, db:str = "dsp", host:str = "2001:7c0:2320:2:f816:3eff:fedc:56d9", user:str = "postgres", password:str = "l0r10t", port:str = "5433"):
+    def __init__(self, db:str = "dsp", host:str = "193.196.55.109", user:str = "postgres", password:str = "l0r10t", port:str = "5433"):
         ''' Initialize the database
         Input:  - db: str, name of the database
                 - host: str, host of the database
