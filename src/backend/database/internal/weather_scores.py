@@ -70,11 +70,11 @@ class WeatherScores:
 
         # Get dimension_id for each column
         sql = """
-            SELECT d.dimension_id, d.dimension
+            SELECT d.dimension_id, d.dimension_name
             FROM
                 core_dimensions d
                 INNER JOIN core_categories c ON d.category_id = c.category_id
-            WHERE c.category = 'weather'
+            WHERE c.category_name = 'weather'
             """
         dimension_map = self.db.fetch_data(sql=sql)
         dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
@@ -89,7 +89,7 @@ class WeatherScores:
                 )
 
         # Add category_id
-        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category = 'weather'").iloc[0, 0]
+        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_name = 'weather'").iloc[0, 0]
 
         return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
 

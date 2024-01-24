@@ -1,7 +1,7 @@
 CREATE TABLE core_dimensions (
     category_id     INTEGER NOT NULL,
     dimension_id    INTEGER NOT NULL,
-    dimension       VARCHAR(255),
+    dimension_name  VARCHAR(255),
     description     VARCHAR(500),
     extras          VARCHAR(255),
     updated_at      TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc-01'),
@@ -13,13 +13,13 @@ COMMENT ON TABLE core_dimensions IS 'The table contains the dimensions of the ca
 
 COMMENT ON COLUMN core_dimensions.category_id IS 'Unique identifier of the category.';
 COMMENT ON COLUMN core_dimensions.dimension_id IS 'Unique identifier of the dimension.';
-COMMENT ON COLUMN core_dimensions.dimension IS 'Name of the dimension.';
+COMMENT ON COLUMN core_dimensions.dimension_name IS 'Name of the dimension.';
 COMMENT ON COLUMN core_dimensions.description IS 'Description of the dimension.';
 COMMENT ON COLUMN core_dimensions.extras IS 'Extra information about the dimension.';
 COMMENT ON COLUMN core_dimensions.updated_at IS 'Timestamp of the last update.';
 
 -- Create subcategories
-INSERT INTO core_dimensions (category_id, dimension_id, dimension, description, extras, updated_at)
+INSERT INTO core_dimensions (category_id, dimension_id, dimension_name, description, extras, updated_at)
 VALUES  (1, 11, 'crime_rate', 'The crime rate provides insights into the prevalence of criminal activities, helping travelers make informed decisions to ensure their personal safety and security during their stay.', NULL, now()),
         (1, 12, 'ecological_threat', 'The ecological threat gauges the potential harm to the environment, allowing you to choose destinations that prioritize ecological sustainability and minimize the impact of human activities on natural ecosystems.', NULL, now()),
         (1, 13, 'peace_index', 'The Peace Index dimension measures the overall level of peace in a destination. Travelers seeking tranquil and safe environments can rely on this index to gauge the general peacefulness of a location, considering factors such as societal harmony and absence of conflict.', NULL, now()),

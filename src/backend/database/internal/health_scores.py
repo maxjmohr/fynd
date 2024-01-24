@@ -38,7 +38,7 @@ class HealthScores:
             FROM
                 core_dimensions d
                 INNER JOIN core_categories c ON d.category_id = c.category_id
-            WHERE c.category = 'health'
+            WHERE c.category_name = 'health'
             """
         data["category_id"] = self.db.fetch_data(sql=sql).iloc[0, 0]
         data["dimension_id"] = self.db.fetch_data(sql=sql).iloc[0, 1]

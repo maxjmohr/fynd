@@ -42,11 +42,11 @@ class SafetyScores:
 
         # Get dimension_id for each column
         sql = """
-            SELECT d.dimension_id, d.dimension
+            SELECT d.dimension_id, d.dimension_name
             FROM
                 core_dimensions d
                 INNER JOIN core_categories c ON d.category_id = c.category_id
-            WHERE c.category = 'safety'
+            WHERE c.category_name = 'safety'
             """
         dimension_map = self.db.fetch_data(sql=sql)
         dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
@@ -61,7 +61,7 @@ class SafetyScores:
                 )
 
         # Add category_id
-        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category = 'safety'").iloc[0, 0]
+        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_name = 'safety'").iloc[0, 0]
 
         return data[["iso2", "country_name", "category_id", "dimension_id", "start_date", "end_date", "score"]]
 
