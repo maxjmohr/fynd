@@ -4,8 +4,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 from db_helpers import Database
+from get_airports import find_nearest_airports
 
 from Countrydetails import countries
+import datetime
 import geojson
 from geopy import distance
 from geopy.geocoders import Nominatim
@@ -119,6 +121,46 @@ def only_cities(data: pd.DataFrame) -> pd.DataFrame:
     # Reset the index
     data.reset_index(drop=True, inplace=True)
     return data
+
+
+def scrape_ger_train_stations() -> pd.DataFrame:
+    ''' Scrape the German train stations from Wikipedia
+    Input:  None
+    Output: dataframe with the German train stations
+    '''
+    # Get the HTML code
+    print(f"{datetime.datetime.now()} - Getting the German train stations from Wikipedia.")
+    url = "https://de.wikipedia.org/wiki/Bahnhof"
+    page = requests.get(url).content
+    tree = etree.HTML(page)
+    train_stations = tree.xpath('//table[@class="wikitable sortable"]//tr//td//a/text()')
+
+    # Delete all values where we have "Bahn" in the name
+    train_stations = [x for x in train_stations if "Bahn" not in x]
+
+    # Replace "Hauptbahnhof with ""
+    train_stations = [x.replace(" Hauptbahnhof", "") for x in train_stations]
+
+    # Delete all values where we have "bahn" in the name
+    train_stations = [x for x in train_stations if "bahn" not in x]
+
+    # Delete all values where we have "28" in the name
+    train_stations = [x for x in train_stations if "28" not in x]
+    train_stations = train_stations[:15]
+
+    # Covert to dataframe and put values in column "city"
+    df = pd.DataFrame(train_stations, columns=["city"])
+
+    # Add column "country"
+    df["country"] = "Germany"
+
+    # Change some city names
+    df["city"] = df["city"].replace("Köln", "Cologne")
+    df["city"] = df["city"].replace("Frankfurt (Main)", "Frankfurt")
+    df["city"] = df["city"].replace("München", "Munich")
+
+    return df
+
 
 
 ###------| Step 2: Get any master data of target locations |------###
@@ -298,11 +340,12 @@ class LocationMasterData:
         return data
 
 
-def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
+def get_master_data(data: pd.DataFrame, airports:pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
     ''' Get master data of all cities
     Input:  - cities: pd.DataFrame
             - city: str, name of the city
             - country: str, name of the country
+            - airports: all airports from db
             - shape: str, either "polygon" or "circle"
     Output: dataframe with all master data
     '''
@@ -315,7 +358,14 @@ def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
         city = data["city"][i]
         country = data["country"][i]
         print(f"Getting master data for {city}...")
+        # Get master data
         location_data = LocationMasterData(city=city, country=country, shape=shape).get_all()
+
+        # Get airports and append to dataframe
+        nearest_airports = find_nearest_airports(location_data.iloc[0, :], airports)
+        location_data = pd.merge(location_data, nearest_airports, on="location_id", how="inner")
+
+        # Append data to total df
         master_data = pd.concat([master_data, location_data], ignore_index=True)
     
     # Delete all duplicates
@@ -328,41 +378,70 @@ def get_master_data(data: pd.DataFrame, shape: str = "polygon") -> pd.DataFrame:
     return master_data
 
 ###------| Step 3: Execute the data gathering and store data in database |------###
+WHICH_LOCATIONS = "ref_start_locations"  # either "ref_start_locations" or "locations"
 
-## Get locations
-# Check if data already exists
-if os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == False:
-    print("File with locations already exists. Reading file...")
-    cities = only_cities(pd.read_csv("res/master_data/wikivoyage_locations.csv"))
-elif os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == True:
-    print("File with locations already exists but explicitely updating file...")
-    cities = only_cities(WikivoyageScraper().get_destinations(save=True))
+if WHICH_LOCATIONS == "ref_start_locations":
+    TARGET_TABLE = "core_ref_start_locations"
+    ## Get reference starting locations
+    # Check if data already exists
+    if os.path.exists("res/master_data/reference_start_locations.csv"):
+        print("File with reference starting locations already exists. Reading file...")
+        cities = pd.read_csv("res/master_data/reference_start_locations.csv")
+    else:
+        print("File with reference starting locations does not exist yet. Creating file...")
+        cities = scrape_ger_train_stations()
+        cities.to_csv("res/master_data/reference_start_locations.csv", index=False)
+
+elif WHICH_LOCATIONS == "locations":
+    TARGET_TABLE = "core_locations"
+    ## Get locations
+    # Check if data already exists
+    if os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == False:
+        print("File with locations already exists. Reading file...")
+        cities = only_cities(pd.read_csv("res/master_data/wikivoyage_locations.csv"))
+    elif os.path.exists("res/master_data/wikivoyage_locations.csv") and update_Wikivoyage_cities == True:
+        print("File with locations already exists but explicitely updating file...")
+        cities = only_cities(WikivoyageScraper().get_destinations(save=True))
+    else:
+        print("File with locations does not exist yet. Creating file...")
+        cities = only_cities(WikivoyageScraper().get_destinations(save=True))
+
 else:
-    print("File with locations does not exist yet. Creating file...")
-    cities = only_cities(WikivoyageScraper().get_destinations(save=True))
+    raise ValueError("Invalid value for parameter 'WHICH_LOCATIONS'. Must be either 'ref_start_locations' or 'locations'.")
+
+## Get airports
+db = Database()
+db.connect()
+airports = db.fetch_data(total_object="core_airports")
+db.disconnect()
 
 ## Get master data
-master_data = get_master_data(cities, shape="polygon")
+master_data = get_master_data(cities, airports, shape="polygon")
 
 # Check cities that don't exist in db yet
 # Go through csv and compare to db as cities might be named differently
 # Delete/update accordingly
+"""
 db = Database()
 db.connect()
-old_loc = db.fetch_data(total_object="core_locations")
+old_loc = db.fetch_data(total_object=TARGET_TABLE)
 db.disconnect()
 new_master_data = master_data[~(master_data['city'].isin(old_loc['city']))]
 # Save master data
-new_master_data.to_csv("res/master_data/new_cities_master_data.csv", index=False)
+if WHICH_LOCATIONS == "ref_start_locations":
+    new_master_data.to_csv("res/master_data/new_ref_start_locations.csv", index=False)
+elif WHICH_LOCATIONS == "locations":
+    new_master_data.to_csv("res/master_data/new_cities_master_data.csv", index=False)
+"""
 
 
 ## Store data in database
 """
 db = Database()
 db.connect()
-db.drop_db_object(object="core_locations")
-db.create_db_object(object="core_locations")
-db.insert_data(master_data, table="core_locations", if_exists="replace", updated_at=True)
-print(db.fetch_data(total_object="core_locations"))
+db.drop_db_object(object=TARGET_TABLE)
+db.create_db_object(object=TARGET_TABLE)
+db.insert_data(master_data, table=TARGET_TABLE, if_exists="replace", updated_at=True)
+print(db.fetch_data(total_object=TARGET_TABLE))
 db.disconnect()
 """

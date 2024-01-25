@@ -160,6 +160,7 @@ def find_nearest_airports(location:pd.Series, airports:pd.DataFrame) -> pd.DataF
     '''
     # Calculate the distance between the location and all airports
     print(f"{datetime.datetime.now()} - Calculating the distance between {location['city']}, {location['country']} and all airports.")
+    location = location.copy()
     location["lat"] = pd.to_numeric(location["lat"])
     location["lon"] = pd.to_numeric(location["lon"])
     airports["distance"] = airports.apply(lambda row: haversine_distance(location["lat"], location["lon"], row["lat"], row["lon"]), axis=1)
@@ -192,6 +193,7 @@ print(results)
 
 # Insert the results into the database
 print(f"{datetime.datetime.now()} - Inserting the airports into 'core_locations'.")
+"""
 
 def insert_airport_cols(row):
     ''' Insert the airports into the database
@@ -200,12 +202,12 @@ def insert_airport_cols(row):
     '''
     print(f"{datetime.datetime.now()} - Updating the airports for {row['location_id']} into 'core_locations'.")
     sql = f"""
-    #    UPDATE core_locations
-    #    SET airport_1 = '{row["airport_1"]}', airport_2 = '{row["airport_2"]}', airport_3 = '{row["airport_3"]}'
-    #    WHERE location_id = {row["location_id"]}
+        UPDATE core_locations
+        SET airport_1 = '{row["airport_1"]}', airport_2 = '{row["airport_2"]}', airport_3 = '{row["airport_3"]}'
+        WHERE location_id = {row["location_id"]}
     """
     db.execute_sql(sql=sql)
-
+"""
 results.apply(insert_airport_cols, axis=1)
 
 db.disconnect()
