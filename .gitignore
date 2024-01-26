@@ -2,5 +2,6 @@
 .cache.sqlite
 .dsproject          
 *_apikey.txt
+*_apikeys.txt
 api_key_fsq.txt
 __pycache__/

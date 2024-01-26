@@ -6,11 +6,9 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 
-from geopy.geocoders import Nominatim
 import ee
 import json
 import pandas as pd
-import requests
 import time
 
 
@@ -95,46 +93,6 @@ def get_land_coverage(location_id: str, geojson: dict, map: str) -> pd.DataFrame
 
     return land_coverage_shares[["location_id", "tree_cover", "shrubland", "grassland", "cropland", "built_up", "bare_sparse_vegetation", "snow_ice", "permanent_water", "herbaceous_wetland", "mangroves", "moss_lichen"]]
 
-
-def get_landmarks(starting_city: str, shape: str, bounding_box: list, long: int, lat: int, radius: int) -> pd.DataFrame:
-    """ Get landmarks of a city and its region
-    Input:  - city: name of the city
-            - shape: area to search for landmarks. Can either be "box" or "circle"
-            - bounding_box: bounding box of the city. Only used if shape is "box"
-            - long: longitude of the city. Only used if shape is "circle"
-            - lat: latitude of the city. Only used if shape is "circle"
-            - radius: radius of the circle in km. Only used if shape is "circle"
-    Output: landmarks: landmarks of the area
-    """
-    # Get the directory of the current script and read API key
-    current_script_directory = os.path.dirname(os.path.abspath(__file__))
-    path = "../../../res/api_keys/geoapify_apikey.txt"
-    with open(os.path.join(current_script_directory, path), "r") as f:
-        apikey = f.read()
-    
-    # Get landmarks from geoapify API
-    url = "https://api.geoapify.com/v2/places"
-    params = {
-        "categories": "natural,national_park,beach",
-        "conditions": "named", # only named places
-        "limit": 200,
-        "apiKey": apikey,
-        "format": "json"
-    }
-    if shape == "box":
-        params["filter"] = f"rect:{bounding_box[2]},{bounding_box[0]},{bounding_box[3]},{bounding_box[1]}"
-    elif shape == "circle":
-        params["filter"] = f"circle:{long},{lat},{radius}"
-    else:
-        raise ValueError("Invalid shape. Shape can either be 'box' or 'circle'.")
-    response = requests.get(url, params=params).json()["features"]
-
-    # Store the relevant columns in lists and convert to dataframe
-    name, county, city, village, long, lat, categories = [[response[i]["properties"][prop] if prop in response[i]["properties"] else None for i in range(len(response))] for prop in ["name", "county", "city", "village", "lon", "lat", "categories"]]
-    landmarks = pd.DataFrame({"starting_city": starting_city, "name": name, "county": county, "city": city, "village": village, "long": long, "lat": lat, "categories": categories})
-
-    return landmarks
-
 """
 db = Database()
 db.connect()
@@ -148,7 +106,5 @@ if __name__ == "__main__":
     ee.Initialize()
     # Get geographical data
     land_coverage, land_coverage_shares, landcover = get_land_coverage(loc["city"], loc["geojson"], "ESA")
-    #landmarks = get_landmarks(params["city"], params["shape_landmarks"], bounding_box, coor.longitude, coor.latitude, params["radius_landmarks"])
     print(land_coverage_shares)
-    #print(landmarks)
 """
