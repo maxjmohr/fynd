@@ -529,6 +529,7 @@
 
 .tablinks {
     flex-grow: 1;
+    flex-basis: 0;
     background-color: #eee;
     color: black;
     border: 1px solid #ccc;
