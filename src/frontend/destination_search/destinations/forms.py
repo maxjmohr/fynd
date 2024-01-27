@@ -64,6 +64,13 @@ class TravellersInputForm(forms.Form):
     start_location_lat = forms.CharField(widget=forms.HiddenInput(), required=False)
     start_location_lon = forms.CharField(widget=forms.HiddenInput(), required=False)
 
+    def clean_previous_locations(self):
+        previous_locations = self.cleaned_data.get('previous_locations')
+        if previous_locations is not None:
+            # Convert the QuerySet to a list of location IDs
+            return list(previous_locations.values_list('location_id', flat=True))
+        return None
+
 
 class FiltersForm(forms.Form):
     min_distance = forms.DecimalField(

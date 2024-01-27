@@ -125,14 +125,14 @@ Results
             <div class="location-list-item-container">
 
                 <div class="location-list-item-image-container">
-                    <a href="{% url 'location_detail' location_id=location.location_id %}">
+                    <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
                         <img src=" {{location.thumbnail_url }} " alt="{{ location.city }} image">
                     </a>
                 </div>
                 
                 <div class="location-list-item-info-container">
                     <div class="location-list-item-title">
-                        <a href="{% url 'location_detail' location_id=location.location_id %}">
+                        <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
                             <span class="location-list-item-city-name"> {{ location.city }} </span>
                         </a>
                         <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:"0"|intcomma }} km)</span>

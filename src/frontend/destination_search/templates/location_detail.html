@@ -14,15 +14,15 @@
     </div>
 
     <div class="tabs">
-        {% for category in categories %}
-        <button class="tablinks" onclick="openCategory(event, '{{category.category_name}}')">{{ category.category_name }}</button>
+        {% for category in data %}
+        <button class="tablinks" onclick="openCategory(event, '{{category.category_name}}')" title="{{ category.category_description }}">{{ category.category_name }}</button>
         {% endfor %}
         <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
     </div>
 
-    {% for category in categories %}
+    {% for category in data %}
     <div id="{{category.category_name}}" class="tabcontent">
-        <p>{{ category.description }}</p>
+        <p>{{ category.category_description }}</p>
     </div>
     {% endfor %}
     <div id="Similarity" class="tabcontent">

@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django import forms
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import render, redirect
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from .models import (
     CoreScores,
     CoreLocations,
@@ -25,6 +25,11 @@ from urllib.parse import urlencode
 from django_pandas.io import read_frame
 
 import time
+
+
+def get_value_from_object(s: pd.Series) -> pd.Series:
+    """Get the value from an object."""
+    return s.str.extract('(\d+)').astype(int)
 
 
 def encode_url_parameters(params: dict) -> str:
@@ -62,7 +67,7 @@ def get_scores(
     # Get closest reference location for start location -----------------------
     #FIXME
 
-    start_location_proxy = 'palceholder'
+    reference_start_location = 'palceholder'
 
 
     # Get filtered scores -----------------------------------------------------
@@ -109,7 +114,7 @@ def get_scores(
     scores.drop(columns=['overlap_days'], inplace=True)
     scores.reset_index(inplace=True)
 
-    return scores, start_location_proxy
+    return scores, reference_start_location
 
 
 class HomeView(TemplateView):
@@ -120,33 +125,18 @@ class DiscoverView(FormView):
     form_class = TravellersInputForm
     success_url = '/list'
 
-    def form_valid(self, form):
-        form_data = {
-            'previous_locations': list(
-                form.cleaned_data['previous_locations']
-                .values_list('location_id', flat=True)
-            ),
-            'start_date': form.cleaned_data['start_date'],
-            'end_date': form.cleaned_data['end_date'],
-            'start_location': form.cleaned_data['start_location'],
-            'start_location_lat': form.cleaned_data['start_location_lat'],
-            'start_location_lon': form.cleaned_data['start_location_lon'],
-        }
-        self.request.session.update(form_data)
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.update(self.request.session.get('travellers_input_form_data', {}))
+        return initial
 
+    def form_valid(self, form):
+        self.request.session['travellers_input_form_data'] = form.cleaned_data
         return super().form_valid(form)
 
     def get_success_url(self):
-        data = {
-            'start_date': self.request.session['start_date'],
-            'end_date': self.request.session['end_date'],
-            'start_location': self.request.session['start_location'],
-            'start_location_lon': self.request.session['start_location_lon'],
-            'start_location_lat': self.request.session['start_location_lat'],
-            'previous_locations': self.request.session['previous_locations']
-        }
         url = reverse('locations_list')
-        query_string = encode_url_parameters(data)
+        query_string = encode_url_parameters(self.request.session['travellers_input_form_data'])
         url = f"{url}?{query_string}"
         return url
 
@@ -182,6 +172,10 @@ class LocationsListView(View):
         # Form instance
         self.travellers_input_form = TravellersInputForm(self.request.GET)
         self.filters_form = FiltersForm(self.request.GET)
+
+        # If the form is valid, store the cleaned data in the session
+        if self.travellers_input_form.is_valid():
+            self.request.session['travellers_input_form_data'] = self.travellers_input_form.cleaned_data
 
         # Get parameters from the request
         self.params = self.request.GET.dict()
@@ -274,7 +268,7 @@ class LocationsListView(View):
         previous_locations = [int(loc_id) for loc_id in previous_locations]
 
         # Get scores
-        scores, start_location_proxy = get_scores(
+        scores, reference_start_location = get_scores(
             start_date=self.params.get('start_date'),
             end_date=self.params.get('end_date'),
             start_location_lat=self.params.get('start_location_lat'),
@@ -357,12 +351,24 @@ class LocationsListView(View):
         return locations.reset_index()
     
     def get_context_data(self, **kwargs):
+
+        # Assemble query params from GET request for LocationDetailView
+        form_data = self.request.session.get('travellers_input_form_data', {})
+        print(form_data)
+        query_parameters = encode_url_parameters({
+            'start_date': form_data.get('start_date'),
+            'end_date': form_data.get('end_date'),
+            'start_location': form_data.get('start_location'),
+            'start_location_lat': form_data.get('start_location_lat'),
+            'start_location_lon': form_data.get('start_location_lon'),
+        })
         context = {
             'location_list': self.page,
             'current_sort_order': self.sort_param,
             'travellers_input_form': self.travellers_input_form,
             'filters_form': self.filters_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
+            'query_parameters': query_parameters,
         }
         return context
 
@@ -379,35 +385,61 @@ class LocationDetailView(DetailView):
         # Get location
         location = get_object_or_404(CoreLocations, pk=self.kwargs['location_id'])
 
-        # Add scores to context
-        if False:
-            scores, start_location_proxy = get_scores(
-                start_date=self.request.session['start_date'],
-                end_date=self.request.session['end_date'],
-                start_location_lat=self.request.session['start_location_lat'],
-                start_location_lon=self.request.session['start_location_lon'],
-                location_id=[location.location_id]
-            )
-
-        # Add thumbnails to context
+        # Get image
         image = read_frame(
             CoreLocationsImages.objects
             .filter(location_id=location.location_id)
             .values('img_url')
         ).img_url.item()
 
-        categories = read_frame(CoreCategories.objects.all()).to_dict('records')
+        # Get scores
+        scores, reference_start_location = get_scores(
+            start_date=self.request.GET.get('start_date'),
+            end_date=self.request.GET.get('end_date'),
+            start_location_lat=self.request.GET.get('start_location_lat'),
+            start_location_lon=self.request.GET.get('start_location_lon'),
+            location_id=[location.location_id]
+        )
+        scores = (
+            scores
+            .filter(['dimension_id', 'score'])
+            .assign(dimension_id=get_value_from_object(scores.dimension_id))
+            .set_index('dimension_id')
+        )
 
+        # Get categories with related dimensions
+        categories_with_dimensions = CoreCategories.objects.prefetch_related(
+            Prefetch('coredimensions_set')
+        )
+
+        # Convert to list of dictionaries, with dimensions and scores
+        data = [
+            {
+                'category_id': category.category_id,
+                'category_name': category.category_name,
+                'category_description': category.description,
+                'display_order': category.display_order,
+                'dimensions': [
+                    {
+                        'dimension_id': dimension.dimension_id,
+                        'dimension_name': dimension.dimension_name,
+                        'dimension_description': dimension.description,
+                        'score': scores.loc[dimension.dimension_id],
+                    }
+                    for dimension in category.coredimensions_set.all()
+                ],
+            }
+            for category in categories_with_dimensions
+        ]
+
+        # Add to context
         context.update({
-            #'start_location_proxy': start_location_proxy,
-            #'scores': scores,
+            'reference_start_location': reference_start_location,
             'image': image,
             'location': location,
-            'categories': categories,
+            'data': data,
         })
 
-        # Add any additional data to the context here. For example:
-        # context['graph_data'] = self.get_graph_data(location)
 
         return context
 
