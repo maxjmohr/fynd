@@ -15,18 +15,18 @@
 
     <div class="tabs">
         {% for category in categories %}
-        <button class="tablinks" onclick="openCategory(event, '{{category.category}}')">{{ category.category }}</button>
+        <button class="tablinks" onclick="openCategory(event, '{{category.category_name}}')">{{ category.category_name }}</button>
         {% endfor %}
-        <button class="tablinks" onclick="openCategory(event, 'Comparison to your previous destinations')">Comparison to your previous destinations</button>
+        <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
     </div>
 
     {% for category in categories %}
-    <div id="{{category.category}}" class="tabcontent">
+    <div id="{{category.category_name}}" class="tabcontent">
         <p>{{ category.description }}</p>
     </div>
     {% endfor %}
-    <div id="Comparison to your previous destinations" class="tabcontent">
-        <p>Comparison to your previous destinations</p>
+    <div id="Similarity" class="tabcontent">
+        <p>Similarity</p>
     </div>
     
 </div>

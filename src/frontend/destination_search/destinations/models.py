@@ -3,7 +3,7 @@ from django.db import models
 
 class CoreCategories(models.Model):
     category_id = models.IntegerField(primary_key=True)
-    category = models.CharField(max_length=255)
+    category_name = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
@@ -15,7 +15,7 @@ class CoreCategories(models.Model):
 class CoreDimensions(models.Model):
     category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
     dimension_id = models.IntegerField(primary_key=True)
-    dimension = models.CharField(max_length=255, blank=True, null=True)
+    dimension_name = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     extras = models.CharField(max_length=255, blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
