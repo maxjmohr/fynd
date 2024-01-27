@@ -5,6 +5,7 @@ class CoreCategories(models.Model):
     category_id = models.IntegerField(primary_key=True)
     category_name = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True, null=True)
+    display_order = models.IntegerField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
