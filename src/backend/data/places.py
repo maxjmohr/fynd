@@ -74,7 +74,16 @@ def get_places(location:pd.DataFrame, category:str, shape:str, apikey:str) -> pd
     })
 
     if len(places) == 0:
-        print(f"No places found for {location['city']}, category: {category}.")
+        print(f"No places found for {location['city']}, category: {category}. Dummy entry created.")
+        places = pd.DataFrame({
+            "location_id": location["location_id"],
+            "place_name": "None found",
+            "place_category": category,
+            "lon": None,
+            "lat": None,
+            "vegetarian": None,
+            "vegan": None
+        }, index=[0])
 
     # Drop any duplicates in the same category
     places.drop_duplicates(subset=["place_name"], inplace=True)
@@ -102,7 +111,6 @@ i = 0  # Initialize API key index
 path = "../../../res/master_data/geoapify_rel_categories.csv"
 categories = pd.read_csv(os.path.join(current_script_directory, path))
 current_state = db.fetch_data(total_object="raw_places")
-categories = categories[~categories["place_category"].isin(current_state["place_category"].unique())].reset_index(drop=True)
 
 # For testing: first 2 categories
 # categories = categories.iloc[:2]
@@ -114,7 +122,15 @@ WAIT_BASE = 1  # Base wait time in seconds
 WAIT_MULTIPLIER = 2  # Multiplier for exponential backoff
 
 for category in categories["place_category"]:
-    for location in locations.iterrows():
+    # Create a set of for each location that has not been processed yet for the category
+    missing_locations = locations[~locations["location_id"]
+                                  .isin(current_state[current_state["place_category"] == category]
+                                        ["location_id"])].reset_index(drop=True)
+    if len(missing_locations) == 0:
+        print(f"All locations have been processed for category {category}.")
+        continue
+
+    for location in missing_locations.iterrows():
         # Get places
         for retry in range(MAX_RETRIES):
             try:
@@ -124,11 +140,7 @@ for category in categories["place_category"]:
                     shape="circle",
                     apikey=apikeys[i]
                 )
-
-                # Insert into db
-                if len(places) > 0:
-                    db.insert_data(data=places, table="raw_places", updated_at=True)
-
+                db.insert_data(data=places, table="raw_places", updated_at=True)
                 break  # Break out of the loop if no exception occurred  
 
             except Exception as e:
