@@ -354,7 +354,6 @@ class LocationsListView(View):
 
         # Assemble query params from GET request for LocationDetailView
         form_data = self.request.session.get('travellers_input_form_data', {})
-        print(form_data)
         query_parameters = encode_url_parameters({
             'start_date': form_data.get('start_date'),
             'end_date': form_data.get('end_date'),
@@ -416,13 +415,13 @@ class LocationDetailView(DetailView):
         data = [
             {
                 'category_id': category.category_id,
-                'category_name': category.category_name,
+                'category_name': category.category_name.title(),
                 'category_description': category.description,
                 'display_order': category.display_order,
                 'dimensions': [
                     {
                         'dimension_id': dimension.dimension_id,
-                        'dimension_name': dimension.dimension_name,
+                        'dimension_name': dimension.dimension_name.title(),
                         'dimension_description': dimension.description,
                         'score': scores.loc[dimension.dimension_id],
                     }
@@ -431,6 +430,9 @@ class LocationDetailView(DetailView):
             }
             for category in categories_with_dimensions
         ]
+
+        # Order by display_order
+        data = sorted(data, key=lambda x: x['display_order'])
 
         # Add to context
         context.update({
