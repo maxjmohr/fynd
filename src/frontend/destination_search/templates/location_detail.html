@@ -6,11 +6,18 @@
 
 {% block main %}
 <div class="details-page-container">
-    <div class="location-image-container">
-        <img class="location-image" src="{{ image }}" alt="{{ location.city }} image" width="100%" height="100%">
-    </div>
-    <div>
-        <div class="location-name">{{ location.city }}</div>
+    <div class="details-page-header">
+        <div class="location-image-container">
+            <img class="location-image" src="{{ image }}" alt="{{ location.city }} image" width="100%" height="100%">
+        </div>
+        <div class="diag1"></div><div class="diag2"></div><div class="rect1"></div><div class="rect2"></div>
+        <div class="title-container">
+            <div class="location-name">{{ location.city }}</div>
+            <div class="location-country">
+                {{ location.country }}
+                <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+            </div>
+        </div>
     </div>
 
     <div class="tabs">
@@ -70,6 +77,7 @@
 {% block javascripts %}
 
 <script>
+    // Open the category tab that was clicked
     function openCategory(evt, categoryName) {
         var i, tabcontent, tablinks;
         tabcontent = document.getElementsByClassName("tabcontent");
@@ -85,6 +93,42 @@
             evt.currentTarget.classList.add("active");
         }
     }
+
+    // Moving fill area on image when scrolling
+    var diag1 = document.querySelector('.diag1');
+    var rect1 = document.querySelector('.rect1');
+
+    // Store the initial right and width values
+    var initialRightDiag1 = parseFloat(getComputedStyle(diag1).right) || 0;
+    var initialWidthRect1 = parseFloat(getComputedStyle(rect1).width) || 0;
+
+    // Get the parent element and its width
+    var parent = document.querySelector('.details-page-header');
+    var parentWidth = parseFloat(getComputedStyle(parent).width) || 0;
+
+    // Set the number of pixels to scroll
+    var scrollPixels = 120;
+
+    // Calculate the number of pixels to move for each scroll pixel
+    var movePixels = parentWidth / scrollPixels;
+
+    // Add the scroll event listener
+    window.addEventListener('scroll', function() {
+        // Calculate the scroll position as a percentage of the scrollPixels
+        var scrollPercent = Math.min(window.scrollY / scrollPixels, 1) * 100;
+
+        // Calculate the new right and width values
+        var newRightDiag1 = initialRightDiag1 + scrollPercent * movePixels;
+        var newWidthRect1 = initialWidthRect1 + scrollPercent * movePixels;
+
+        // Ensure the new values do not exceed the initial values
+        newRightDiag1 = Math.max(newRightDiag1, initialRightDiag1);
+        newWidthRect1 = Math.max(newWidthRect1, initialWidthRect1);
+
+        // Adjust the right and width properties
+        diag1.style.right = newRightDiag1 + 'px';
+        rect1.style.width = newWidthRect1 + 'px';
+    });
 
     window.onload = function() {
         // Click on general tab by default
