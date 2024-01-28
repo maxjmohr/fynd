@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ location.city }} - Location Detail
+{{ location.city }}
 {% endblock %}
 
 {% block main %}
@@ -33,6 +33,7 @@
     {% for category in data %}
     <div id="{{category.category_name}}" class="tabcontent">
 
+        <!-- Scores -->
         {% if category.category_name != "General" %}
         <div class="category-content-container">
             <div class="dimensions-figure-wrapper">
@@ -59,9 +60,17 @@
         </div>
         {% endif %}
 
+        <!-- Texts -->
         <div class="category-content-container">
             <div class="text-container">{{ category.text }}</div>
         </div>
+
+        <!-- Further data -->
+        {% if category.category_name == "Geography" %}
+        <div class="category-content-container map-container">
+            <div id="mapid"></div>
+        </div>
+        {% endif %}
 
     </div>
     {% endfor %}
@@ -76,7 +85,12 @@
 
 {% block javascripts %}
 
+<!-- Leaflet map -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
 <script>
+    var map;
+
     // Open the category tab that was clicked
     function openCategory(evt, categoryName) {
         var i, tabcontent, tablinks;
@@ -91,6 +105,22 @@
         document.getElementById(categoryName).classList.add("active");
         if (evt && evt.currentTarget) {
             evt.currentTarget.classList.add("active");
+        }
+
+        // If the map tab is opened, invalidate the map size
+        if (categoryName === 'Geography' && !map) {
+            map = L.map('mapid').setView([{{ location.lat }}, {{ location.lon }}], 13);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            var geojson = JSON.parse('{{ location.geojson|escapejs }}');
+            var geojsonLayer = L.geoJSON(geojson).addTo(map);
+
+            // Adjust the view to fit the bounds of the GeoJSON layer
+            map.fitBounds(geojsonLayer.getBounds());
         }
     }
 
