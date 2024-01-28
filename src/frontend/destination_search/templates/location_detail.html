@@ -15,16 +15,50 @@
 
     <div class="tabs">
         {% for category in data %}
-        <button class="tablinks" onclick="openCategory(event, '{{category.category_name}}')" title="{{ category.category_description }}">{{ category.category_name }}</button>
+        <button class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
+            {{ category.category_name }}
+            <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
+        </button>
         {% endfor %}
         <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
     </div>
 
     {% for category in data %}
     <div id="{{category.category_name}}" class="tabcontent">
-        <p>{{ category.category_description }}</p>
+
+        {% if category.category_name != "General" %}
+        <div class="category-content-container">
+            <div class="dimensions-figure-wrapper">
+                <div class="dimensions-figure">
+                    {% for dimension in category.dimensions %}
+                    <div class="dimension-container">
+                        <div class="dimension-name has-tooltip">
+                            {{ dimension.dimension_name }}
+                            <span class="tooltip-text dimension-description-tooltip-text">{{ dimension.dimension_description }}</span>
+                        </div>
+                        <div class="dimension-score-container">
+                            <div class="dimension-score-slider">
+                                <div class="dimension-score-slider-range">
+                                    <div class="dimension-score-knob has-tooltip" style="left: calc({{ dimension.score }} * 100%)">
+                                        <span class="tooltip-text score-tooltip-text">{{ dimension.score|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="category-content-container">
+            <div class="text-container">{{ category.text }}</div>
+        </div>
+
     </div>
     {% endfor %}
+
     <div id="Similarity" class="tabcontent">
         <p>Similarity</p>
     </div>
@@ -36,19 +70,48 @@
 {% block javascripts %}
 
 <script>
-function openCategory(evt, categoryName) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
+    function openCategory(evt, categoryName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(categoryName).classList.add("active");
+        if (evt && evt.currentTarget) {
+            evt.currentTarget.classList.add("active");
+        }
     }
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
+
+    window.onload = function() {
+        // Click on general tab by default
+        var generalTabButton = document.querySelector(".tablinks.active");
+        openCategory({currentTarget: generalTabButton}, 'General');
+
+        // Position tooltips for category descriptions
+        var tooltips = document.querySelectorAll('.category-description-tooltip-text');;
+        tooltips.forEach(function(tooltip) {
+            var parent = tooltip.parentElement;
+            var container = parent.parentElement
+            parent.addEventListener('mouseenter', function() {
+                var parentRect = parent.getBoundingClientRect();
+                var tooltipRect = tooltip.getBoundingClientRect();
+                var left = parentRect.left + parentRect.width / 2 - tooltipRect.width / 2;
+                if (left < container.offsetLeft) {
+                    left = container.offsetLeft;
+                } else if (left + tooltipRect.width > container.offsetWidth) {
+                    left = container.offsetWidth - tooltipRect.width + container.offsetLeft;
+                }
+                tooltip.style.left = (left - tooltip.offsetParent.getBoundingClientRect().left) + 'px';
+                tooltip.style.transform = 'none';
+            });
+        });
+
     }
-    document.getElementById(categoryName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
+
 </script>
 
 {% endblock %}

@@ -46,31 +46,11 @@
     border-radius: 0;
 }
 
-.tooltip-text {
-    visibility: hidden;
+.nav-link-tooltip-text {
     width: 120px;
-    background-color: rgba(100, 100, 100, 0.8);
-    color: #fff;
-    text-align: center;
-    font-size: 0.8em;
-    padding: 5px 0;
-    border-radius: 6px;
-
-    /* Position the tooltip text */
-    position: absolute;
-    z-index: 1;
     top: 100%; /* Place the tooltip below the link */
     left: 50%;
     margin-left: -60px; /* Use half the width to center the tooltip */
-
-    /* Fade in tooltip */
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.nav-link:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
 }
 
 .footer-container {
@@ -100,6 +80,29 @@
 }
 
 /* Reoccurring elements -----------------------------------------------------*/
+
+.tooltip-text {
+    visibility: hidden;
+    background-color: rgba(100, 100, 100, 0.8);
+    text-align: center;
+    color: #fff;
+    font-size: 0.8em;
+    padding: 5px;
+    border-radius: 6px;
+
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 100000;
+
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.has-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
 
 .question-box {
     border: 1px solid #ccc;
@@ -528,6 +531,7 @@
 }
 
 .tablinks {
+    position: relative;
     flex-grow: 1;
     flex-basis: 0;
     background-color: #eee;
@@ -540,13 +544,104 @@
     font-weight: bold;
 }
 
-
 .tabcontent {
     display: none;
     width: 100%;
     background-color: lightgreen;
+    padding: 10px;
+}
+
+.tabcontent.active {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .tablinks.active {
     background-color: #ccc;
+}
+
+.category-description-tooltip-text {
+    font-weight: normal;
+    width: max-content;
+    max-width: 500px;
+    word-wrap: break-word;
+    top: calc(100% + 10px);
+}
+
+.category-content-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: lightpink;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.dimensions-figure-wrapper {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.dimensions-figure {
+    display: grid;
+    justify-content: start;
+    gap: 10px;
+}
+
+.dimension-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.dimension-name {
+    position: relative;
+    display: inline-block;
+    text-align: right;
+    margin-right: 15px;
+    flex-grow: 0;
+}
+
+.dimension-description-tooltip-text {
+    width: max-content;
+    max-width: 300px;
+    word-wrap: break-word;
+    left: calc(100% + 15px);
+}
+
+.dimension-score-container {
+    width: 200px;
+    display: flex;
+    align-items: center;
+}
+
+.dimension-score-slider {
+    width: 100%;
+    height: 15px;
+    border-radius: 7.5px;
+    border: none;
+    background: var(--customlightgrey);
+    position: relative;
+}
+.dimension-score-slider-range {
+    width: calc(100% - 15px);
+    height: 100%;
+    margin: auto;
+    position: relative;
+}
+
+.dimension-score-knob {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: var(--accent1);
+    position: absolute;
+    transform: translateX(-50%); /* Move the knob left by 50% of its own width */
+}
+
+.score-tooltip-text {
+    top: -50%;
+    left: 150%;
 }
