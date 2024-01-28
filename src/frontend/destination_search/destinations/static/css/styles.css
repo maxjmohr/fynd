@@ -1,9 +1,18 @@
 /* Define some colors and other variables */
 :root {
-    --accent1: #007bff;
-    --accent2: rgb(0, 39, 145);
-    --customlightgrey: #f9f9f9;
-    --customgrey: #6c757d;
+    --accent1: #ff3b3f;
+    --accent2: #caebf2;
+    --accent3: #a9a9a9;
+    --accent4: #efefef;
+    --accent5: rgb(53, 126, 189);
+
+    --accent8: #007bff;
+    --accent9: rgb(0, 39, 145);
+
+    --darkgrey: rgb(53, 55, 72);
+    --normalgrey: #6c757d;
+    --lightgrey: #f9f9f9;
+    --light: #f8f9fa;
 
     --content-width: calc(min(1200px, 100% - 20px));
 }
@@ -14,7 +23,7 @@ body {
 }
 
 .page {
-    background-color: lightsalmon;
+    background-color: white;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -30,7 +39,7 @@ body {
     top: 0;
     width: 100%;
     height: auto;
-    background-color: var(--accent1);
+    background-color: var(--light);
     box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.2);   
     z-index: 10;
 }
@@ -59,7 +68,7 @@ body {
 
 .footer-container {
     height: 30px;
-    background-color: var(--accent1);
+    background-color: var(--accent2);
 }
 
 .footer-content-container {
@@ -69,7 +78,6 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: turquoise;
 }
 
 .main-container {
@@ -79,7 +87,8 @@ body {
     justify-content: space-evenly;
     align-items: flex-start;
     flex-wrap: nowrap;
-    background-color: orange;
+    background-color: white;
+    border: 1px solid green;
     margin-bottom: 20px;
 }
 
@@ -109,13 +118,13 @@ body {
 }
 
 .question-box {
-    border: 1px solid #ccc;
+    border: 1px solid var(--normalgrey);
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 10px;
     width: 100%;
     box-sizing: border-box;
-    background-color: lightgreen;
+    background-color: var(--accent2);
 }
 
 .submit-button {
@@ -125,19 +134,19 @@ body {
     margin-top: 10px;
     font-weight: bold;
     color: white;
-    background-color: var(--accent1);
+    background-color: var(--accent5);
     border-radius: 4px;
-    border: 1px solid var(--accent1);
+    border: 1px solid var(--accent5);
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .submit-button:active {
-    background-color: var(--accent2);
+    background-color: var(--accent9);
     box-shadow: none;
 }
 
 .form-label {
-    color: black;
+    color: --var(--darkgrey);
 }
 
 .form-label-header {
@@ -145,7 +154,7 @@ body {
 }
 
 .form-help-text-display {
-    color: rgb(40, 40, 40);
+    color: var(--darkgrey);
 }
 
 .tooltip-container {
@@ -158,9 +167,9 @@ body {
     position: absolute;
     z-index: 1000;
     background-color: var(--light);
-    color: var(--customgrey);
+    color: var(--normalgrey);
     border-radius: 4px;
-    border: 1px solid var(--customgrey);
+    border: 1px solid var(--normalgrey);
     padding: 5px;
     font-size: 12px;
     left: 100%;
@@ -175,12 +184,12 @@ body {
     left: -14px;
     border-width: 7px;
     border-style: solid;
-    border-color: transparent var(--customgrey) transparent transparent;
+    border-color: transparent var(--normalgrey) transparent transparent;
 }
 
 .info-icon {
     cursor: pointer;
-    color: var(--accent1);
+    color: var(--accent5);
 }
 
 .input-box {
@@ -224,41 +233,41 @@ body {
 }
 
 .range-slider-label {
-    color: var(--customgrey);
+    color: var(--normalgrey);
     font-size: 0.8em;
 }
 
 .ui-slider {
     background: none;
-    border: var(--customgrey);
+    border: var(--normalgrey);
     height: 3px;
 }
 
 .ui-slider .ui-slider-handle {
     width: 16px;
     height: 16px;
-    background-color: var(--customgrey);
+    background-color: var(--normalgrey);
     border: none;
     border-radius: 50%;
     top: -9px;
 }
 
 .ui-slider .ui-slider-range {
-    background-color: var(--customgrey);
+    background-color: var(--normalgrey);
 }
 
 /* Location list ------------------------------------------------------------*/
 
 .list .form-container {
     width: 35%;
-    background-color: lightblue;
+    background-color: var(--accent2);
     border-radius: 0 0 10px 10px;
     padding: 10px;
 }
 
 .form-group-box {
-    background-color: var(--customlightgrey);
-    border: 1px solid var(--customgrey);
+    background-color: var(--lightgrey);
+    border: 1px solid var(--normalgrey);
     border-radius: 5px;
     margin-bottom: 10px;
 }
@@ -269,7 +278,7 @@ body {
 }
 
 .form-group-summary {
-    background-color: var(--customgrey);
+    background-color: var(--normalgrey);
     color: white;
     padding: 5px;
     cursor: pointer;
@@ -306,7 +315,6 @@ body {
 
 .location-list-item-container {
     border: 1px solid lightgrey;
-    background-color: rgb(121, 135, 26);
     border-radius: 10px;
     width: 100%;
     padding: 10px;
@@ -351,7 +359,7 @@ body {
 }
 
 .location-list-item-distance-to-start {
-    color: red;
+    color: var(--darkgrey);
 }
 
 .location-list-item-country-name {
@@ -363,7 +371,7 @@ body {
     height: 100px;
     margin-left: 10px;
     align-self: flex-end;
-    background-color: red;
+    background-color: var(--accent3);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -397,9 +405,9 @@ body {
     align-items: center;
     height: 200px;
     border-radius: 12px;
-    background-color: #f0f0f0;
+    background-color: var(--accent2);
     text-decoration: none;
-    color: black;
+    color: var(--darkgrey);
     position: relative;
     overflow: hidden;
 }
@@ -425,20 +433,17 @@ body {
 /* Discover page ------------------------------------------------------------*/
 
 .discover-form-container {
-    background-color: lightblue;
     width: 80%;
     margin: 80px 0px;
+    color: var(--darkgrey);
 }
 
 .discover-form-introtext {
-    margin-bottom: 10px;
-    background-color: lightpink;
     margin-bottom: 10px;
 }
 
 .discover-form-container form {
     width: 100%;
-    background-color: yellow;
 }
 
 /* Search page --------------------------------------------------------------*/
@@ -584,6 +589,7 @@ body {
     z-index: 5;
     padding-right: 20px;
     padding-bottom: 10px;
+    color: var(--darkgrey);
 }
 
 .location-name {
@@ -607,17 +613,19 @@ body {
     flex-direction: row;
     justify-content: space-between;
     gap: 10px;
-    border-bottom: 2px solid #ccc;
+    border-bottom: 2px solid var(--accent3);
     margin-top: 20px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.2);
 }
 
 .tablinks {
     position: relative;
     flex-grow: 1;
     flex-basis: 0;
-    background-color: #eee;
-    color: black;
-    border: 1px solid #ccc;
+    background-color: var(--accent4);
+    color: var(--darkgrey);
+    border: 1px solid var(--accent3);
+    border-bottom: none;
     border-radius: 5px 5px 0 0;
     outline: none;
     padding: 10px;
@@ -630,6 +638,7 @@ body {
     width: 100%;
     background-color: lightgreen;
     padding: 10px;
+    color: var(--darkgrey);
 }
 
 .tabcontent.active {
@@ -639,7 +648,7 @@ body {
 }
 
 .tablinks.active {
-    background-color: #ccc;
+    background-color: var(--accent2);
 }
 
 .category-description-tooltip-text {
@@ -683,6 +692,7 @@ body {
     text-align: right;
     margin-right: 15px;
     flex-grow: 0;
+    color: var(--darkgrey);
 }
 
 .dimension-description-tooltip-text {
@@ -703,7 +713,7 @@ body {
     height: 15px;
     border-radius: 7.5px;
     border: none;
-    background: var(--customlightgrey);
+    background-color: var(--lightgrey);
     position: relative;
 }
 .dimension-score-slider-range {
