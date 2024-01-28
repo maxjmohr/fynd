@@ -15,6 +15,7 @@ from .models import (
     CoreLocationsImages,
     CoreDimensions,
     CoreCategories,
+    CoreTexts,
 )
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -29,7 +30,7 @@ import time
 
 def get_value_from_object(s: pd.Series) -> pd.Series:
     """Get the value from an object."""
-    return s.str.extract('(\d+)').astype(int)
+    return s.str.extract('(\d+)').fillna(0).astype(int) #FIXME fillna is just a hot fix
 
 
 def encode_url_parameters(params: dict) -> str:
@@ -54,7 +55,9 @@ def get_scores(
         end_date: str,
         start_location_lat: str,
         start_location_lon: str,
-        location_id: int = None):
+        location_id: int = None,
+        retrieve_text: bool = False
+    ):
     
     # Convert start and end date to datatime
     start_date = pd.to_datetime(start_date)
@@ -67,7 +70,7 @@ def get_scores(
     # Get closest reference location for start location -----------------------
     #FIXME
 
-    reference_start_location = 'palceholder'
+    reference_start_location = 'Tübingen'
 
 
     # Get filtered scores -----------------------------------------------------
@@ -78,7 +81,7 @@ def get_scores(
     )
 
     if location_id is not None:
-        query = query.filter(location_id__in=location_id)
+        query = query.filter(location_id=location_id)
 
     # Define fileds to include in values() (negative selection)
     all_fields = [f.name for f in CoreScores._meta.get_fields()]
@@ -114,6 +117,22 @@ def get_scores(
     scores.drop(columns=['overlap_days'], inplace=True)
     scores.reset_index(inplace=True)
 
+    # Get text ---------------------------------------------------------------
+    if retrieve_text:
+        if type(location_id) == list:
+            raise ValueError('Text retrieval ony possible for one location_id.')
+        else:
+            #FIXME how to handle start and end date, since we cant average texts?
+            texts = CoreTexts.objects.filter(
+                Q(reference_start_location=reference_start_location)
+                & Q(location_id=location_id)
+                & Q(start_date__lte=end_date) 
+                & Q(end_date__gte=start_date)
+            ).values('category_id', 'text')
+            texts = read_frame(texts)
+
+        return scores, texts, reference_start_location
+    
     return scores, reference_start_location
 
 
@@ -272,8 +291,7 @@ class LocationsListView(View):
             start_date=self.params.get('start_date'),
             end_date=self.params.get('end_date'),
             start_location_lat=self.params.get('start_location_lat'),
-            start_location_lon=self.params.get('start_location_lon'),
-            location_id=locations.index.tolist() + previous_locations
+            start_location_lon=self.params.get('start_location_lon')
         )
 
         # Rescale scores based on number of dimensions per category
@@ -391,19 +409,25 @@ class LocationDetailView(DetailView):
             .values('img_url')
         ).img_url.item()
 
-        # Get scores
-        scores, reference_start_location = get_scores(
+        # Get scores and texts
+        scores, texts, reference_start_location = get_scores(
             start_date=self.request.GET.get('start_date'),
             end_date=self.request.GET.get('end_date'),
             start_location_lat=self.request.GET.get('start_location_lat'),
             start_location_lon=self.request.GET.get('start_location_lon'),
-            location_id=[location.location_id]
+            location_id=location.location_id,
+            retrieve_text=True
         )
         scores = (
             scores
             .filter(['dimension_id', 'score'])
             .assign(dimension_id=get_value_from_object(scores.dimension_id))
             .set_index('dimension_id')
+        )
+        texts = (
+            texts
+            .assign(category_id=get_value_from_object(texts.category_id))
+            .set_index('category_id')
         )
 
         # Get categories with related dimensions
@@ -418,12 +442,13 @@ class LocationDetailView(DetailView):
                 'category_name': category.category_name.title(),
                 'category_description': category.description,
                 'display_order': category.display_order,
+                'text': texts.loc[category.category_id].item(),
                 'dimensions': [
                     {
                         'dimension_id': dimension.dimension_id,
                         'dimension_name': dimension.dimension_name.title(),
                         'dimension_description': dimension.description,
-                        'score': scores.loc[dimension.dimension_id],
+                        'score': scores.loc[dimension.dimension_id].item(),
                     }
                     for dimension in category.coredimensions_set.all()
                 ],

@@ -77,3 +77,18 @@ class CoreScores(models.Model):
         managed = False
         db_table = 'core_scores'
         unique_together = (('location_id', 'category_id', 'dimension_id', 'start_date', 'end_date'),)
+
+
+class CoreTexts(models.Model):
+    location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
+    category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    reference_start_location = models.CharField(max_length=100, blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'core_texts'
+        unique_together = (('location_id', 'category_id'),)
