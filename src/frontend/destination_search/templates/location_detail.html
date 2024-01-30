@@ -66,9 +66,16 @@
         </div>
 
         <!-- Further data -->
-        {% if category.category_name == "Geography" %}
+        {% if category.category_id == 5 %}
         <div class="category-content-container map-container">
             <div id="mapid"></div>
+        </div>
+
+        {% elif category.category_id == 2 %}
+        <div class="category-content-container weather-diagram-container">
+            <div class="weather-diagram-title">Climate diagram ({{ weather_data.0.year }})</div>
+            <svg id="temperature-diagram" width="500" height="200"></svg>
+            <svg id="precipitation-diagram" width="500" height="200"></svg>
         </div>
         {% endif %}
 
@@ -88,6 +95,7 @@
 <!-- Leaflet map -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
+<!-- Tabs / scrolling / map -->
 <script>
     var map;
 
@@ -185,6 +193,128 @@
         });
 
     }
+
+</script>
+
+<!-- Weather diagram-->
+<script>
+    var data = {{ weather_data|safe }};
+
+    // Select the SVG element
+    var svgTemp = d3.select("#temperature-diagram");
+    var svgPrec = d3.select("#precipitation-diagram");
+
+    // Define the dimensions of the chart
+    var margin = {top: 20, right: 20, bottom: 30, left: 60},
+        width = +svgTemp.attr("width") - margin.left - margin.right,
+        height = +svgTemp.attr("height") - margin.top - margin.bottom;
+
+    // Create scales
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+    var yTemp = d3.scaleLinear().rangeRound([height, 0]);
+    var yPrec = d3.scaleLinear().rangeRound([height, 0]);
+
+    // Append a group element to the SVG, and apply a transform to account for the margins
+    var gTemp = svgTemp.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var gPrec = svgPrec.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Set the domains of the scales
+    x.domain(data.map(function(d) { return d.month; }));
+    yTemp.domain([d3.min(data, function(d) { return d.temperature_min; }), d3.max(data, function(d) { return d.temperature_max; })]);
+    yPrec.domain([0, d3.max(data, function(d) { return d.precipitation_sum; })]);
+
+    // Create a tooltip
+    var tooltip = d3.select(".weather-diagram-container").append("div")
+        .attr("class", "weather-diagram-tooltip")
+        .style("opacity", 0);
+
+    // Add the range bars for temperature
+    gTemp.selectAll(".range-bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "range-bar temperature-bar")
+        .attr("x", function(d) { return x(d.month); })
+        .attr("y", function(d) { return yTemp(d.temperature_max); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return yTemp(d.temperature_min) - yTemp(d.temperature_max); })
+        .attr("rx", 6)
+        .attr("ry", 6)
+        .on("mouseover", function(d) {
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html("Max: " + d.temperature_max.toFixed(1) + "°C" + "<br>Min: " + d.temperature_min.toFixed(1) + "°C")
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
+    // Add the bars for precipitation
+    gPrec.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar precipitation-bar")
+        .attr("x", function(d) { return x(d.month); })
+        .attr("y", function(d) { return yPrec(d.precipitation_sum); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - yPrec(d.precipitation_sum); })
+        .attr("rx", 6)
+        .attr("ry", 6)
+        .on("mouseover", function(d) {
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html(d.precipitation_sum.toFixed(1) + "mm")
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
+    // Add the X Axis
+    var xAxis = gPrec.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    xAxis.selectAll("text")
+        .attr("class", "weather-diagram-axis-label");
+
+    // Add the Y Axes
+    var yAxisTemp = gTemp.append("g").call(d3.axisLeft(yTemp).ticks(5));
+    var yAxisPrec = gPrec.append("g").call(d3.axisLeft(yPrec).ticks(5));
+
+    yAxisTemp.selectAll("text")
+        .attr("class", "weather-diagram-axis-label");
+    yAxisPrec.selectAll("text")
+        .attr("class", "weather-diagram-axis-label");
+
+    // Add y-axis titles
+    yAxisTemp.append("text")
+        .attr("class", "weather-diagram-axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left)
+        .attr("x", -height / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Temperature (°C)");
+
+    yAxisPrec.append("text")
+        .attr("class", "weather-diagram-axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left)
+        .attr("x", -height / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Precipitation (mm)");
 
 </script>
 

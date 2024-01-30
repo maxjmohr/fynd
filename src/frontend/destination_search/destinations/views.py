@@ -16,6 +16,7 @@ from .models import (
     CoreDimensions,
     CoreCategories,
     CoreTexts,
+    RawWeatherHistorical,
 )
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -30,7 +31,7 @@ import time
 
 def get_value_from_object(s: pd.Series) -> pd.Series:
     """Get the value from an object."""
-    return s.str.extract('(\d+)').fillna(0).astype(int) #FIXME fillna is just a hot fix
+    return s.str.extract('(\d+)').fillna(99).astype(int) #FIXME fillna is just a hot fix
 
 
 def encode_url_parameters(params: dict) -> str:
@@ -448,7 +449,7 @@ class LocationDetailView(DetailView):
                         'dimension_id': dimension.dimension_id,
                         'dimension_name': dimension.dimension_name,
                         'dimension_description': dimension.description,
-                        'score': scores.loc[dimension.dimension_id].item(),
+                        'score': scores.loc[dimension.dimension_id].item() if dimension.dimension_id in scores.index else None, #FIXME
                     }
                     for dimension in category.coredimensions_set.all()
                 ],
@@ -459,12 +460,41 @@ class LocationDetailView(DetailView):
         # Order by display_order
         data = sorted(data, key=lambda x: x['display_order'])
 
+        # Get weather data
+        weather_fields = ['year', 'month', 'temperature_max', 'temperature_min', 'precipitation_sum']
+        weather_dtypes = {
+            'temperature_max': float,
+            'temperature_min': float,
+            'precipitation_sum': float
+        }
+        weather_data = read_frame(
+            RawWeatherHistorical.objects
+            .filter(location_id=location.location_id)
+            .values(*weather_fields)
+        )
+        weather_data = (
+            weather_data
+            .query('year == year.max()')
+            .sort_values('month')
+            .astype(weather_dtypes)
+            .copy()
+        )
+        months = {
+            1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 
+            6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 
+            11: 'Nov', 12: 'Dec'
+        }
+        weather_data['month'] = weather_data['month'].map(months)
+        weather_data = weather_data.to_dict('records')
+        print(weather_data)
+
         # Add to context
         context.update({
             'reference_start_location': reference_start_location,
             'image': image,
             'location': location,
             'data': data,
+            'weather_data': weather_data,
         })
 
 

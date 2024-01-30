@@ -92,3 +92,27 @@ class CoreTexts(models.Model):
         managed = False
         db_table = 'core_texts'
         unique_together = (('location_id', 'category_id'),)
+
+
+class RawWeatherHistorical(models.Model):
+    location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
+    city = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    temperature_max = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    temperature_min = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    sunshine_duration = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    daylight_duration = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    precipitation_duration = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    precipitation_sum = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    rain_sum = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    snowfall_sum = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
+    wind_speed_max = models.DecimalField(max_digits=11, decimal_places=7, blank=True, null=True)
+    weather_code_label = models.CharField(max_length=255, blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_weather_historical'
+        unique_together = (('location_id', 'year', 'month'),)
