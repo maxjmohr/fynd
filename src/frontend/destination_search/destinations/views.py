@@ -439,14 +439,14 @@ class LocationDetailView(DetailView):
         data = [
             {
                 'category_id': category.category_id,
-                'category_name': category.category_name.title(),
+                'category_name': category.category_name,
                 'category_description': category.description,
                 'display_order': category.display_order,
                 'text': texts.loc[category.category_id].item(),
                 'dimensions': [
                     {
                         'dimension_id': dimension.dimension_id,
-                        'dimension_name': dimension.dimension_name.title(),
+                        'dimension_name': dimension.dimension_name,
                         'dimension_description': dimension.description,
                         'score': scores.loc[dimension.dimension_id].item(),
                     }
