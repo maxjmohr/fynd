@@ -34,11 +34,9 @@ class HealthScores:
 
         # Add category_id and dimension_id
         sql = """
-            SELECT c.category_id, d.dimension_id
-            FROM
-                core_dimensions d
-                INNER JOIN core_categories c ON d.category_id = c.category_id
-            WHERE c.category_name = 'health'
+            SELECT category_id, dimension_id
+            FROM core_dimensions
+            WHERE category_id = 7
             """
         data["category_id"] = self.db.fetch_data(sql=sql).iloc[0, 0]
         data["dimension_id"] = self.db.fetch_data(sql=sql).iloc[0, 1]

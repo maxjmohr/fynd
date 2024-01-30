@@ -38,14 +38,9 @@ class GeographyScores:
 
         # Map the dimension_id
         sql = """
-            SELECT d.dimension_id, d.dimension_name
-            FROM
-                core_dimensions d
-                INNER JOIN core_categories c ON d.category_id = c.category_id
-            WHERE
-                c.category_name = 'geography'
-                AND d.dimension_name in ('tree_cover', 'shrubland', 'grassland', 'cropland', 'built_up', 'bare_sparse_vegetation',
-                                        'snow_ice', 'permanent_water', 'herbaceous_wetland', 'mangroves', 'moss_lichen')
+            SELECT dimension_id, dimension_name
+            FROM core_dimensions
+            WHERE category_id = 5
             """
         dimension_map = self.db.fetch_data(sql=sql)
         dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
@@ -53,7 +48,7 @@ class GeographyScores:
             .map(dimension_map)
 
         # Add category_id
-        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_name = 'geography'").iloc[0, 0]
+        data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 5").iloc[0, 0]
 
         # Add start_date and end_date
         data["start_date"] = datetime(2023, 1, 1).date()

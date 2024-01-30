@@ -34,13 +34,11 @@ class CostScores:
 
         # Dict to assign costs to correct group
         sql = """
-            SELECT d.dimension_id, d.extras
-            FROM
-                core_dimensions d
-                INNER JOIN core_categories c ON d.category_id = c.category_id
+            SELECT dimension_id, extras
+            FROM core_dimensions
             WHERE
-                c.category_name = 'cost'
-                AND d.dimension_name not in ('travel_costs', 'accommodation_costs')
+                category_id = 4
+                AND dimension_name not in ('Travel', 'Accommodation')
             """
         cost_map = self.db.fetch_data(sql=sql).to_dict()
         cost_map = {cost_map['dimension_id'][i]: eval(cost_map['extras'][i]) for i in range(len(cost_map['dimension_id']))}
@@ -88,7 +86,7 @@ class CostScores:
         data = self.numbeo_scores()
 
         # Add category_id
-        category_id = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_name = 'cost'").iloc[0, 0]
+        category_id = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 4").iloc[0, 0]
         data["category_id"] = category_id
         assert data["category_id"].notnull().all()
 
