@@ -19,6 +19,7 @@ class CoreDimensions(models.Model):
     dimension_name = models.CharField(max_length=255, blank=True, null=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     extras = models.CharField(max_length=255, blank=True, null=True)
+    icon_url = models.CharField(max_length=255, blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:

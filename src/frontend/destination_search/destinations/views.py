@@ -449,6 +449,7 @@ class LocationDetailView(DetailView):
                         'dimension_id': dimension.dimension_id,
                         'dimension_name': dimension.dimension_name,
                         'dimension_description': dimension.description,
+                        'dimension_icon_url': dimension.icon_url,
                         'score': scores.loc[dimension.dimension_id].item() if dimension.dimension_id in scores.index else None, #FIXME
                     }
                     for dimension in category.coredimensions_set.all()

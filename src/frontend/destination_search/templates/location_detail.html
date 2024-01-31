@@ -33,36 +33,41 @@
     {% for category in data %}
     <div id="{{category.category_name}}" class="tabcontent">
 
-        <!-- Scores -->
-        {% if category.category_name != "General" %}
-        <div class="category-content-container">
-            <div class="dimensions-figure-wrapper">
-                <div class="dimensions-figure">
-                    {% for dimension in category.dimensions %}
-                    <div class="dimension-container">
-                        <div class="dimension-name has-tooltip">
-                            {{ dimension.dimension_name }}
-                            <span class="tooltip-text dimension-description-tooltip-text">{{ dimension.dimension_description }}</span>
-                        </div>
-                        <div class="dimension-score-container">
-                            <div class="dimension-score-slider">
-                                <div class="dimension-score-slider-range">
-                                    <div class="dimension-score-knob has-tooltip" style="left: calc({{ dimension.score }} * 100%)">
-                                        <span class="tooltip-text score-tooltip-text">{{ dimension.score|floatformat:2 }}</span>
+        <div class="categeory-first-row">
+
+            <!-- Scores -->
+            {% if category.category_name != "General" %}
+            <div class="category-content-container">
+                <div class="dimensions-figure-wrapper">
+                    <div class="dimensions-figure">
+                        {% for dimension in category.dimensions %}
+                        <div class="dimension-container">
+                            <div class="dimension-name has-tooltip">
+                                <div class="dimension-name-text">{{ dimension.dimension_name }}</div>
+                                <img src="{{ dimension.dimension_icon_url }}" alt="{{ dimension.dimension_name }} icon" class="dimension-icon">
+                                <span class="tooltip-text dimension-description-tooltip-text">{{ dimension.dimension_description }}</span>
+                            </div>
+                            <div class="dimension-score-container">
+                                <div class="dimension-score-slider">
+                                    <div class="dimension-score-slider-range">
+                                        <div class="dimension-score-knob has-tooltip" style="left: calc({{ dimension.score }} * 100%)">
+                                            <span class="tooltip-text score-tooltip-text">{{ dimension.score|floatformat:2 }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        <!-- Texts -->
-        <div class="category-content-container">
-            <div class="text-container">{{ category.text }}</div>
+            <!-- Texts -->
+            <div class="category-content-container">
+                <div class="text-container">{{ category.text }}</div>
+            </div>
+
         </div>
 
         <!-- Further data -->
@@ -83,7 +88,7 @@
     {% endfor %}
 
     <div id="Similarity" class="tabcontent">
-        <p>Similarity</p>
+        <div class="category-content-container">In this tab, we highlight main similarities and differences between this destination and previous destinations.</div>
     </div>
     
 </div>

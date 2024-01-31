@@ -6,6 +6,8 @@
     --accent4: #efefef;
     --accent5: rgb(53, 126, 189);
 
+    --lightbrown: #F2EFEA;
+
     --accent8: #007bff;
     --accent9: rgb(0, 39, 145);
 
@@ -653,14 +655,14 @@ body {
     display: none;
     width: 100%;
     background-color: lightgreen;
-    padding: 10px;
+    padding-top: 20px;
     color: var(--darkgrey);
 }
 
 .tabcontent.active {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 20px;
 }
 
 .tablinks.active {
@@ -675,18 +677,31 @@ body {
     top: calc(100% + 10px);
 }
 
+.categeory-first-row {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
 .category-content-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    background-color: lightpink;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    justify-content: flex-start;
+    background-color: var(--light);
+    border: 1px solid var(--normalgrey);
+    border-radius: 10px;
+    padding: 20px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
 }
 
 .dimensions-figure-wrapper {
     display: flex;
     justify-content: flex-start;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 0;
 }
 
 .dimensions-figure {
@@ -704,11 +719,22 @@ body {
 
 .dimension-name {
     position: relative;
-    display: inline-block;
-    text-align: right;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
     margin-right: 15px;
     flex-grow: 0;
     color: var(--darkgrey);
+}
+
+.dimension-icon {
+    height: 1em;
+}
+
+.dimension-name-text {
+    text-align: right;
 }
 
 .dimension-description-tooltip-text {
@@ -716,6 +742,17 @@ body {
     max-width: 300px;
     word-wrap: break-word;
     left: calc(100% + 15px);
+}
+
+.dimension-description-tooltip-text::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -15px;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent var(--normalgrey) transparent transparent;
 }
 
 .dimension-score-container {
@@ -729,7 +766,7 @@ body {
     height: 15px;
     border-radius: 7.5px;
     border: none;
-    background-color: var(--lightgrey);
+    background-color: var(--lightbrown);
     position: relative;
 }
 .dimension-score-slider-range {
@@ -743,7 +780,7 @@ body {
     width: 15px;
     height: 15px;
     border-radius: 50%;
-    background: var(--accent1);
+    background-color: var(--accent1);
     position: absolute;
     transform: translateX(-50%); /* Move the knob left by 50% of its own width */
 }
@@ -755,10 +792,13 @@ body {
 
 .map-container {
     padding: 0 !important;
+    /*border: none !important;*/
 }
 
 #mapid {
     height: 400px;
+    z-index: 1;
+    border-radius: 10px;
 }
 
 .weather-diagram-container {
@@ -771,7 +811,6 @@ body {
     color: var(--darkgrey);
     text-align: center;
     margin-bottom: 10px;
-    background-color: yellow;
 }
 
 .weather-diagram-tooltip {
