@@ -377,12 +377,10 @@
         if (window.pageYOffset >= initialLocationTitleTop - initialPageHeaderBottom - 20) {
             locationHeader.style.position = 'sticky';
             locationHeader.style.top = initialPageHeaderBottom - initialLocationImageHeight + initialLocationTitleHeight + 20 + 'px';
-            console.log('sticky')
         }
         else {
             locationHeader.style.position = 'relative';
             locationHeader.style.top = 'auto';
-            console.log('auto')
         }
     };
 
