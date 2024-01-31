@@ -85,12 +85,13 @@ body {
 }
 
 .footer-container {
-    height: 30px;
+    height: fit-content;
     background-color: var(--accent2);
 }
 
 .footer-content-container {
     height: 100%;
+    padding: 20px;
     font-size: 0.8em;
     display: flex;
     flex-direction: column;
