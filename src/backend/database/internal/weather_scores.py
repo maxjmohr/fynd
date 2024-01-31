@@ -43,12 +43,20 @@ class WeatherScores:
                                          "snowfall_sum": "mean",
                                          "wind_speed_max": "mean"}) \
             .reset_index(inplace=False)
-        # Change signs of certain scores
-        data["temperature_min"] = -data["temperature_min"]
-        data["precipitation_sum"] = -data["precipitation_sum"]
-        data["rain_sum"] = -data["rain_sum"]
-        data["snowfall_sum"] = -data["snowfall_sum"]
-        data["wind_speed_max"] = -data["wind_speed_max"]
+
+        # Rename columns
+        new_names = {
+            "temperature_max": "Maximum temperature",
+            "temperature_min": "Minimum temperature",
+            "sunshine_duration": "Sunshine duration",
+            "daylight_duration": "Daylight duration",
+            "precipitation_duration": "Precipitation duration",
+            "precipitation_sum": "Precipitation amount",
+            "rain_sum": "Rain amount",
+            "snowfall_sum": "Snowfall amount",
+            "wind_speed_max": "Maximum wind speed"
+        }
+        data = data.rename(columns=new_names)
 
         # Duplicate month columns for end_date
         data["end_date"] = data["month"]
@@ -62,9 +70,9 @@ class WeatherScores:
             .map(lambda x: datetime(year, x, calendar.monthrange(year, x)[1]).date())
 
         # Bring into long format
+        value_vars = list(new_names.values())
         data = data.melt(id_vars=["location_id", "start_date", "end_date"], 
-                 value_vars=["temperature_max", "temperature_min", "sunshine_duration", "daylight_duration", 
-                             "precipitation_duration", "precipitation_sum", "rain_sum", "snowfall_sum", "wind_speed_max"],
+                 value_vars=value_vars,
                  var_name="dimension_id", 
                  value_name="score")
 
@@ -75,7 +83,7 @@ class WeatherScores:
             WHERE category_id = 2
             """
         dimension_map = self.db.fetch_data(sql=sql)
-        dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
+        dimension_map = {row["dimension_name"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
         data["dimension_id"] = data["dimension_id"] \
             .map(dimension_map)
 
