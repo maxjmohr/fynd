@@ -117,3 +117,13 @@ class RawWeatherHistorical(models.Model):
         managed = False
         db_table = 'raw_weather_historical'
         unique_together = (('location_id', 'year', 'month'),)
+
+class RawTravelWarnings(models.Model):
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    country_name = models.CharField(max_length=64, blank=True, null=True)
+    warning_text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_travel_warnings'

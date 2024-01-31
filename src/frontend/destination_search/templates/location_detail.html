@@ -78,9 +78,25 @@
 
         {% elif category.category_id == 2 %}
         <div class="category-content-container weather-diagram-container">
-            <div class="weather-diagram-title">Climate diagram ({{ weather_data.0.year }})</div>
+            <div class="category-content-title weather-diagram-title">Climate diagram ({{ weather_data.0.year }})</div>
             <svg id="temperature-diagram" width="500" height="200"></svg>
             <svg id="precipitation-diagram" width="500" height="200"></svg>
+        </div>
+
+        {% elif category.category_id == 1 and travel_warning %}
+        <div class="category-content-container">
+            <div class="category-content-title">Travel warnings</div>
+            {{ travel_warning }}
+        </div>
+
+        {% elif category.category_id == 3 %}
+        <div class="category-content-container">
+            <div class="category-content-title">Top attractions</div>
+            <ul>
+            {% for attraction in top_attractions %}
+                <li>{{ attraction }}</li>
+            {% endfor %}
+            </ul>
         </div>
         {% endif %}
 

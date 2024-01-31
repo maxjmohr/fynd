@@ -17,6 +17,7 @@ from .models import (
     CoreCategories,
     CoreTexts,
     RawWeatherHistorical,
+    RawTravelWarnings,
 )
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -82,7 +83,9 @@ def get_scores(
     )
 
     if location_id is not None:
-        query = query.filter(location_id=location_id)
+        query = query.filter(
+            location_id__in=[location_id] if type(location_id) == int else location_id
+        )
 
     # Define fileds to include in values() (negative selection)
     all_fields = [f.name for f in CoreScores._meta.get_fields()]
@@ -488,6 +491,21 @@ class LocationDetailView(DetailView):
         weather_data['month'] = weather_data['month'].map(months)
         weather_data = weather_data.to_dict('records')
 
+        # Get travel warnings
+        travel_warning = (
+            RawTravelWarnings
+            .objects
+            .filter(iso3=location.country_code)
+            .values('warning_text')
+            .first()
+        )
+        if travel_warning:
+            context['travel_warning'] = travel_warning
+
+        # Get top attractions
+        #FIXME
+        top_attractions = ['Attraction 1', 'Attraction 2', 'Attraction 3']
+
         # Add to context
         context.update({
             'reference_start_location': reference_start_location,
@@ -495,6 +513,7 @@ class LocationDetailView(DetailView):
             'location': location,
             'data': data,
             'weather_data': weather_data,
+            'top_attractions': top_attractions,
         })
 
 
