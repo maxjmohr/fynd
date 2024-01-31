@@ -577,22 +577,6 @@ body {
     opacity: 0.9;
 }
 
-.diag1 {
-    right: 190px;
-}
-
-.diag2 {
-    right: 160px;
-}
-
-.rect1 {
-    width: 190px;
-}
-
-.rect2 {
-    width: 160px;
-}
-
 .title-container {
     position: absolute;
     bottom: 0;

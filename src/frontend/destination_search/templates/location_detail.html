@@ -118,6 +118,8 @@
 
 <!-- Tabs / scrolling / map -->
 <script>
+
+    // Tabs & map -------------------------------------------------------------
     var map;
 
     // Open the category tab that was clicked
@@ -153,13 +155,35 @@
         }
     }
 
+    // Adjust background elements based on location name ----------------------
+
     // Moving fill area on image when scrolling
     var diag1 = document.querySelector('.diag1');
+    var diag2 = document.querySelector('.diag2');
     var rect1 = document.querySelector('.rect1');
+    var rect2 = document.querySelector('.rect2');
 
     // Store the initial right and width values
     var initialRightDiag1 = parseFloat(getComputedStyle(diag1).right) || 0;
+    var initialRightDiag2 = parseFloat(getComputedStyle(diag2).right) || 0;
     var initialWidthRect1 = parseFloat(getComputedStyle(rect1).width) || 0;
+    var initialWidthRect2 = parseFloat(getComputedStyle(rect2).width) || 0;
+
+    var titleContainer = document.querySelector('.title-container');
+    var titleContainerWidth = parseFloat(getComputedStyle(titleContainer).width) || 0;
+
+    // Set new widths/rights
+    var diff = 30
+    var minPosition2 = 160
+    position2 = Math.max(titleContainerWidth-30, minPosition2)
+    position1 = position2 + diff
+
+    diag1.style.right = position1 + 'px';
+    diag2.style.right = position2 + 'px';
+    rect1.style.width = position1 + 'px';
+    rect2.style.width = position2 + 'px';
+
+    // Scrolling --------------------------------------------------------------
 
     // Get the parent element and its width
     var parent = document.querySelector('.details-page-header');
@@ -176,19 +200,16 @@
         // Calculate the scroll position as a percentage of the scrollPixels
         var scrollPercent = Math.min(window.scrollY / scrollPixels, 1) * 100;
 
-        // Calculate the new right and width values
-        var newRightDiag1 = initialRightDiag1 + scrollPercent * movePixels;
-        var newWidthRect1 = initialWidthRect1 + scrollPercent * movePixels;
-
-        // Ensure the new values do not exceed the initial values
-        newRightDiag1 = Math.max(newRightDiag1, initialRightDiag1);
-        newWidthRect1 = Math.max(newWidthRect1, initialWidthRect1);
+        // Calculate the new position
+        var newPosition1 = position1 + scrollPercent * movePixels;
+        newPosition1 = Math.max(newPosition1, position1);
 
         // Adjust the right and width properties
-        diag1.style.right = newRightDiag1 + 'px';
-        rect1.style.width = newWidthRect1 + 'px';
+        diag1.style.right = newPosition1 + 'px';
+        rect1.style.width = newPosition1 + 'px';
     });
 
+    // ONLOAD -----------------------------------------------------------------
     window.onload = function() {
         // Click on general tab by default
         var generalTabButton = document.querySelector(".tablinks.active");
