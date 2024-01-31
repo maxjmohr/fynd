@@ -529,6 +529,12 @@ body {
 }
 
 .details-page-header {
+    width: 100%;
+    z-index: 2;
+    background-color: white;
+}
+
+.details-page-image-and-title-container {
     position: relative;
     width: 100%;
     height: 300px;
@@ -568,12 +574,12 @@ body {
 }
 
 .diag1, .rect1 {
-    z-index: 2;
+    z-index: 3;
     opacity: 0.5;
 }
 
 .diag2, .rect2 {
-    z-index: 3;
+    z-index: 4;
     opacity: 0.9;
 }
 

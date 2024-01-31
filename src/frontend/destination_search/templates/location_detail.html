@@ -7,27 +7,28 @@
 {% block main %}
 <div class="details-page-container">
     <div class="details-page-header">
-        <div class="location-image-container">
-            <img class="location-image" src="{{ image }}" alt="{{ location.city }} image" width="100%" height="100%">
-        </div>
-        <div class="diag1"></div><div class="diag2"></div><div class="rect1"></div><div class="rect2"></div>
-        <div class="title-container">
-            <div class="location-name">{{ location.city }}</div>
-            <div class="location-country">
-                {{ location.country }}
-                <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+        <div class="details-page-image-and-title-container">
+            <div class="location-image-container">
+                <img class="location-image" src="{{ image }}" alt="{{ location.city }} image" width="100%" height="100%">
+            </div>
+            <div class="diag1"></div><div class="diag2"></div><div class="rect1"></div><div class="rect2"></div>
+            <div class="title-container">
+                <div class="location-name">{{ location.city }}</div>
+                <div class="location-country">
+                    {{ location.country }}
+                    <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="tabs">
-        {% for category in data %}
-        <button class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
-            {{ category.category_name }}
-            <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
-        </button>
-        {% endfor %}
-        <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
+        <div class="tabs">
+            {% for category in data %}
+            <button class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
+                {{ category.category_name }}
+                <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
+            </button>
+            {% endfor %}
+            <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
+        </div>
     </div>
 
     {% for category in data %}
@@ -85,7 +86,7 @@
 
         {% elif category.category_id == 1 and travel_warning %}
         <div class="category-content-container">
-            <div class="category-content-title">Travel warnings</div>
+            <div class="category-content-title">Travel warning</div>
             {{ travel_warning }}
         </div>
 
@@ -358,6 +359,38 @@
         .style("text-anchor", "middle")
         .text("Precipitation (mm)");
 
+</script>
+
+<!-- Sticky header when scrolling -->
+<script>
+    // Calculate initial positions of elements
+    var pageHeader = document.getElementById('headerContainer');
+    var locationHeader = document.querySelector('.details-page-header');
+    var locationTitle = document.querySelector('.title-container');
+    var locationImage = document.querySelector('.location-image-container');
+    var initialPageHeaderBottom = pageHeader.getBoundingClientRect().bottom + window.pageYOffset;
+    var initialLocationTitleTop = locationTitle.getBoundingClientRect().top + window.pageYOffset;
+    var initialLocationImageHeight = locationImage.getBoundingClientRect().height;
+    var initialLocationTitleHeight = locationTitle.getBoundingClientRect().height;
+
+    function stickyLocationHeader() {
+        if (window.pageYOffset >= initialLocationTitleTop - initialPageHeaderBottom - 20) {
+            locationHeader.style.position = 'sticky';
+            locationHeader.style.top = initialPageHeaderBottom - initialLocationImageHeight + initialLocationTitleHeight + 20 + 'px';
+            console.log('sticky')
+        }
+        else {
+            locationHeader.style.position = 'relative';
+            locationHeader.style.top = 'auto';
+            console.log('auto')
+        }
+    };
+
+    // Run the function when the page is loaded
+    stickyLocationHeader();
+
+    // Run the function when a scroll event is detected
+    window.addEventListener('scroll', stickyLocationHeader);
 </script>
 
 {% endblock %}
