@@ -119,9 +119,10 @@ class RawWeatherHistorical(models.Model):
         unique_together = (('location_id', 'year', 'month'),)
 
 class RawTravelWarnings(models.Model):
-    iso3 = models.CharField(primary_key=True, max_length=3)
+    country_code = models.CharField(primary_key=True, max_length=2)
     country_name = models.CharField(max_length=64, blank=True, null=True)
     warning_text = models.TextField(blank=True, null=True)
+    link = models.TextField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:

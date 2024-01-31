@@ -87,7 +87,7 @@
         {% elif category.category_id == 1 and travel_warning %}
         <div class="category-content-container">
             <div class="category-content-title">Travel warning</div>
-            {{ travel_warning }}
+            <p>{{ travel_warning.warning_text }} <a href="{{ travel_warning.link }}">their website</a>.</p>
         </div>
 
         {% elif category.category_id == 3 %}

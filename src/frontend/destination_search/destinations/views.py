@@ -495,8 +495,8 @@ class LocationDetailView(DetailView):
         travel_warning = (
             RawTravelWarnings
             .objects
-            .filter(iso3=location.country_code)
-            .values('warning_text')
+            .filter(country_code=location.country_code)
+            .values('warning_text', 'link')
             .first()
         )
         if travel_warning:
