@@ -637,7 +637,7 @@ body {
 .tabcontent {
     display: none;
     width: 100%;
-    background-color: lightgreen;
+    background-color: var(--accent2);
     padding-top: 20px;
     color: var(--darkgrey);
 }
