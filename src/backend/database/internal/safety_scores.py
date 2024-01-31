@@ -31,11 +31,23 @@ class SafetyScores:
         data["start_date"] = datetime(2023, 1, 1).date()
         data["end_date"] = datetime(2099, 12, 31).date()
 
+        # Rename columns
+        new_names = {
+            "crime_rate": "Crime rate safety",
+            "ecological_threat": "Ecological threat safety",
+            "peace_index": "Peace index",
+            "personal_freedom": "Personal freedom",
+            "political_stability": "Political stability",
+            "rule_of_law": "Rule of law",
+            "terrorism_index": "Terrorism safety"
+        }
+        data = data.rename(columns=new_names)
+
         # Bring into long format
+        value_vars = list(new_names.values())
         data = data.melt(
             id_vars=["iso2", "country_name", "start_date", "end_date"],
-            value_vars=["crime_rate", "ecological_threat", "peace_index", "personal_freedom",
-                        "political_stability", "rule_of_law", "terrorism_index"],
+            value_vars=value_vars,
             var_name="dimension_id",
             value_name="score"
             )
@@ -47,7 +59,7 @@ class SafetyScores:
             WHERE category_id = 1
             """
         dimension_map = self.db.fetch_data(sql=sql)
-        dimension_map = {row["dimension"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
+        dimension_map = {row["dimension_name"]: row["dimension_id"] for _, row in dimension_map.iterrows()}
         data["dimension_id"] = data["dimension_id"] \
             .map(dimension_map)
 
