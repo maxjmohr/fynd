@@ -550,54 +550,47 @@ body {
     height: 100%;
   }
 
-.diag1 {
+.diag1, .diag2, .rect1, .rect2 {
+    content: "";
     position: absolute;
     bottom: 0;
-    right: 190px;
-    width: 150px;
     height: 100%;
     background-color: white;
+}
+
+.diag1, .diag2 {
+    width: 150px;
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.rect1, .rect2 {
+    right: 0;
+}
+
+.diag1, .rect1 {
+    z-index: 2;
     opacity: 0.5;
+}
+
+.diag2, .rect2 {
     z-index: 3;
-    clip-path: polygon(100% 0, 100% 100%, 0 100%); /* Adjust these values to change the angle */
+    opacity: 0.9;
+}
+
+.diag1 {
+    right: 190px;
 }
 
 .diag2 {
-    position: absolute;
-    bottom: 0;
     right: 160px;
-    width: 150px;
-    height: 100%;
-    background-color: white;
-    opacity: 0.9;
-    z-index: 2;
-    clip-path: polygon(100% 0, 100% 100%, 0 100%); /* Adjust these values to change the angle */
 }
 
 .rect1 {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    right: 0;
     width: 190px;
-    height: 100%;
-    background-color: white;
-    opacity: 0.5;
-    z-index: 3;
-
 }
 
 .rect2 {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    right: 0;
     width: 160px;
-    height: 100%;
-    background-color: white;
-    opacity: 0.9;
-    z-index: 3;
-
 }
 
 .title-container {
