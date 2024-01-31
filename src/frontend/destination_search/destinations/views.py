@@ -486,7 +486,6 @@ class LocationDetailView(DetailView):
         }
         weather_data['month'] = weather_data['month'].map(months)
         weather_data = weather_data.to_dict('records')
-        print(weather_data)
 
         # Add to context
         context.update({
