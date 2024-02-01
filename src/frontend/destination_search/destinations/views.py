@@ -18,6 +18,7 @@ from .models import (
     CoreTexts,
     RawWeatherHistorical,
     RawTravelWarnings,
+    RawCultureTexts
 )
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -503,8 +504,14 @@ class LocationDetailView(DetailView):
             context['travel_warning'] = travel_warning
 
         # Get top attractions
-        #FIXME
-        top_attractions = ['Attraction 1', 'Attraction 2', 'Attraction 3']
+        top_attractions = (
+            RawCultureTexts
+            .objects
+            .filter(location_id=location.location_id)
+            .values('text')
+            .first()
+        )
+        top_attractions = eval(top_attractions['text'])
 
         # Add to context
         context.update({

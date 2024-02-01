@@ -128,3 +128,14 @@ class RawTravelWarnings(models.Model):
     class Meta:
         managed = False
         db_table = 'raw_travel_warnings'
+
+class RawCultureTexts(models.Model):
+    location = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True)
+    category_id = models.IntegerField()
+    text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_culture_texts'
+        unique_together = (('location', 'category_id'),)
