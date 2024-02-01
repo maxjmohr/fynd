@@ -13,12 +13,13 @@ import requests
 import time
 
 
-def get_places(location:pd.DataFrame, category:str, shape:str, apikey:str) -> pd.DataFrame:
+def get_places(location:pd.DataFrame, category:str, shape:str, apikey:str, call_count:int) -> (pd.DataFrame, int):
     ''' Get places of a location and category from the geoapify API
     Input:  - locaation df containing the necessary columns
             - category: category of the places
             - shape: shape of the area. Can either be "box" or "circle"
             - api_key: API key for the geoapify API
+            - call_count: number of calls made so far
     Output: places: places of the category in the area
     Weight per call: 1 call per location per caategory for searching 40 places = 2 credits
 	Call limits:    - daily: 3,000 credits
@@ -73,6 +74,9 @@ def get_places(location:pd.DataFrame, category:str, shape:str, apikey:str) -> pd
         "vegan": vegan
     })
 
+    if len(places) > 0:
+        call_count += 2
+
     if len(places) == 0:
         print(f"No places found for {location['city']}, category: {category}. Dummy entry created.")
         places = pd.DataFrame({
@@ -88,9 +92,9 @@ def get_places(location:pd.DataFrame, category:str, shape:str, apikey:str) -> pd
     # Drop any duplicates in the same category
     places.drop_duplicates(subset=["place_name"], inplace=True)
 
-    return places
+    return places, call_count
 
-
+"""
 db = Database()
 db.connect()
 
@@ -104,8 +108,8 @@ with open(os.path.join(current_script_directory, path), "r") as f:
 i = 0  # Initialize API key index
 
 # Ensure that exactly 2 API keys are read
-"""if len(apikeys) != 2:
-    raise ValueError("Expected 2 API keys, but found {}.".format(len(apikeys)))"""
+'''if len(apikeys) != 2:
+    raise ValueError("Expected 2 API keys, but found {}.".format(len(apikeys)))'''
 
 # Read categories
 path = "../../../res/master_data/geoapify_rel_categories.csv"
@@ -152,3 +156,4 @@ for category in categories["place_category"]:
                 continue  # Continue with the next iteration using the next API key
 
 db.disconnect()
+"""
