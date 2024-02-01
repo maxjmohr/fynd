@@ -22,7 +22,8 @@ COMMENT ON COLUMN core_dimensions.updated_at IS 'Timestamp of the last update.';
 
 -- Create subcategories
 INSERT INTO core_dimensions (category_id, dimension_id, dimension_name, description, extras, icon_url, updated_at)
-VALUES  (1, 11, 'Crime rate safety', 'The crime rate safety index provides insights into the prevalence of criminal activities. A higher score refers to lower crime rates.', NULL, 'https://static.thenounproject.com/png/1820946-200.png', now()),
+VALUES  (0, 00, 'General dummy dimension', NULL, NULL, NULL, now()),
+        (1, 11, 'Crime rate safety', 'The crime rate safety index provides insights into the prevalence of criminal activities. A higher score refers to lower crime rates.', NULL, 'https://static.thenounproject.com/png/1820946-200.png', now()),
         (1, 12, 'Ecological threat safety', 'The ecological threat safety index gauges the potential harm to the environment. A higher score refers to less ecological threats.', NULL, 'https://static.thenounproject.com/png/6061985-200.png', now()),
         (1, 13, 'Peace index', 'The peace index measures the overall level of peace in a destination. A higher score refers to a more peaceful environment.', NULL, 'https://static.thenounproject.com/png/32960-200.png', now()),
         (1, 14, 'Personal freedom', 'Personal freedom assesses the degree to which individuals can exercise their rights and freedoms without interference. A higher score refers to more personal freedom.', NULL, 'https://static.thenounproject.com/png/5484847-200.png', now()),

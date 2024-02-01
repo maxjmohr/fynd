@@ -18,7 +18,7 @@ COMMENT ON COLUMN core_categories.updated_at IS 'Timestamp of the last update.';
 
 -- Create the master data
 INSERT INTO core_categories (category_id, category_name, description, display_order, updated_at)
-VALUES  (99, 'General', 'General information provides a short, textual summary of the locations properties like its population or country.', 0, now()),
+VALUES  (0, 'General', 'General information provides a short, textual summary of the locations properties like its population or country.', 0, now()),
         (1, 'Safety', 'Safety encompasses measures and conditions that contribute to the protection of individuals, property, and well-being. It includes aspects such as crime rates, personal freedom, political stability and ecological threats', 6, now()),
         (2, 'Weather', 'Weather focuses on atmospheric conditions that influence the environment. It encompasses temperature, precipitation, humidity, and other meteorological factors that can impact daily life and activities.', 1, now()),
         (3, 'Culture', 'Culture refers to the amount of accessible places in a given location. Places can range from restaurants, tourist attractions to other entertainment venues.', 2, now()),
