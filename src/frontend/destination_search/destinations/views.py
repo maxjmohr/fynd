@@ -1,24 +1,13 @@
 from django.views import View
-from django.views.generic import TemplateView, ListView, FormView
+from django.views.generic import TemplateView, FormView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.paginator import Paginator
-from django import forms
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
-from .models import (
-    CoreScores,
-    CoreLocations,
-    CoreLocationsImages,
-    CoreDimensions,
-    CoreCategories,
-    CoreTexts,
-    RawWeatherHistorical,
-    RawTravelWarnings,
-)
+from .models import *
 from .forms import *
 from .compute_relevance import compute_relevance
 from .compute_haversine import haversine
@@ -27,12 +16,10 @@ import pandas as pd
 from urllib.parse import urlencode
 from django_pandas.io import read_frame
 
-import time
 
-
-def get_value_from_object(s: pd.Series) -> pd.Series:
+def clean_id(s: pd.Series) -> pd.Series:
     """Get the value from an object."""
-    return s.str.extract('(\d+)').fillna(99).astype(int) #FIXME fillna is just a hot fix
+    return s.fillna(0).astype(int) #FIXME fillna is just a hot fix
 
 
 def encode_url_parameters(params: dict) -> str:
@@ -195,33 +182,38 @@ class LocationsListView(View):
         # Form instance
         self.travellers_input_form = TravellersInputForm(self.request.GET)
         self.filters_form = FiltersForm(self.request.GET)
+        self.preferences_form = PreferencesForm(self.request.GET)
 
-        # If the form is valid, store the cleaned data in the session
-        if self.travellers_input_form.is_valid():
-            self.request.session['travellers_input_form_data'] = self.travellers_input_form.cleaned_data
-
-        # Get parameters from the request
-        self.params = self.request.GET.dict()
-        if 'sort' in self.params:
-            del self.params['sort']
-
-        # Merge the new parameters with the existing ones
-        new_params = QueryDict('', mutable=True)
-        new_params.update(self.params)
-
-        # Check if the queryset is in the session
-        # and if GET parameters have changed (apart form sorting)
-        # If yes, (re)compute the queryset and store it in the session
-        first_run = 'location_list' not in self.request.session
-        params_changed = self.params != self.request.session.get('params', {})
-        if first_run or params_changed:
-            location_list = self.get_queryset()
-            self.request.session['location_list'] = location_list.to_dict(orient='list')
-            self.request.session['params'] = self.params
-        else:
-            location_list = pd.DataFrame(self.request.session['location_list'])
+        def compare_form_with_session(form, session_key):
+            """Compare form with session data."""
+            session_data = self.request.session.get(session_key, {})
+            if form.is_valid():
+                form_data = form.cleaned_data
+                if form_data != session_data:
+                    self.request.session[session_key] = form_data
+                    return True
+                return False
+            raise ValueError('Form is not bound.')
         
-        # Sort the queryset based on the sort parameter
+        # Check if forms changed compared to session (will update session)
+        forms_changed =  (
+            compare_form_with_session(self.travellers_input_form, 'travellers_input_form_data')
+            or compare_form_with_session(self.preferences_form, 'preferences_form_data')
+        )
+            
+        # If location list not in session or parameters changed
+        if 'locations_list' not in self.request.session or forms_changed:
+            self.locations_list = self.get_locations_list()
+            self.request.session['locations_list'] = self.locations_list.to_dict(orient='list')
+        # Otherwise get location list from session
+        else:
+            self.locations_list = pd.DataFrame(self.request.session['locations_list'])
+
+        # Filter locations
+        if compare_form_with_session(self.filters_form, 'filters_form_data'):
+            self.filter_locations()
+        
+        # Sort locations based on the sort parameter
         self.sort_param = self.request.GET.get('sort', 'relevance_desc')
         sort_options = {
             'relevance_desc': ('relevance', False),
@@ -231,148 +223,102 @@ class LocationsListView(View):
             'name_desc': ('city', False),
         }
         sort_column, sort_order = sort_options.get(self.sort_param)
-        location_list = location_list.sort_values(
+        self.locations_list = self.locations_list.sort_values(
             by=sort_column, ascending=sort_order
         )
         
-        # Create a Paginator
-        self.paginator = Paginator(
-            object_list=location_list.reset_index().to_dict('records'),
-            per_page=50
-        )
+        # Create Paginator and get page
+        self.page = Paginator(
+            object_list=self.locations_list.reset_index().to_dict('records'),
+            per_page=30
+        ).get_page(self.request.GET.get('page'))
 
-        # Get the page number from the GET parameters
-        page_number = self.request.GET.get('page')
-
-        # Get the page of objects
-        self.page = self.paginator.get_page(page_number)
-
-        # Render the template with the context data
+        # Assemble context
         context = self.get_context_data()
 
         return render(request, self.template_name, context)
 
-    def get_queryset(self):
+    def get_locations_list(self):
+        """Get list of locations and their respective relevance scores."""
 
-        # GET LOCATIONS -------------------------------------------------------
+        # Get parameters from travellers input form
+        ti_form_data = self.request.session.get('travellers_input_form_data', {})
+
+        # Get locations
         cols = ['location_id', 'city', 'country', 'country_code', 'lat', 'lon']
         locations = read_frame(CoreLocations.objects.values(*cols))
         locations.set_index('location_id', inplace=True)
 
-        # DISTANCE TO START LOCATION ------------------------------------------
-
-        start_location_lat = self.params.get('start_location_lat')
-        start_location_lon = self.params.get('start_location_lon')
+        # Compute distance to start location
         locations['distance_to_start'] = haversine(
-            lon1=float(start_location_lon),
-            lat1=float(start_location_lat),
+            lon1=ti_form_data['start_location_lon'],
+            lat1=ti_form_data['start_location_lat'],
             lon2=locations['lon'].astype(float), #FIXME dtype
             lat2=locations['lat'].astype(float) #FIXME dtype
         )
         self.request.session['distance_to_start_hist_data'] = create_hist_for_slider(locations['distance_to_start'])
-        
-        # FILTER --------------------------------------------------------------
-
-        # Get the distance range from the session #FIXME get from GET request
-        min_distance = self.params.get('min_distance', None)
-        max_distance = self.params.get('max_distance', None)
-
-        # If a distance range is set, filter the DataFrame
-        if min_distance is not None and max_distance is not None:
-            locations = locations[
-                (locations['distance_to_start'] >= float(min_distance))
-                & (locations['distance_to_start'] <= float(max_distance))
-            ]
-
-        # RELEVANCE SCORES ----------------------------------------------------
-
-        # Previous locations user input
-        previous_locations = self.request.GET.getlist('previous_locations')
-        previous_locations = [int(loc_id) for loc_id in previous_locations]
 
         # Get scores
         scores, reference_start_location = get_scores(
-            start_date=self.params.get('start_date'),
-            end_date=self.params.get('end_date'),
-            start_location_lat=self.params.get('start_location_lat'),
-            start_location_lon=self.params.get('start_location_lon')
+            start_date=ti_form_data['start_date'],
+            end_date=ti_form_data['end_date'],
+            start_location_lat=ti_form_data['start_location_lat'],
+            start_location_lon=ti_form_data['start_location_lon']
         )
 
-        # Rescale scores based on number of dimensions per category
-        n_dims_per_category = (
-            read_frame(CoreDimensions.objects.values('category_id'))
-            .category_id
-            .value_counts()
-            .rename('n_dims')
+        # Add distance_to_start (as score scaled to [0,1])
+        distance_to_start_scores = (
+            (locations['distance_to_start']/locations['distance_to_start'].max())
+            .reset_index()
+            .assign(category_id=999, dimension_id=9999)
+            .rename(columns={'distance_to_start': 'score'})
         )
-        # Reverse such that scores of categories with more dimensions get lower weights
-        weights = 1/n_dims_per_category
-        weights.rename('weight', inplace=True)
-
-        # Incorporate user preferences
-        user_preferences = {
-            'CoreCategories object (1)': 0.88,
-            'CoreCategories object (2)': 0.34,
-            'CoreCategories object (3)': 0.12,
-            'CoreCategories object (4)': 0.55,
-            'CoreCategories object (5)': 0.66,
-            'CoreCategories object (6)': 0.77,
-            'CoreCategories object (7)': 0.89,
-            'distance_to_start': 1.89,
-        }
-        #user_preferences = None #FIXME
-        if user_preferences:
-            # Convert user preferences to pandas Series
-            user_preferences_series = pd.Series(user_preferences, name='weight')
-            user_preferences_series.index.name = 'category_id'
-
-            # Multiply with weights from number of dimensions per category
-            # Categories are matched by index of pandas Series
-            weights = weights * user_preferences_series
-
-        # Multiply scores with weights
-        scores = scores.merge(weights, on='category_id', how='left')
-        scores['score'] *= scores['weight']
-        scores.drop(columns=['weight'], inplace=True)
-
-        # Pivot scores (from long to wide)
-        scores = (
-            scores
-            .pivot(index='location_id', columns='dimension_id', values='score')
-            .rename_axis(None, axis=1)
-        )
-
-        # Add distance_to_start to scores
-        # (scaled to [0,1] and multiplied with user preference)
-        distance_to_start_score = (
-            locations['distance_to_start']/locations['distance_to_start'].max()
-        )
-        if user_preferences:
-            distance_to_start_score *= user_preferences['distance_to_start'] #FIXME
-        scores['distance_to_start'] = distance_to_start_score
-
-        #FIXME Replace missings
-        scores.fillna(-1, inplace=True)
+        scores = pd.concat([scores, distance_to_start_scores])
 
         # Compute relevance score and add to DataFrame
         # (correctly joined by pandas index)
+        previous_locations = ti_form_data['previous_locations']
         locations['relevance'] = compute_relevance(
             previous_locations=previous_locations,
-            scores=scores
+            scores=scores,
+            preferences=self.request.session.get('preferences_form_data')
         )
 
-        # THUMBNAILS ----------------------------------------------------------
+        # Get thumbnails and add to DataFrame
         thumbnails = read_frame(
             CoreLocationsImages.objects.values('location_id', 'img_url')
         )
         thumbnails.set_index('location_id', inplace=True)
         locations['thumbnail_url'] = thumbnails['img_url']
 
-        # ---------------------------------------------------------------------
-        
+        # Separate previous locations
+        self.request.session['previous_locations_list'] = (
+            locations
+            .loc[previous_locations, :]
+            .reset_index()
+            .to_dict('records')
+        )
+        locations = locations.drop(previous_locations)
+
         return locations.reset_index()
     
+    def filter_locations(self):
+        """Filter locations based on user input."""
+
+        # Get form data
+        filters_form_data = self.request.session['filters_form_data']
+
+        # Distance to start location
+        min_distance = filters_form_data['min_distance']
+        max_distance = filters_form_data['max_distance']
+        if min_distance is not None and max_distance is not None:
+            self.locations_list = self.locations_list[
+                (self.locations_list['distance_to_start'] >= min_distance)
+                & (self.locations_list['distance_to_start'] <= max_distance)
+            ]
+    
     def get_context_data(self, **kwargs):
+        """Assemble context for template."""
 
         # Assemble query params from GET request for LocationDetailView
         form_data = self.request.session.get('travellers_input_form_data', {})
@@ -383,14 +329,18 @@ class LocationsListView(View):
             'start_location_lat': form_data.get('start_location_lat'),
             'start_location_lon': form_data.get('start_location_lon'),
         })
+
         context = {
-            'location_list': self.page,
+            'locations_list': self.page,
+            'previous_locations_list': self.request.session['previous_locations_list'],
             'current_sort_order': self.sort_param,
             'travellers_input_form': self.travellers_input_form,
             'filters_form': self.filters_form,
+            'preferences_form': self.preferences_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
             'query_parameters': query_parameters,
         }
+
         return context
 
 
@@ -425,12 +375,12 @@ class LocationDetailView(DetailView):
         scores = (
             scores
             .filter(['dimension_id', 'score'])
-            .assign(dimension_id=get_value_from_object(scores.dimension_id))
+            .assign(dimension_id=clean_id(scores.dimension_id))
             .set_index('dimension_id')
         )
         texts = (
             texts
-            .assign(category_id=get_value_from_object(texts.category_id))
+            .assign(category_id=clean_id(texts.category_id))
             .set_index('category_id')
         )
 
@@ -503,8 +453,14 @@ class LocationDetailView(DetailView):
             context['travel_warning'] = travel_warning
 
         # Get top attractions
-        #FIXME
-        top_attractions = ['Attraction 1', 'Attraction 2', 'Attraction 3']
+        top_attractions = (
+            RawCultureTexts
+            .objects
+            .filter(location_id=location.location_id)
+            .values('text')
+            .first()
+        )
+        top_attractions = eval(top_attractions['text'])
 
         # Add to context
         context.update({

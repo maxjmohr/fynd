@@ -12,6 +12,9 @@ class CoreCategories(models.Model):
         managed = False
         db_table = 'core_categories'
 
+    def __str__(self):
+        return str(self.category_id)
+
 
 class CoreDimensions(models.Model):
     category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
@@ -25,6 +28,9 @@ class CoreDimensions(models.Model):
     class Meta:
         managed = False
         db_table = 'core_dimensions'
+
+    def __str__(self):
+        return str(self.dimension_id)
 
 
 class CoreLocations(models.Model):
@@ -128,3 +134,14 @@ class RawTravelWarnings(models.Model):
     class Meta:
         managed = False
         db_table = 'raw_travel_warnings'
+
+class RawCultureTexts(models.Model):
+    location = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True)
+    category_id = models.IntegerField()
+    text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_culture_texts'
+        unique_together = (('location', 'category_id'),)
