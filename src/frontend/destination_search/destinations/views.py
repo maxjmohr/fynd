@@ -31,9 +31,9 @@ from django_pandas.io import read_frame
 import time
 
 
-def get_value_from_object(s: pd.Series) -> pd.Series:
+def clean_id(s: pd.Series) -> pd.Series:
     """Get the value from an object."""
-    return s.str.extract('(\d+)').fillna(0).astype(int) #FIXME fillna is just a hot fix
+    return s.fillna(0).astype(int) #FIXME fillna is just a hot fix
 
 
 def encode_url_parameters(params: dict) -> str:
@@ -284,27 +284,22 @@ class LocationsListView(View):
             start_location_lon=ti_form_data['start_location_lon']
         )
 
-        # Pivot scores (from long to wide)
-        scores = (
-            scores
-            .pivot(index='location_id', columns='dimension_id', values='score')
-            .rename_axis(None, axis=1)
+        # Add distance_to_start (as score scaled to [0,1])
+        distance_to_start_scores = (
+            (locations['distance_to_start']/locations['distance_to_start'].max())
+            .reset_index()
+            .assign(category_id=999, dimension_id=9999)
+            .rename(columns={'distance_to_start': 'score'})
         )
-
-        # Add distance_to_start to scores (scaled to [0,1])
-        distance_to_start_score = (
-            locations['distance_to_start']/locations['distance_to_start'].max()
-        )
-        scores['distance_to_start'] = distance_to_start_score
-
-        #FIXME Replace missings
-        scores.fillna(-1, inplace=True)
+        scores = pd.concat([scores, distance_to_start_scores])
 
         # Compute relevance score and add to DataFrame
         # (correctly joined by pandas index)
+        previous_locations = ti_form_data['previous_locations']
         locations['relevance'] = compute_relevance(
-            previous_locations=ti_form_data['previous_locations'],
-            scores=scores
+            previous_locations=previous_locations,
+            scores=scores,
+            preferences=self.request.session.get('preferences_form_data')
         )
 
         # THUMBNAILS ----------------------------------------------------------
@@ -387,15 +382,16 @@ class LocationDetailView(DetailView):
             location_id=location.location_id,
             retrieve_text=True
         )
+        print(scores.dtypes)
         scores = (
             scores
             .filter(['dimension_id', 'score'])
-            .assign(dimension_id=get_value_from_object(scores.dimension_id))
+            .assign(dimension_id=clean_id(scores.dimension_id))
             .set_index('dimension_id')
         )
         texts = (
             texts
-            .assign(category_id=get_value_from_object(texts.category_id))
+            .assign(category_id=clean_id(texts.category_id))
             .set_index('category_id')
         )
 
