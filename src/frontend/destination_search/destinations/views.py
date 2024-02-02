@@ -227,7 +227,7 @@ class LocationsListView(View):
             by=sort_column, ascending=sort_order
         )
         
-        # Create a Paginator and get page
+        # Create Paginator and get page
         self.page = Paginator(
             object_list=self.locations_list.reset_index().to_dict('records'),
             per_page=30
@@ -244,14 +244,12 @@ class LocationsListView(View):
         # Get parameters from travellers input form
         ti_form_data = self.request.session.get('travellers_input_form_data', {})
 
-        # GET LOCATIONS -------------------------------------------------------
-
+        # Get locations
         cols = ['location_id', 'city', 'country', 'country_code', 'lat', 'lon']
         locations = read_frame(CoreLocations.objects.values(*cols))
         locations.set_index('location_id', inplace=True)
 
-        # DISTANCE TO START LOCATION ------------------------------------------
-
+        # Compute distance to start location
         locations['distance_to_start'] = haversine(
             lon1=ti_form_data['start_location_lon'],
             lat1=ti_form_data['start_location_lat'],
@@ -259,8 +257,6 @@ class LocationsListView(View):
             lat2=locations['lat'].astype(float) #FIXME dtype
         )
         self.request.session['distance_to_start_hist_data'] = create_hist_for_slider(locations['distance_to_start'])
-
-        # RELEVANCE SCORES ----------------------------------------------------
 
         # Get scores
         scores, reference_start_location = get_scores(
@@ -288,15 +284,22 @@ class LocationsListView(View):
             preferences=self.request.session.get('preferences_form_data')
         )
 
-        # THUMBNAILS ----------------------------------------------------------
+        # Get thumbnails and add to DataFrame
         thumbnails = read_frame(
             CoreLocationsImages.objects.values('location_id', 'img_url')
         )
         thumbnails.set_index('location_id', inplace=True)
         locations['thumbnail_url'] = thumbnails['img_url']
 
-        # ---------------------------------------------------------------------
-        
+        # Separate previous locations
+        self.request.session['previous_locations_list'] = (
+            locations
+            .loc[previous_locations, :]
+            .reset_index()
+            .to_dict('records')
+        )
+        locations = locations.drop(previous_locations)
+
         return locations.reset_index()
     
     def filter_locations(self):
@@ -329,6 +332,7 @@ class LocationsListView(View):
 
         context = {
             'locations_list': self.page,
+            'previous_locations_list': self.request.session['previous_locations_list'],
             'current_sort_order': self.sort_param,
             'travellers_input_form': self.travellers_input_form,
             'filters_form': self.filters_form,
@@ -368,7 +372,6 @@ class LocationDetailView(DetailView):
             location_id=location.location_id,
             retrieve_text=True
         )
-        print(scores.dtypes)
         scores = (
             scores
             .filter(['dimension_id', 'score'])
