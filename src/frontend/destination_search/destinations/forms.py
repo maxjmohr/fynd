@@ -93,11 +93,11 @@ class PreferencesForm(forms.Form):
         self.add_category(999, 'Distance from start location', distance_from_start_location_description)
 
     def add_category(self, category_id, category_name, category_description):
-        self.fields[f'{category_name}_importance'] = forms.FloatField(
+        self.fields[f'importance_{category_id}'] = forms.FloatField(
             required=False,
             widget=forms.HiddenInput()
         )
-        self.fields[f'{category_name}_direction'] = forms.BooleanField(
+        self.fields[f'direction_{category_id}'] = forms.BooleanField(
             required=False,
             widget=forms.HiddenInput(attrs={'class': 'preferences-checkbox'})
         )
@@ -105,8 +105,8 @@ class PreferencesForm(forms.Form):
             'category_id': category_id,
             'category_name': category_name,
             'fields': {
-                'importance': self[f'{category_name}_importance'],
-                'direction': self[f'{category_name}_direction']
+                'importance': self[f'importance_{category_id}'],
+                'direction': self[f'direction_{category_id}']
             },
             'category_description': category_description
         })
