@@ -236,8 +236,8 @@
             container.append('<div id="' + sliderId + '" style="margin-bottom: 10px;"></div>');
             container.append(
                 '<div style="display: flex; justify-content: space-between;">' +
-                    '<div class="range-slider-label" id="' + minLabelId + '"></div>' +
-                    '<div class="range-slider-label" id="' + maxLabelId + '"></div>' +
+                    '<div class="form-input-label" id="' + minLabelId + '"></div>' +
+                    '<div class="form-input-label" id="' + maxLabelId + '"></div>' +
                 '</div>'
             );
 
@@ -316,6 +316,42 @@
             // Update the colors of the bars initially
             updateBarColors(sliderMinValue, sliderMaxValue);
 
+        }
+    </script>
+
+    <!-- Simple slider for importance -->
+    <script>
+        function importanceSlider(containerId, fieldId) {
+            // Create the div for the slider
+            var container = $("#" + containerId);
+            var sliderId = containerId + "_slider";
+            container.append('<div id="' + sliderId + '"></div>');
+
+            // Check if there is any value from the GET request
+            var getValue = $("#"+fieldId).val();
+
+            // If a value exists in the GET request, use it. Otherwise, use 0.5
+            sliderValue = getValue ? getValue : 0.5;
+
+            // Set initial value for the distance form field
+            $("#" + fieldId).val(sliderValue);
+
+            // Create the slider
+            var slider = $("#" + sliderId).slider({
+                min: 0,
+                max: 1,
+                step: 0.000001,
+                value: sliderValue,
+                slide: function(event, ui) {
+                    $("#" + fieldId).val(ui.value);
+                }
+            });
+
+            // Add double click event listener to the slider handle
+            slider.find(".ui-slider-handle").dblclick(function() {
+                slider.slider("value", 0.5);
+                $("#" + fieldId).val(0.5);
+            });
         }
     </script>
 

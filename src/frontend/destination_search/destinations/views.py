@@ -196,6 +196,7 @@ class LocationsListView(View):
         # Form instance
         self.travellers_input_form = TravellersInputForm(self.request.GET)
         self.filters_form = FiltersForm(self.request.GET)
+        self.preferences_form = PreferencesForm(self.request.GET)
 
         # If the form is valid, store the cleaned data in the session
         if self.travellers_input_form.is_valid():
@@ -389,6 +390,7 @@ class LocationsListView(View):
             'current_sort_order': self.sort_param,
             'travellers_input_form': self.travellers_input_form,
             'filters_form': self.filters_form,
+            'preferences_form': self.preferences_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
             'query_parameters': query_parameters,
         }

@@ -13,7 +13,7 @@ Results
         <details class="form-group-box">
             <summary class="form-group-summary">Travel characteristics</summary>
             <div class="form-group-content">
-                <div class="form-group">
+                <div class="form-item">
                     <div class="tooltip-container">
                         <label class="form-label" for="{{ travellers_input_form.start_location.id_for_label }}">
                             {{ travellers_input_form.start_location.label }}
@@ -30,7 +30,7 @@ Results
                     {{ travellers_input_form.start_location_lat.as_widget }}
                     {{ travellers_input_form.start_location_lon.as_widget }}
                 </div>
-                <div class="form-group">
+                <div class="form-item">
                     <div class="tooltip-container">
                         <label class="form-label" for="{{ travellers_input_form.start_date.id_for_label }}">
                             {{ travellers_input_form.start_date.label }}
@@ -48,7 +48,7 @@ Results
                     {{ travellers_input_form.end_date.errors }}
                     {{ travellers_input_form.end_date.as_widget }}
                 </div>
-                <div class="form-group">
+                <div class="form-item">
                     <div class="tooltip-container">
                         <label class="form-label" for="{{ travellers_input_form.previous_locations.id_for_label }}">
                             {{ travellers_input_form.previous_locations.label }}
@@ -69,7 +69,7 @@ Results
         <details class="form-group-box"  open>
             <summary class="form-group-summary">Filters</summary>
             <div class="form-group-content">
-                <div class="form-group">
+                <div class="form-item">
                     <div class="tooltip-container">
                         <label class="form-label" for="{{ filters_form.min_distance.id_for_label }}">
                             {{ filters_form.min_distance.label }}
@@ -93,7 +93,49 @@ Results
         <details class="form-group-box">
             <summary class="form-group-summary">Preferences</summary>
             <div class="form-group-content">
-                <p>Set weights for categories. These weights are used for relevance computation.</p>
+                <div class="form-item preferences-intro-text">
+                        Set your preferences for the different categories.
+                        The importance slider allows you to set the importance of each category.
+                        The direction toggle switch allows you to indicate whether you want destinations that are similar or different to your previous destinations with regards to the respective category.
+                </div>
+                {% for category in preferences_form.get_categories %}
+                    <div class="form-item">
+
+                        <div class="tooltip-container">
+                            <label class="form-label">
+                                {{ category.category_name }}
+                            </label>
+                            <span class="info-icon" onclick="showHelpText(event, '{{ category.category_id }}_description')">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                            <div id="{{ category.category_id }}_description" class="form-help-text-infobox">
+                                {{ category.category_description }}
+                            </div>
+                        </div>
+
+                        <div class="category-preferences">
+                            <label class="preferences-label" for="{{ category.fields.importance.id_for_label }}">Importance:</label>
+                            <div class="preferences-input">
+                                {{ category.fields.importance.errors }}
+                                <div class="form-input-label">none</div>
+                                {{ category.fields.importance.as_widget }}
+                                <div class="slider importance-slider" id="{{ category.category_id }}_importance"></div>
+                                <div class="form-input-label">high</div>
+                            </div>
+                            <label class="preferences-label" for="{{ category.fields.direction.id_for_label }}">Direction:</label>
+                            {{ category.fields.direction.errors }}
+                            <div class="preferences-input">
+                                <div class="form-input-label">similar</div>
+                                {{ category.fields.direction.as_widget }}
+                                <label for="{{ category.fields.direction.id_for_label }}" class="switch-label">
+                                    <div class="switch-slider"></div>
+                                </label>
+                                <div class="form-input-label">different</div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </details>
 
@@ -260,7 +302,7 @@ Results
     }
 </script>
 
-<!-- From container scrolling -->
+<!-- Form container scrolling -->
 <script>
     function adjustFormContainer() {
         var formContainer = document.getElementById('formContainer');
@@ -303,6 +345,47 @@ Results
         var data = {{ distance_to_start_hist_data|safe }};
         rangeSlider("distance_to_start_range", "id_min_distance", "id_max_distance", data, d3.format(",.0f"), " km");
     });
+</script>
+
+<!-- Preferences form -->
+<script>
+
+    // IMPORTANCE SLIDER
+    $(function() {
+        {% for category in preferences_form.get_categories %}
+            importanceSlider("{{ category.category_id }}_importance", "{{ category.fields.importance.id_for_label }}");
+        {% endfor %}
+    });
+
+    // DIRECTION TOGGLE SWITCHES
+
+    // Get all the hidden inputs and the toggle-switches
+    var hiddenInputs = document.querySelectorAll('.preferences-checkbox');
+    var toggleSwitches = document.querySelectorAll('.switch-label');
+
+    // Initialize each hidden input with a default value and set the corresponding toggle switch
+    for (let i = 0; i < hiddenInputs.length; i++) {
+        // If the hidden input doesn't have a value, assign a default value
+        if (!hiddenInputs[i].value) {
+            hiddenInputs[i].value = 'false';
+        }
+
+        // Set the state of the toggle switch based on the value of the hidden input
+        toggleSwitches[i].classList.toggle('active', hiddenInputs[i].value === 'true');
+
+        // Add an event listener to the toggle-switch
+        toggleSwitches[i].addEventListener('click', function() {
+            // Get the corresponding hidden input
+            var hiddenInput = hiddenInputs[i];
+
+            // Toggle the value of the hidden input
+            hiddenInput.value = hiddenInput.value === 'true' ? 'false' : 'true';
+
+            // Change the background of the toggle-switch to indicate whether it's active or not
+            this.classList.toggle('active', hiddenInput.value === 'true');
+        });
+    }
+
 </script>
 
 {% endblock %}
