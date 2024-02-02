@@ -1,12 +1,10 @@
 from django.views import View
-from django.views.generic import TemplateView, ListView, FormView
+from django.views.generic import TemplateView, FormView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import ModelFormMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.paginator import Paginator
-from django import forms
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
 from .models import *
@@ -17,8 +15,6 @@ import numpy as np
 import pandas as pd
 from urllib.parse import urlencode
 from django_pandas.io import read_frame
-
-import time
 
 
 def clean_id(s: pd.Series) -> pd.Series:
