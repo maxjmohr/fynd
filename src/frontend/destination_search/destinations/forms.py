@@ -1,6 +1,5 @@
 from django import forms
 from django_select2 import forms as s2forms
-from datetime import datetime
 from .models import CoreLocations, CoreCategories
 
 
@@ -61,8 +60,8 @@ class TravellersInputForm(forms.Form):
             " By now, our scores will work propely only for German locations."
         )
     )
-    start_location_lat = forms.CharField(widget=forms.HiddenInput(), required=False)
-    start_location_lon = forms.CharField(widget=forms.HiddenInput(), required=False)
+    start_location_lat = forms.FloatField(widget=forms.HiddenInput(), required=False)
+    start_location_lon = forms.FloatField(widget=forms.HiddenInput(), required=False)
 
     def clean_previous_locations(self):
         previous_locations = self.cleaned_data.get('previous_locations')
@@ -73,13 +72,13 @@ class TravellersInputForm(forms.Form):
 
 distance_from_start_location_description = "Distance (as the crow flies) from your start location to the destination."
 class FiltersForm(forms.Form):
-    min_distance = forms.DecimalField(
+    min_distance = forms.FloatField(
         widget=forms.HiddenInput(),
         required=False,
         label='Distance from start location',
         help_text=distance_from_start_location_description
     )
-    max_distance = forms.DecimalField(
+    max_distance = forms.FloatField(
         widget=forms.HiddenInput(),
         required=False,
     )
@@ -94,7 +93,7 @@ class PreferencesForm(forms.Form):
         self.add_category(999, 'Distance from start location', distance_from_start_location_description)
 
     def add_category(self, category_id, category_name, category_description):
-        self.fields[f'{category_name}_importance'] = forms.DecimalField(
+        self.fields[f'{category_name}_importance'] = forms.FloatField(
             required=False,
             widget=forms.HiddenInput()
         )
