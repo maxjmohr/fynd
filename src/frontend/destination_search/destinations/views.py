@@ -470,7 +470,8 @@ class LocationDetailView(DetailView):
             .values('text')
             .first()
         )
-        top_attractions = eval(top_attractions['text'])
+        if top_attractions['text']:
+            context['top_attractions'] = eval(top_attractions['text'])
 
         # Add to context
         context.update({
@@ -479,7 +480,6 @@ class LocationDetailView(DetailView):
             'location': location,
             'data': data,
             'weather_data': weather_data,
-            'top_attractions': top_attractions,
         })
 
 
