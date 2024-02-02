@@ -33,7 +33,7 @@ import time
 
 def get_value_from_object(s: pd.Series) -> pd.Series:
     """Get the value from an object."""
-    return s.str.extract('(\d+)').fillna(99).astype(int) #FIXME fillna is just a hot fix
+    return s.str.extract('(\d+)').fillna(0).astype(int) #FIXME fillna is just a hot fix
 
 
 def encode_url_parameters(params: dict) -> str:
