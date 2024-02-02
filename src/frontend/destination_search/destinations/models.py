@@ -12,6 +12,9 @@ class CoreCategories(models.Model):
         managed = False
         db_table = 'core_categories'
 
+    def __str__(self):
+        return str(self.category_id)
+
 
 class CoreDimensions(models.Model):
     category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
@@ -25,6 +28,9 @@ class CoreDimensions(models.Model):
     class Meta:
         managed = False
         db_table = 'core_dimensions'
+
+    def __str__(self):
+        return str(self.dimension_id)
 
 
 class CoreLocations(models.Model):
