@@ -114,6 +114,22 @@ class PreferencesForm(forms.Form):
     def get_categories(self):
         return self.categories
 
+    def clean(self):
+        cleaned_data = super().clean()
+
+        for category in self.categories:
+            category_id = category['category_id']
+
+            direction_field = f'direction_{category_id}'
+            if direction_field not in cleaned_data or cleaned_data[direction_field] is None:
+                cleaned_data[direction_field] = False
+
+            importance_field = f'importance_{category_id}'
+            if importance_field not in cleaned_data or cleaned_data[importance_field] is None:
+                cleaned_data[importance_field] = 0.5
+
+        return cleaned_data
+
 
 class SearchLocationForm(forms.Form):
     location = forms.ModelChoiceField(
