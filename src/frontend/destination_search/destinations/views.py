@@ -9,17 +9,7 @@ from django import forms
 from django.http import HttpResponseRedirect, QueryDict
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
-from .models import (
-    CoreScores,
-    CoreLocations,
-    CoreLocationsImages,
-    CoreDimensions,
-    CoreCategories,
-    CoreTexts,
-    RawWeatherHistorical,
-    RawTravelWarnings,
-    RawCultureTexts
-)
+from .models import *
 from .forms import *
 from .compute_relevance import compute_relevance
 from .compute_haversine import haversine
