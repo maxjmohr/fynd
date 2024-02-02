@@ -184,23 +184,33 @@ class LocationsListView(View):
         self.filters_form = FiltersForm(self.request.GET)
         self.preferences_form = PreferencesForm(self.request.GET)
 
-        def compare_form_with_session(form, session_key):
+        def compare_form_with_session(form, session_key, check_validity=True):
             """Compare form with session data."""
             session_data = self.request.session.get(session_key, {})
-            if form.is_valid():
-                form_data = form.cleaned_data
-                if form_data != session_data:
-                    self.request.session[session_key] = form_data
-                    return True
-                return False
-            raise ValueError('Form is not bound.')
+            valid = form.is_valid() # Call such that clean_data is available
+            if check_validity:
+                if valid:
+                    form_data = form.cleaned_data
+                else:
+                    raise ValueError('Form is not valid.')
+            else:
+                form_data = form.clean()
+            if form_data != session_data:
+                self.request.session[session_key] = form_data
+                return True
+            return False
         
         # Check if forms changed compared to session (will update session)
-        forms_changed =  (
-            compare_form_with_session(self.travellers_input_form, 'travellers_input_form_data')
-            or compare_form_with_session(self.preferences_form, 'preferences_form_data')
+        # Using two separate staements to call both functions
+        # Otherwise if first is True, second will not be called
+        ti_form_changed = compare_form_with_session(
+            self.travellers_input_form, 'travellers_input_form_data'
         )
-            
+        preferences_form_changed = compare_form_with_session(
+            self.preferences_form, 'preferences_form_data', check_validity=False
+        )
+        forms_changed = ti_form_changed or preferences_form_changed
+
         # If location list not in session or parameters changed
         if 'locations_list' not in self.request.session or forms_changed:
             self.locations_list = self.get_locations_list()
