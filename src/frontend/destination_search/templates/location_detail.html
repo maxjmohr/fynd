@@ -90,7 +90,7 @@
             <p>{{ travel_warning.warning_text }} <a href="{{ travel_warning.link }}">their website</a>.</p>
         </div>
 
-        {% elif category.category_id == 3 %}
+        {% elif category.category_id == 3 and top_attractions %}
         <div class="category-content-container">
             <div class="category-content-title">Top attractions</div>
             <ul>
