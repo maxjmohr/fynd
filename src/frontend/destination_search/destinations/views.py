@@ -466,7 +466,6 @@ class LocationDetailView(DetailView):
             .first()
         )
         if top_attractions['text']:
-            print(top_attractions['text'])
             context['top_attractions'] = eval(top_attractions['text'])
 
         # Get previous locations
