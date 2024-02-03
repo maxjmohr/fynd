@@ -40,3 +40,11 @@ Discover destinations
 </div>
 
 {% endblock %}
+
+{% block javascripts %}
+<script>
+    // Previous location select
+    var preselectedValues = {{ preselected_previous_locations|safe }};
+    initializeSelect2('id_previous_locations', preselectedValues);
+</script>
+{% endblock %}

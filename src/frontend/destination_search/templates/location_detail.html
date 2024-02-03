@@ -27,7 +27,14 @@
                 <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
             </button>
             {% endfor %}
-            <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
+            {% if previous_locations %}
+                <button class="tablinks has-tooltip" onclick="openCategory(event, 'Similarity')">
+                    Similarity
+                    <span class="tooltip-text category-description-tooltip-text">
+                        This tab highlights main similarities and differences between this destination and your previous destinations.
+                    </span>
+                </button>
+            {% endif %}
         </div>
     </div>
 
@@ -104,9 +111,19 @@
     </div>
     {% endfor %}
 
-    <div id="Similarity" class="tabcontent">
-        <div class="category-content-container">In this tab, we highlight main similarities and differences between this destination and previous destinations.</div>
-    </div>
+    {% if previous_locations %}
+        <div id="Similarity" class="tabcontent">
+            <div class="category-content-container">
+                In this tab, we highlight main similarities and differences between this destination and previous destinations.
+                Your previous locations are:
+                <ul>
+                    {% for location in previous_locations %}
+                        <li>{{ location }}</li>
+                    {% endfor %}
+                    </ul>
+            </div>
+        </div>
+    {% endif %}
     
 </div>
 
@@ -223,12 +240,13 @@
             var container = parent.parentElement
             parent.addEventListener('mouseenter', function() {
                 var parentRect = parent.getBoundingClientRect();
+                var containerRect = container.getBoundingClientRect();
                 var tooltipRect = tooltip.getBoundingClientRect();
                 var left = parentRect.left + parentRect.width / 2 - tooltipRect.width / 2;
-                if (left < container.offsetLeft) {
-                    left = container.offsetLeft;
-                } else if (left + tooltipRect.width > container.offsetWidth) {
-                    left = container.offsetWidth - tooltipRect.width + container.offsetLeft;
+                if (left < containerRect.left) {
+                    left = containerRect.left;
+                } else if (left + tooltipRect.width > containerRect.right) {
+                    left = containerRect.right - tooltipRect.width;
                 }
                 tooltip.style.left = (left - tooltip.offsetParent.getBoundingClientRect().left) + 'px';
                 tooltip.style.transform = 'none';

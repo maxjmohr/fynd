@@ -14,8 +14,8 @@
     <!-- jQuery UI CSS -->
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
-    <!-- Django-Select2 CSS -->
-    {{ travellers_input_form.media.css }}<style> input, select {width: 100%} </style>
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
@@ -88,8 +88,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <!-- Django-Select2 JavaScript -->
-    {{ travellers_input_form.media.js }}
-    <!-- <script src="{% static 'django_select2/django_select2.js' %}"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 
     <!-- Daterangepicker -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
@@ -351,6 +350,30 @@
             slider.find(".ui-slider-handle").dblclick(function() {
                 slider.slider("value", 0.5);
                 $("#" + fieldId).val(0.5);
+            });
+        }
+    </script>
+
+    <!-- Select2 Location(s) choice -->
+    <script>
+        function initializeSelect2(elementId) {
+            var grouped_locations = JSON.parse('{{ grouped_locations|escapejs }}');
+            var data = $.map(grouped_locations, function(locations, country) {
+                return {
+                    text: country,
+                    children: locations
+                };
+            });
+
+            $(document).ready(function() {
+                var selectElement = $('#' + elementId);
+                selectElement.select2({
+                    data: data,
+                    placeholder: "Select destination(s)...",
+                    allowClear: true,
+                    minimumInputLength: 1,
+                });
+                selectElement.val(preselectedValues).trigger('change');  // Preselect values
             });
         }
     </script>

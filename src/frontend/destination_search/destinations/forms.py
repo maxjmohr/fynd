@@ -1,31 +1,12 @@
 from django import forms
-from django_select2 import forms as s2forms
-from .models import CoreLocations, CoreCategories
-
-
-class SelectMultipleLocationsWidget(s2forms.ModelSelect2MultipleWidget):
-    search_fields = [
-        "location_id__icontains",
-        "city__icontains",
-    ]
-
-
-class SelectSingleLocationWidget(s2forms.ModelSelect2Widget):
-    search_fields = [
-        "location_id__icontains",
-        "city__icontains",
-    ]
+from .models import CoreCategories
+import ast
 
 
 class TravellersInputForm(forms.Form):
 
-    previous_locations = forms.ModelMultipleChoiceField(
-        queryset=CoreLocations.objects.only('location_id', 'city'),
-        to_field_name='location_id',
-        widget=SelectMultipleLocationsWidget(attrs={
-            'data-placeholder': 'Select destination(s)...',
-            'data-minimum-input-length': 1
-        }),
+    previous_locations = forms.CharField(
+        widget=forms.SelectMultiple(attrs={'class': 'input-box'}),
         required=True,
         label='Previous destinations',
         help_text=(
@@ -66,9 +47,9 @@ class TravellersInputForm(forms.Form):
     def clean_previous_locations(self):
         previous_locations = self.cleaned_data.get('previous_locations')
         if previous_locations is not None:
-            # Convert the QuerySet to a list of location IDs
-            return list(previous_locations.values_list('location_id', flat=True))
+            return [int(location_id) for location_id in ast.literal_eval(previous_locations)]
         return None
+
 
 distance_from_start_location_description = "Distance (as the crow flies) from your start location to the destination."
 class FiltersForm(forms.Form):
@@ -131,13 +112,12 @@ class PreferencesForm(forms.Form):
         return cleaned_data
 
 
-class SearchLocationForm(forms.Form):
-    location = forms.ModelChoiceField(
-        queryset=CoreLocations.objects.only('location_id', 'city'),
-        to_field_name='location_id',
-        widget=SelectSingleLocationWidget(attrs={
-            'data-placeholder': 'Select location...',
-            'data-minimum-input-length': 1
-        }),
+class SearchLocationForm(TravellersInputForm):
+    location = forms.IntegerField(
+        widget=forms.Select(attrs={'class': 'input-box'}),
         required=True
     )
+
+    def __init__(self, *args, **kwargs):
+        super(SearchLocationForm, self).__init__(*args, **kwargs)
+        self.fields.pop('previous_locations')

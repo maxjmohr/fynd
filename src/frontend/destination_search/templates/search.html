@@ -7,20 +7,50 @@ Discover destinations
 {% block main %}
 
 <div class="search-container">
-    <div class="search-text">
-        <p>Search for a specific location and hit "GO". You will be redirected to a page with more details about this location.</p>
-    </div>
-
     <div class="search-form-container">
         <form method="post">
             {% csrf_token %}
-            {% for field in form %}
-                {{ field.errors }}
-                {{ field }}
-            {% endfor %}
-            <input type="submit" value="Go">
+            <div class="search-intro-text">
+                Search for a specific location and hit "GO". You will be redirected to a page with more details about this location.
+            </div>
+            <div class="location-search-bar">
+                {{ search_location_form.location.errors }}
+                {{ search_location_form.location.as_widget }}
+            </div>
+            <details class="form-group-box" {% if not search_location_form.start_date.value and not search_location_form.start_location.value %}open{% endif %}>
+                <summary class="form-group-summary">Travel characteristics</summary>
+                <div class="form-group-content search-travel-characteristics-input">
+                    <div class="form-item">
+                        <label class="form-label form-label-header" for="{{ search_location_form.start_location.id_for_label }}">{{ search_location_form.start_location.label }}</label>
+                        <p class="form-help-text-display">{{ search_location_form.start_location.help_text }}</p>
+                        {{ search_location_form.start_location.errors }}
+                        {{ search_location_form.start_location.as_widget }}
+                        {{ search_location_form.start_location_lat.as_widget }}
+                        {{ search_location_form.start_location_lon.as_widget }}
+                    </div>
+                    <div class="form-item">
+                        <label class="form-label form-label-header" for="{{ search_location_form.start_date.id_for_label }}">{{ search_location_form.start_date.label }}</label>
+                        <p class="form-help-text-display">{{ search_location_form.start_date.help_text }}</p>
+                        <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
+                        {{ search_location_form.start_date.errors }}
+                        {{ search_location_form.start_date.as_widget }}
+                        {{ search_location_form.end_date.errors }}
+                        {{ search_location_form.end_date.as_widget }}
+                    </div>
+                </div>
+            </details>
+            <input type="submit" value="Go" class="submit-button">
         </form>
     </div>
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Location select
+    var preselectedValues = {{ searched_location|safe }};
+    console.log(preselectedValues);
+    initializeSelect2('id_location', preselectedValues);
+</script>
 {% endblock %}
