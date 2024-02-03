@@ -223,12 +223,13 @@
             var container = parent.parentElement
             parent.addEventListener('mouseenter', function() {
                 var parentRect = parent.getBoundingClientRect();
+                var containerRect = container.getBoundingClientRect();
                 var tooltipRect = tooltip.getBoundingClientRect();
                 var left = parentRect.left + parentRect.width / 2 - tooltipRect.width / 2;
-                if (left < container.offsetLeft) {
-                    left = container.offsetLeft;
-                } else if (left + tooltipRect.width > container.offsetWidth) {
-                    left = container.offsetWidth - tooltipRect.width + container.offsetLeft;
+                if (left < containerRect.left) {
+                    left = containerRect.left;
+                } else if (left + tooltipRect.width > containerRect.right) {
+                    left = containerRect.right - tooltipRect.width;
                 }
                 tooltip.style.left = (left - tooltip.offsetParent.getBoundingClientRect().left) + 'px';
                 tooltip.style.transform = 'none';
