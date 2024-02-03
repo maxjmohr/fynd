@@ -50,6 +50,7 @@ class TravellersInputForm(forms.Form):
             return [int(location_id) for location_id in ast.literal_eval(previous_locations)]
         return None
 
+
 distance_from_start_location_description = "Distance (as the crow flies) from your start location to the destination."
 class FiltersForm(forms.Form):
     min_distance = forms.FloatField(
@@ -111,8 +112,12 @@ class PreferencesForm(forms.Form):
         return cleaned_data
 
 
-class SearchLocationForm(forms.Form):
+class SearchLocationForm(TravellersInputForm):
     location = forms.IntegerField(
         widget=forms.Select(attrs={'class': 'input-box'}),
         required=True
     )
+
+    def __init__(self, *args, **kwargs):
+        super(SearchLocationForm, self).__init__(*args, **kwargs)
+        self.fields.pop('previous_locations')

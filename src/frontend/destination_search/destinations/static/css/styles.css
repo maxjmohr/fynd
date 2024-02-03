@@ -137,10 +137,10 @@ body {
 }
 
 .question-box {
-    border: 1px solid var(--normalgrey);
+    /*border: 1px solid var(--normalgrey);*/
     border-radius: 10px;
     padding: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     width: 100%;
     box-sizing: border-box;
     background-color: var(--accent2);
@@ -151,6 +151,7 @@ body {
     width: 100px;
     margin-left: auto;
     margin-top: 10px;
+    padding: 5px;
     font-weight: bold;
     color: white;
     background-color: var(--accent5);
@@ -533,42 +534,29 @@ body {
 
 /* Search page --------------------------------------------------------------*/
 .search-container {
-    background-color: lightblue;
+    background-color: var(--accent2);
     width: 80%;
-    align-self: center;
-    
+    margin-top: max(min(100px, 20vh), 10px);
+    padding: 30px;
+    border-radius: 10px;
 }
 
-.search-text {
-    margin-bottom: 10px;
+.search-intro-text {
     text-align: center;
 }
 
 .search-form-container {
     width: 100%;
-    display: flex;
-    align-items: center;
 }
 
 .search-form-container form {
     width: 100%;
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    align-items: stretch;
+    flex-direction: column;
 }
 
-.search-form-container input[type="submit"] {
-    width: auto;
-    margin-left: 10px;
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 4px;
-    box-shadow: none;
-    border-style: solid;
-    border-color: rgba(68, 68, 68, 0.4); /* FIXME: use custom variable */
-    border-width: 1px;
-    background-color: rgb(235, 235, 235); /* FIXME: use custom variable */
+.location-search-bar {
+    margin: 20px 0px;
 }
 
 .search .select2-selection.select2-selection--single {
@@ -576,13 +564,26 @@ body {
     line-height: 36px;
 }
 
-
 .search .select2-container--default .select2-selection--single .select2-selection__rendered {
     line-height: 36px;
+    color: black;
+    font-weight: bold;
 }
 
 .search .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 34px;
+    visibility: hidden;
+}
+
+.search .select2-container--default .select2-selection--single .select2-selection__clear {
+    height: 34px !important;
+    line-height: 34px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: rgb(136, 136, 136);
+    margin-right: 15px;
 }
 
 /* Details page -------------------------------------------------------------*/

@@ -179,10 +179,20 @@ class SearchView(FormView):
     template_name = 'search.html'
     form_class = SearchLocationForm
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.update(self.request.session.get('search_location_form_data', {}))
+        return initial
+
     def form_valid(self, form):
-        location_id = form.cleaned_data['location']
+        form_data = form.cleaned_data
+        self.request.session['search_location_form_data'] = form_data
+        location_id = form_data.pop('location')
         self.request.session['searched_location'] = location_id
-        return HttpResponseRedirect(reverse('location_detail', args=[location_id]))
+
+        url = reverse('location_detail', args=[location_id])
+        params = encode_url_parameters(form_data)
+        return HttpResponseRedirect(f'{url}?{params}')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
