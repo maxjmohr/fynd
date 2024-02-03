@@ -45,8 +45,9 @@ def get_places(location:pd.DataFrame, category:str, shape:str, apikey:str, call_
     elif shape == "circle":
         lon = location["lon"]
         lat = location["lat"]
-        radius = location["radius_km"]*1000  # convert to m
+        radius = location["radius_km"] * 1000  # convert to m
         params["filter"] = f"circle:{lon},{lat},{radius}"
+        params["bias"] = f"proximity:{lon},{lat}"
     else:
         raise ValueError("Invalid shape. Shape can either be 'box' or 'circle'.")
     response = requests.get(url, params=params).json()["features"]
