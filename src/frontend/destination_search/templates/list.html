@@ -394,4 +394,35 @@ Results
 
 </script>
 
+<!-- Form container toggling -->
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        // Get all the details elements
+        const detailsElements = document.querySelectorAll('details');
+
+        // Get the current page's parameters
+        let params = new URLSearchParams(window.location.search);
+
+        // Remove the parameters you want to exclude
+        params.delete('sort');
+        params.delete('page');
+
+        // Loop through each details element
+        detailsElements.forEach((details, index) => {
+            // Get the saved open state from localStorage
+            const isOpen = localStorage.getItem('detailsOpenState' + params.toString() + index);
+
+            // If there's a saved open state, apply it
+            if (isOpen !== null) {
+                details.open = isOpen === 'true';
+            }
+
+            // Add an onToggle event handler to save the open state when it's toggled
+            details.addEventListener('toggle', () => {
+                localStorage.setItem('detailsOpenState' + params.toString() + index, details.open);
+            });
+        });
+    });
+</script>
+
 {% endblock %}
