@@ -57,7 +57,7 @@ class CostScores:
                 loc_results["country"] = [row["country"]]
 
                 # Calculate scores based on the sum of cost variables (cheaper has higher score)
-                loc_results["score"] = -relevant_features.sum()
+                loc_results["score"] = relevant_features.sum()
 
                 # Add dimension_id
                 loc_results["dimension_id"] = dimension_id
