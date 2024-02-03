@@ -339,6 +339,12 @@ Results
     window.addEventListener('scroll', adjustFormContainer);
 </script>
 
+<!-- Previous location select -->
+<script>
+    var preselectedValues = {{ preselected_previous_locations|safe }};
+    initializeSelect2('id_previous_locations', preselectedValues);
+</script>
+
 <!-- Range sliders -->
 <script>
     $(function() {

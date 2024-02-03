@@ -14,13 +14,20 @@ Discover destinations
     <div class="search-form-container">
         <form method="post">
             {% csrf_token %}
-            {% for field in form %}
-                {{ field.errors }}
-                {{ field }}
-            {% endfor %}
+            {{ search_location_form.location.errors }}
+            {{ search_location_form.location.as_widget }}
             <input type="submit" value="Go">
         </form>
     </div>
 </div>
 
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Location select
+    var preselectedValues = {{ searched_location|safe }};
+    console.log(preselectedValues);
+    initializeSelect2('id_location', preselectedValues);
+</script>
 {% endblock %}

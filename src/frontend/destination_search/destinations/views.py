@@ -15,6 +15,19 @@ import numpy as np
 import pandas as pd
 from urllib.parse import urlencode
 from django_pandas.io import read_frame
+import json
+import ast
+
+
+def get_locations_for_select2():
+    """Get locations for use in Select2."""
+    locations = CoreLocations.objects.values('location_id', 'city', 'country')
+    grouped_locations = {}
+    for location in locations:
+        if location['country'] not in grouped_locations:
+            grouped_locations[location['country']] = []
+        grouped_locations[location['country']].append({'id': location['location_id'], 'text': location['city']})
+    return json.dumps(grouped_locations)
 
 
 def clean_id(s: pd.Series) -> pd.Series:
@@ -153,6 +166,12 @@ class DiscoverView(FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['travellers_input_form'] = context.pop('form')
+        context['grouped_locations'] = get_locations_for_select2()
+        context['preselected_previous_locations'] = (
+            self.request.session
+            .get('travellers_input_form_data', {})
+            .get('previous_locations', [])
+        )
         return context
 
 
@@ -161,9 +180,16 @@ class SearchView(FormView):
     form_class = SearchLocationForm
 
     def form_valid(self, form):
-        location = form.cleaned_data['location']
-        self.request.session['searched_location'] = location.location_id
-        return HttpResponseRedirect(reverse('location_detail', args=[location.location_id]))
+        location_id = form.cleaned_data['location']
+        self.request.session['searched_location'] = location_id
+        return HttpResponseRedirect(reverse('location_detail', args=[location_id]))
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_location_form'] = context.pop('form')
+        context['grouped_locations'] = get_locations_for_select2()
+        context['searched_location'] = self.request.session.get('searched_location', [])
+        return context
 
 
 class CompareView(TemplateView):
@@ -331,9 +357,7 @@ class LocationsListView(View):
         """Assemble context for template."""
 
         # Assemble query params from GET request for LocationDetailView
-        query_parameters = encode_url_parameters(
-            self.request.session.get('travellers_input_form_data', {})
-        )
+        query_parameters = encode_url_parameters(self.request.session['travellers_input_form_data'])
 
         context = {
             'locations_list': self.page,
@@ -344,6 +368,8 @@ class LocationsListView(View):
             'preferences_form': self.preferences_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
             'query_parameters': query_parameters,
+            'grouped_locations': get_locations_for_select2(),
+            'preselected_previous_locations': self.request.session['travellers_input_form_data']['previous_locations']
         }
 
         return context
@@ -466,7 +492,7 @@ class LocationDetailView(DetailView):
             .first()
         )
         if top_attractions['text']:
-            context['top_attractions'] = eval(top_attractions['text'])
+            context['top_attractions'] = ast.literal_eval(top_attractions['text'])
 
         # Get previous locations
         previous_locations = [
