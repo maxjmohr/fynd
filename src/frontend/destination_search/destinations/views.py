@@ -181,15 +181,17 @@ class SearchView(FormView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial.update(self.request.session.get('search_location_form_data', {}))
+        travellers_input_form_data = self.request.session.get('travellers_input_form_data', {})
+        initial.update(travellers_input_form_data)
         return initial
 
     def form_valid(self, form):
         form_data = form.cleaned_data
-        self.request.session['search_location_form_data'] = form_data
+        travellers_input_form_data = self.request.session.get('travellers_input_form_data', {})
+        travellers_input_form_data.update(form_data)
+        self.request.session['travellers_input_form_data'] = travellers_input_form_data
+        
         location_id = form_data.pop('location')
-        self.request.session['searched_location'] = location_id
-
         url = reverse('location_detail', args=[location_id])
         params = encode_url_parameters(form_data)
         return HttpResponseRedirect(f'{url}?{params}')
@@ -198,7 +200,7 @@ class SearchView(FormView):
         context = super().get_context_data(**kwargs)
         context['search_location_form'] = context.pop('form')
         context['grouped_locations'] = get_locations_for_select2()
-        context['searched_location'] = self.request.session.get('searched_location', [])
+        context['searched_location'] = self.request.session.get('travellers_input_form_data', {}).get('location', [])
         return context
 
 
