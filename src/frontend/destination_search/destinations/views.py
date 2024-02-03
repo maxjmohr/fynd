@@ -331,14 +331,9 @@ class LocationsListView(View):
         """Assemble context for template."""
 
         # Assemble query params from GET request for LocationDetailView
-        form_data = self.request.session.get('travellers_input_form_data', {})
-        query_parameters = encode_url_parameters({
-            'start_date': form_data.get('start_date'),
-            'end_date': form_data.get('end_date'),
-            'start_location': form_data.get('start_location'),
-            'start_location_lat': form_data.get('start_location_lat'),
-            'start_location_lon': form_data.get('start_location_lon'),
-        })
+        query_parameters = encode_url_parameters(
+            self.request.session.get('travellers_input_form_data', {})
+        )
 
         context = {
             'locations_list': self.page,
@@ -471,8 +466,22 @@ class LocationDetailView(DetailView):
             .first()
         )
         if top_attractions['text']:
+            print(top_attractions['text'])
             context['top_attractions'] = eval(top_attractions['text'])
 
+        # Get previous locations
+        previous_locations = [
+            int(id) for id in self.request.GET.getlist('previous_locations', [])
+        ]
+        if len(previous_locations) > 0:
+            previous_locations = (
+                CoreLocations
+                .objects
+                .filter(location_id__in=previous_locations)
+                .values('location_id', 'city', 'country')
+            )
+            context['previous_locations'] = previous_locations
+            
         # Add to context
         context.update({
             'reference_start_location': reference_start_location,

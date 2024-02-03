@@ -27,7 +27,14 @@
                 <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
             </button>
             {% endfor %}
-            <button class="tablinks" onclick="openCategory(event, 'Similarity')">Similarity</button>
+            {% if previous_locations %}
+                <button class="tablinks has-tooltip" onclick="openCategory(event, 'Similarity')">
+                    Similarity
+                    <span class="tooltip-text category-description-tooltip-text">
+                        This tab highlights main similarities and differences between this destination and your previous destinations.
+                    </span>
+                </button>
+            {% endif %}
         </div>
     </div>
 
@@ -104,9 +111,19 @@
     </div>
     {% endfor %}
 
-    <div id="Similarity" class="tabcontent">
-        <div class="category-content-container">In this tab, we highlight main similarities and differences between this destination and previous destinations.</div>
-    </div>
+    {% if previous_locations %}
+        <div id="Similarity" class="tabcontent">
+            <div class="category-content-container">
+                In this tab, we highlight main similarities and differences between this destination and previous destinations.
+                Your previous locations are:
+                <ul>
+                    {% for location in previous_locations %}
+                        <li>{{ location }}</li>
+                    {% endfor %}
+                    </ul>
+            </div>
+        </div>
+    {% endif %}
     
 </div>
 
