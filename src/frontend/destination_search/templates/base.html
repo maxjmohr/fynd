@@ -23,6 +23,9 @@
     {% load static %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
 
+    <!-- favicon -->
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
+
 </head>
 <body class="{{ request.path|slugify }}">
 
@@ -34,8 +37,7 @@
                 {% block header %}
                 <nav class="navbar navbar-expand-lg navbar-light bg-light">
                     <a class="navbar-brand" href="/">
-                        <img src="https://www.svgrepo.com/show/58117/airplane-travelling-around-earth.svg" width="30" height="30" class="d-inline-block align-top" alt="">
-                        <b>fynd</b>
+                        <img src="{% static 'images/logo.svg' %}" class="logo" alt="fynd-logo">
                     </a>
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav ml-auto">

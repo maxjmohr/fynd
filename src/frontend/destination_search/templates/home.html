@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 fynd
@@ -7,7 +8,10 @@ fynd
 {% block main %}
 
 <div class="home-overview-container">
-    <p class="intro-text">Welcome to fynd. Choose an option below to get started.</p>
+    <div class="home-intro-text">
+        <div class="home-welcome">Welcome to <img src="{% static 'images/logo.svg' %}" style="height: 1em;" alt="fynd"></div>
+        Choose an option below to get started.
+    </div>
 
     <div class="box-container">
         <a href="/discover" class="box">
