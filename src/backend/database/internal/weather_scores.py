@@ -106,7 +106,7 @@ class WeatherScores:
             28: "cm",
             29: "km/h"
         }
-        data["raw_value_formatted"] = data.apply(lambda row: f"{round(row['raw_value_formatted'],2)} {suffix_mapping.get(row['dimension_id'], '')}", axis=1)
+        data["raw_value_formatted"] = data.apply(lambda row: f"{round(row['raw_value_formatted'],1)} {suffix_mapping.get(row['dimension_id'], '')}", axis=1)
 
         # Add category_id
         data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 2").iloc[0, 0]
