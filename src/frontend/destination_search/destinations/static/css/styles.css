@@ -488,6 +488,17 @@ body {
     margin-bottom: 20px;
 }
 
+.colored-letter {
+    color: var(--accent1);
+    font-family: 'Plantagenet Cherokee';
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.f-space {
+    margin-right: 2px;
+}
+
 .box-container {
     display: flex;
     flex-direction: column;
