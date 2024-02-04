@@ -6,7 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 import datetime
-from math import radians, cos, sin, asin, sqrt
+from geopy.distance import geodesic
 import numpy as np
 import pandas as pd
 import random
@@ -16,6 +16,7 @@ import time
 ## PARTS ##
 # PART 1: Import the csv into the database with Kayak Checks
 # PART 2: Find nearest airport for each location
+# PART 3: Define start airports and assign to starting locations
 ############
 
 
@@ -130,7 +131,7 @@ db.disconnect()
 
 
 ##====| PART 2: Find nearest airport for each location |====##
-
+"""
 def haversine_distance(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     ''' Calculate the great circle distance (km) between two points on the earth (specified in decimal degrees).
     Source: https://stackoverflow.com/a/29546836
@@ -150,6 +151,7 @@ def haversine_distance(lon1: float, lat1: float, lon2: float, lat2: float) -> fl
     c = 2 * np.arcsin(np.sqrt(a))
     km = 6378.137 * c
     return km
+"""
 
 
 def find_nearest_airports(location:pd.Series, airports:pd.DataFrame) -> pd.DataFrame:
@@ -163,11 +165,23 @@ def find_nearest_airports(location:pd.Series, airports:pd.DataFrame) -> pd.DataF
     location = location.copy()
     location["lat"] = pd.to_numeric(location["lat"])
     location["lon"] = pd.to_numeric(location["lon"])
-    airports["distance"] = airports.apply(lambda row: haversine_distance(location["lat"], location["lon"], row["lat"], row["lon"]), axis=1)
+
+    # For haversine distance
+    # airports["distance"] = airports.apply(lambda row: haversine_distance(location["lat"], location["lon"], row["lat"], row["lon"]), axis=1)
+    # For geodesic distance
+    airports["distance"] = airports.apply(lambda row: geodesic((location["lat"], location["lon"]), (row["lat"], row["lon"])).kilometers, axis=1)
+
+    # Get the top 3 airports
+    airports = airports.nsmallest(3, "distance")
+
+    # Calculate sorting metric passenger_count/distance
+    # Prefers airports with more passengers and shorter distance
+    airports["passenger_count"] = pd.to_numeric(airports["passenger_count"], errors='coerce')
+    airports["sorting"] = airports["passenger_count"] / airports["distance"]
 
     # Get the three nearest airports
     print(f"{datetime.datetime.now()} - Extracting the three nearest airports.")
-    nearest_airports = airports.sort_values(by="distance")
+    nearest_airports = airports.sort_values(by="sorting", ascending=False)
 
     # Store top 3 airports in a dataframe
     results = pd.DataFrame({
@@ -179,36 +193,104 @@ def find_nearest_airports(location:pd.Series, airports:pd.DataFrame) -> pd.DataF
 
     return results
 
-"""
-db = Database()
-db.connect()
-# Fetch the locations and airports
-locations = db.fetch_data(total_object="core_locations")
-airports = db.fetch_data(total_object="core_airports")
-# Find the nearest airports for each location
-print(f"{datetime.datetime.now()} - Finding the nearest airports for each location.")
-results = locations.apply(lambda row: find_nearest_airports(row, airports), axis=1)
-results = pd.concat(results.to_list(), axis=0).reset_index(drop=True)
-print(results)
 
-# Insert the results into the database
-print(f"{datetime.datetime.now()} - Inserting the airports into 'core_locations'.")
-"""
-
-def insert_airport_cols(row):
+def insert_airport_cols(db:Database, table:str, row:pd.Series) -> None:
     ''' Insert the airports into the database
-    Input:  row: row of the results dataframe
+    Input:  - db: Database
+            - table: table to insert the airports into
+            - row: row of the results dataframe
     Output: None
     '''
-    print(f"{datetime.datetime.now()} - Updating the airports for {row['location_id']} into 'core_locations'.")
+    print(f"{datetime.datetime.now()} - Updating the airports for {row['location_id']} into '{table}'.")
     sql = f"""
-        UPDATE core_locations
+        UPDATE {table}
         SET airport_1 = '{row["airport_1"]}', airport_2 = '{row["airport_2"]}', airport_3 = '{row["airport_3"]}'
         WHERE location_id = {row["location_id"]}
     """
     db.execute_sql(sql=sql)
+
+
+def map_airports_to_loc(db:Database, table:str) -> None:
+    ''' Map the airports to the locations
+    Input:  - db: Database
+            - table: table to map the airports to
+    Output: results: dataframe of the results
+    '''
+    # Fetch the locations and airports
+    locations = db.fetch_data(total_object=table)
+    airports = db.fetch_data(total_object="core_airports")
+
+    # Find the nearest airports for each location
+    print(f"{datetime.datetime.now()} - Finding the nearest airports for each location.")
+    results = locations.apply(lambda row: find_nearest_airports(row, airports), axis=1)
+    results = pd.concat(results.to_list(), axis=0).reset_index(drop=True)
+    print(results)
+
+    # Insert the results into the database
+    print(f"{datetime.datetime.now()} - Inserting the airports into '{table}'.")
+    results.apply(lambda row: insert_airport_cols(db, table, row), axis=1)
+    return results
+
+
+# Activate to assign nearest airports to locations
 """
-results.apply(insert_airport_cols, axis=1)
+db = Database()
+db.connect()
+
+# map_airports_to_loc(db, "core_locations")
+map_airports_to_loc(db, "core_locations")
+
+db.disconnect()
+"""
+
+
+##====| PART 3: Define start airports and assign to starting locations |====##
+
+def determineUniqueChosenAirport(row, airport_coords):
+    closest_airport = min(airport_coords, key=lambda airport: geodesic((row['lat'], row['lon']), (airport_coords[airport]['lat'], airport_coords[airport]['lon'])).meters)
+    return closest_airport.iloc[0]["iata_code"]
+
+
+def map_start_airports_to_start_loc(db:Database, table:str) -> None:
+    ''' Map the start airports to the start locations
+    Input:  - db: Database
+            - table: table to map the start airports to
+    Output: None
+    '''
+    # Fetch the start locations
+    start_refs = db.fetch_data(total_object=table)
+
+    # Define start airports
+    start_airports = start_refs[start_refs['city'].isin(["Munich", "Frankfurt"])]
+
+    # Create a dictionary with the airport codes and their coordinates
+    airport_dict = {code: {'lat': coord['lat'], 'lon': coord['lon']} for code, coord in zip(start_airports['airport_1'], start_airports[['lat', 'lon']].to_dict("records"))}
+
+    # Determine the unique chosen airport for each location
+    print(f"{datetime.datetime.now()} - Determining the unique chosen airport for each location.")
+    start_refs["mapped_start_airport"] = start_refs.apply(lambda x: determineUniqueChosenAirport(x, airport_dict), axis=1)
+
+    # Insert the results into the database
+    print(f"{datetime.datetime.now()} - Inserting the start airports into '{table}'.")
+    for _, row in start_refs.iterrows():
+        query = f"""
+            UPDATE {table}
+            SET mapped_start_airport = '{row['mapped_start_airport']}'
+            WHERE location_id = {row['location_id']}
+        """
+        db.execute_sql(query)
+
+
+
+# Activate to assign start airports to start location
+"""
+db = Database()
+db.connect()
+
+# Add column to table
+#db.execute_sql("ALTER TABLE core_ref_start_locations ADD COLUMN mapped_start_airport VARCHAR(5)")
+
+map_start_airports_to_start_loc(db, "core_ref_start_locations")
 
 db.disconnect()
 """
