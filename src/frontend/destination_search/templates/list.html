@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load humanize %} <!-- for intcomma -->
 
 {% block title %}
@@ -151,7 +152,7 @@ Results
         {% for location in previous_locations_list %}
             <div class="previous-location-list-item-container">
                 <div class="location-list-item-image-container same-width-as-height">
-                    <img src="{{ location.thumbnail_url }}" alt="{{ location.city }} image">
+                    <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
                 </div>
                 <div class="location-list-item-info-general">
                     <div class="location-list-item-title">
@@ -193,7 +194,7 @@ Results
 
                 <div class="location-list-item-image-container same-height-as-width">
                     <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
-                        <img src=" {{location.thumbnail_url }} " alt="{{ location.city }} image">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
                     </a>
                 </div>
                 

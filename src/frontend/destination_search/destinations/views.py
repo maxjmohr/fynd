@@ -340,13 +340,6 @@ class LocationsListView(View):
             preferences=self.request.session.get('preferences_form_data')
         )
 
-        # Get thumbnails and add to DataFrame
-        thumbnails = read_frame(
-            CoreLocationsImages.objects.values('location_id', 'img_url')
-        )
-        thumbnails.set_index('location_id', inplace=True)
-        locations['thumbnail_url'] = thumbnails['img_url']
-
         # Separate previous locations
         self.request.session['previous_locations_list'] = (
             locations
