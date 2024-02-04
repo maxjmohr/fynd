@@ -10,6 +10,7 @@ import time
 from datetime import datetime, timedelta
 import numpy as np
 from dateutil.parser import parse
+from tqdm import tqdm
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -200,7 +201,6 @@ class Route:
             return False
 
         else:
-
             car_route = self.get_car_route()
             return ((self.dest['lon'] - car_route['end_point']['lon'] <= 0.1) and 
                     (self.dest['lat'] - car_route['end_point']['lat'] <= 0.1))
@@ -230,9 +230,9 @@ class Route:
                     "end_point": None,
                     "duration": None,
                     "polyline": None,
-                    "route": None,
-                    "distance": None,
-                    'total_transfers': None
+                    "route": 0,
+                    "distance": 0,
+                    'total_transfers': 0
                 }
 
             else:
@@ -261,15 +261,18 @@ class Route:
 
     def createFlightSearchURL(self, orig_iata: str, dest_iata: str, date_leave: str) -> str:
 
-        date_return = (parser.parse(date_leave) + pd.Timedelta(days=7)).strftime('%Y-%m-%d')
+        date_ret_ts = datetime.strptime(date_leave, "%Y-%m-%d") + timedelta(days=7)
+        date_ret = date_ret_ts.strftime("%Y-%m-%d")
 
-        url = f"https://www.kayak.com/flights/{orig_iata}-{dest_iata}/{date_leave}/{date_return}?sort=bestflight_a"
+        url = f"https://www.kayak.com/flights/{orig_iata}-{dest_iata}/{date_leave}/{date_ret}?sort=bestflight_a"
         return url
     
 
     def getFlightData(self, orig, dest, date_leave):
 
         url = self.createFlightSearchURL(orig, dest, date_leave)
+
+        # FIXME: 404 page not found and Belarus
 
         # set up selenium
         options = webdriver.ChromeOptions()
@@ -279,7 +282,11 @@ class Route:
         driver = webdriver.Chrome(options=options)
 
         try:
+
+            # wait for presence of the x / y results element
+            max_wait = 40
             driver.get(url)
+            WebDriverWait(driver, max_wait).until(EC.presence_of_element_located((By.CLASS_NAME, "nrc6")))
             soup = BeautifulSoup(driver.page_source, "html.parser")
             driver.quit()
 
@@ -387,19 +394,19 @@ def process_location_land_reachability(loc, start_refs):
 
             else:
                 print("public transport route not available")
-                tmp_dict['pt_distance'] = None
-                tmp_dict['pt_duration'] = None
+                tmp_dict['pt_distance'] = 0
+                tmp_dict['pt_duration'] = 0
                 tmp_dict['pt_polyline'] = None
-                tmp_dict['pt_total_transfers'] = None
+                tmp_dict['pt_total_transfers'] = 0
 
         else:
-            tmp_dict['car_distance'] = None
-            tmp_dict['car_duration'] = None
+            tmp_dict['car_distance'] = 0
+            tmp_dict['car_duration'] = 0
             tmp_dict['car_polyline'] = None
-            tmp_dict['pt_distance'] = None
-            tmp_dict['pt_duration'] = None
+            tmp_dict['pt_distance'] = 0
+            tmp_dict['pt_duration'] = 0
             tmp_dict['pt_polyline'] = None
-            tmp_dict['pt_total_transfers'] = None
+            tmp_dict['pt_total_transfers'] = 0
         
         # return dataframe of results to be inserted into database
         res.append(pd.DataFrame(tmp_dict, index=[0]))
@@ -407,55 +414,74 @@ def process_location_land_reachability(loc, start_refs):
     return pd.concat(res)
     
 
-def process_location_air_reachability(loc, start_refs):
+def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFrame, processed_locs) -> pd.DataFrame:
+    """
+    Processes the air reachability of a given location airport and a set of reference airports.
+    Args:
+        loc (pd.DataFrame): The location airport.
+        start_refs (pd.DataFrame): The reference airports.
+    Returns:
+        pd.DataFrame: The air reachability data.
+    """
 
-    # create dates for each location: 6 weeks intervals starting from today
-    start = "2024-03-01"
-    periods = generate_periods(start, pd.to_datetime(start) + pd.DateOffset(months=6), 42)
+    # set periods manually: each day of the week one time per season (winter summer); Febrary and March twice (2024 and 2025) because they are closest to the start date
+    start_dates = [
+        "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
+        "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
+        "2024-12-12", "2025-01-17", "2025-02-22", "2025-03-02"
+    ]
 
+    # create destination coordinate dict for Route object constructor
     dest = {
         "lat": float(loc['lat']),
         "lon": float(loc['lon'])
     }
 
-    dest_name = loc['city']
-
+    dest_iata = loc['airport_1']
     res_list = []
 
-    for period in periods:
-
-        dep_date = period[0].strftime('%Y-%m-%d')
+    # loop over all periods and reference airports
+    for dep_date in start_dates:
 
         for _, row in start_refs.iterrows():
 
-            time.sleep(5)
+            orig_iata = row['mapped_start_airport']
 
+            # check if flight data for this route and date has already been processed
+            if processed_locs is not None:
+                if len(processed_locs[(processed_locs['orig_iata'] == orig_iata & processed_locs['dest_iata'] == dest_iata & processed_locs['dep_date'] == dep_date)]) > 0:
+                    continue
+
+            #time.sleep(5)
+
+            # specify origin coordinates for Route object constructor
             orig = {
                 "lat": float(row['lat']),
                 "lon": float(row['lon'])
             }
 
-            orig_iata = row['airport_1']
-            loc_json = getLocationJSON(loc['city'], loc['country'])
+            # set origin iata code, create Route object
+            route = Route(dest, orig)
 
-            if len(loc_json) > 0:
-                if "apicode" in loc_json[0].keys():
-                    dest_iata = loc_json[0]['apicode']
+            # get flight data
+            soup = route.getFlightData(orig_iata, dest_iata, dep_date)
+            print(f"Kayak page fetched successfully for {orig_iata} to {dest_iata} on {dep_date}")
+            try:
+                flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
+                print(f"Flight data parsed successfully for {orig_iata} to {dest_iata} on {dep_date}")
 
-                    route = Route(dest, orig)
+                # insert flight data into database
+                if flight_data is not None:
+                    flight_data['orig_iata'] = orig_iata
+                    flight_data['dest_iata'] = dest_iata
+                    res_list.append(pd.DataFrame(flight_data, index=[0]))
+                    print(f"SUCCESS: data found for {orig_iata} to {loc['city']} on {dep_date}")
+                    continue
 
-                    # get flight data
-                    soup = route.getFlightData(orig_iata, dest_iata, dep_date)
-                    flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
+            except:
+                pass
 
-                    # insert flight data into database
-                    if flight_data is not None:
-                        flight_data['loc_id'] = loc['location_id']
-                        res_list.append(pd.DataFrame(flight_data, index=[0]))
-                        print(f"SUCCESS: data found for {orig_iata} to {dest_name} on {dep_date}")
-                        continue
-
-            print(f"WARNING: No flight data found for {orig_iata} to {dest_name} on {dep_date}")
+            print(f"WARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}")
                         
      # after iterating through time periods and locations, return the dataframe                   
     return pd.concat(res_list)

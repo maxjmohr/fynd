@@ -14,6 +14,8 @@ from data.accomodations import accomodations_main
 from data.reachability import process_location_land_reachability, process_location_air_reachability
 from database.db_helpers import Database
 import datetime
+from multiprocessing import Pool
+from geopy.distance import geodesic
 from dateutil.relativedelta import relativedelta
 import ee
 import json
@@ -198,24 +200,35 @@ def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Dat
 
 
 def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    """
+    
+    """
 
-    locations = locations[~locations['city'].isin(["Shkoder", "Kruje", "Korçë", "Fier",
-                                                   "Berat", "Bashkia Durrës"])]
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    db.disconnect()
+    
+    # use only start reference locations with unique chosen iata
+    start_refs = start_refs.drop_duplicates(subset=['mapped_start_airport'])
 
-    if os.path.exists("./res/master_data/location_rename.json"):
-        with open("./res/master_data/location_rename.json", "r", encoding="utf-8") as f:
-            location_rename = json.load(f)
+    # drop duplicates of first airport to create unique orig -> dest combinations
+    locations = locations.drop_duplicates(subset=['airport_1'])
 
-    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])]
-    locations.loc[locations['location_id'] == 206579565, 'city'] = "Hong Kong"
-    locations.loc[locations['location_id'] == 206579565, 'country'] = "Hong Kong"  
-    locations['city'] = locations[['city', 'country']].apply(lambda x: location_rename[f"{x['city']}, {x['country']}"] if f"{x['city']}, {x['country']}" in location_rename.keys() else x['city'],  axis=1)
+    # remove locations for which data was already scraped
+    try:
+        db.connect()
+        raw_reachability = db.fetch_data("raw_reachability_air")
+        db.disconnect()
+
+    except:
+        raw_reachability = None
 
     # iterate over locations
     for _, loc in locations.iterrows():
 
         # module function returns a dataframe with combinations for all start locations and the current location
-        loc_air_reachability_df = process_location_air_reachability(loc, start_refs)
+        loc_air_reachability_df = process_location_air_reachability(loc, start_refs, raw_reachability)
 
         # insert that into "table_name" if it is not empty
         if len(loc_air_reachability_df) > 0:
@@ -226,52 +239,100 @@ def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Data
     return end_datetime
 
 
-# Dictonary that maps names of database tables to functions which fill these tables with data
-table_fill_function_dict = {
-    #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
-    #"raw_safety_city": [fill_raw_safety_city, 2],
-    #"raw_safety_country": [fill_raw_safety_country, 3],
-    #raw_places": [fill_raw_places, 4],
-    # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    #"raw_weather_historical": [fill_raw_weather_historical, 6],
-    #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
-    #"raw_accommodation" : [fill_raw_accommodation, 8],
-    #"raw_reachability_air" : [fill_raw_reachability_air, 9],
-    "raw_reachability_land" : [fill_raw_reachability_land, 10]
+def worker(args):
+    loc, start_refs, raw_reachability = args
+    return process_location_air_reachability(loc, start_refs, raw_reachability)
+
+def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    """
+    
+    """
+
+    num_workers = 4
+
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    db.disconnect()
+    
+    # use only start reference locations with unique chosen iata
+    start_refs = start_refs.drop_duplicates(subset=['mapped_start_airport'])
+
+    # drop duplicates of first airport to create unique orig -> dest combinations
+    locations = locations.drop_duplicates(subset=['airport_1'])
+
+    # remove locations for which data was already scraped
+    try:
+        db.connect()
+        raw_reachability = db.fetch_data("raw_reachability_air")
+        db.disconnect()
+
+    except:
+        raw_reachability = None
+
+    # create a multiprocessing Pool with the specified number of workers
+    with Pool(num_workers) as p:
+        results = p.map(worker, [(loc, start_refs, raw_reachability) for _, loc in locations.iterrows()])
+
+    # iterate over the results and insert them into the database
+    for loc_air_reachability_df in results:
+        if len(loc_air_reachability_df) > 0:
+            db.insert_data(loc_air_reachability_df, table_name, if_exists='append')
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+
+
+if __name__ == '__main__':
+
+    # Dictonary that maps names of database tables to functions which fill these tables with data
+    table_fill_function_dict = {
+        #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
+        #"raw_safety_city": [fill_raw_safety_city, 2],
+        #"raw_safety_country": [fill_raw_safety_country, 3],
+        #raw_places": [fill_raw_places, 4],
+        # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
+        #"raw_weather_historical": [fill_raw_weather_historical, 6],
+        #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
+        #"raw_accommodation" : [fill_raw_accommodation, 8],
+        "raw_reachability_air" : [fill_raw_reachability_air_par, 9],
+        #"raw_reachability_land" : [fill_raw_reachability_land, 10]
     }
 
-# List that consists of names of log tables that need to be created 
-log_tables = ["log_history", "log_processes"]
+    # List that consists of names of log tables that need to be created 
+    log_tables = ["log_history", "log_processes"]
 
-# Dictonary that maps process_id to its fill_table function, its description and its turnus for the logging tables
-table_process_id_dict = {
-    1: ["raw_costs_numbeo", "Inserts numbeo cost data for given cities and countries.", 30],
-    2: ["fill_raw_safety_city", "Inserts safety data for given cities.", 30],
-    3: ["fill_raw_safety_country", "Inserts safety data for given countries.", 30],
-    4: ["fill_raw_places", "Inserts culture data for given locations.", 30],
-    5: ["raw_weather_current_future", "Inserts current and future weather data for given locations.", 30],
-    6: ["raw_weather_historical", "Inserts historical weather data for given locations.", 30],
-    7: ["fill_raw_geography", "Inserts geography data for given locations.", 30],
-    8: ["fill_raw_accommodation", "Inserts accommodation data for given locations.", 30],
-    9: ["fill_raw_reachability_air", "Inserts reachability data for given locations.", 30],
-    10: ["fill_raw_reachability_land", "Inserts reachability data for given locations.", 30]
-}
+    # Dictonary that maps process_id to its fill_table function, its description and its turnus for the logging tables
+    table_process_id_dict = {
+        1: ["raw_costs_numbeo", "Inserts numbeo cost data for given cities and countries.", 30],
+        2: ["fill_raw_safety_city", "Inserts safety data for given cities.", 30],
+        3: ["fill_raw_safety_country", "Inserts safety data for given countries.", 30],
+        4: ["fill_raw_places", "Inserts culture data for given locations.", 30],
+        5: ["raw_weather_current_future", "Inserts current and future weather data for given locations.", 30],
+        6: ["raw_weather_historical", "Inserts historical weather data for given locations.", 30],
+        7: ["fill_raw_geography", "Inserts geography data for given locations.", 30],
+        8: ["fill_raw_accommodation", "Inserts accommodation data for given locations.", 30],
+        9: ["fill_raw_reachability_air", "Inserts reachability data for given locations.", 30],
+        10: ["fill_raw_reachability_land", "Inserts reachability data for given locations.", 30]
+    }
 
-# Connect to database
-db = Database()
-db.connect()
+    # Connect to database
+    db = Database()
+    db.connect()
 
-# define start references in global scope for reachability
-start_refs = db.fetch_data("core_ref_start_locations")
+    # define start references in global scope for reachability
+    start_refs = db.fetch_data("core_ref_start_locations")
 
-# Create tables
-#create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
-# Fill tables
-fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
+    # Create tables
+    #create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
+    # Fill tables
 
-# Create logging
-# create_log_db_tables(log_tables)
-# fill_log_processes_db_table(table_process_id_dict.keys())
+    fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
 
-# Disconnect from database
-db.disconnect()
+    # Create logging
+    # create_log_db_tables(log_tables)
+    # fill_log_processes_db_table(table_process_id_dict.keys())
+
+    # Disconnect from database
+    db.disconnect()
