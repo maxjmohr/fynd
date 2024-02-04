@@ -173,23 +173,26 @@ Results
                 </div>
                 
                 <div class="location-list-item-info-container">
-                    <div class="location-list-item-title">
-                        <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
-                            <span class="location-list-item-city-name"> {{ location.city }} </span>
-                        </a>
-                        <span class="location-list-item-distance-to-start">({{ location.distance_to_start|floatformat:"0"|intcomma }} km)</span>
+                    <div class="location-list-item-info-general">
+                        <div class="location-list-item-title">
+                            <span class="location-list-item-rank">{{ location.rank }}.</span>
+                            <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
+                                <span class="location-list-item-city-name">{{ location.city }}</span>
+                            </a>
+                        </div>
+                        <div class="location-list-item-country">
+                            <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                            <div class="location-list-item-country-name">{{ location.country }}</div>
+                        </div>
+                        <span class="location-list-item-distance-to-start">{{ location.distance_to_start|floatformat:"0"|intcomma }} km away</span>
                     </div>
-                    <br>
-                    <div class="location-list-item-country-name">
-                        <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
-                        {{ location.country }}
+                    <div class="location-list-item-relevance-container">
+                        <div class="location-list-item-relevance">{{ location.relevance|floatformat:1    }}</div>
                     </div>
+                </div>
 
-                </div>
-                <div class="location-list-item-relevance-container">
-                    <div class="location-list-item-relevance">{{ location.relevance|floatformat:1    }}</div>
-                </div>
             </div>
+
         {% endfor %}
     </div>
 

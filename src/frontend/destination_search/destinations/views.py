@@ -272,13 +272,21 @@ class LocationsListView(View):
         }
         sort_column, sort_order = sort_options.get(self.sort_param)
         self.locations_list = self.locations_list.sort_values(
-            by=sort_column, ascending=sort_order
+            by=sort_column, ascending=sort_order, ignore_index=True
         )
-        
+
+        # Convert to object_list (add rank)
+        object_list = (
+            self.locations_list
+            .reset_index().rename(columns={'index': 'rank'})
+            .assign(rank=lambda x: x['rank'] + 1)
+            .to_dict('records')
+        )
+
         # Create Paginator and get page
         self.page = Paginator(
-            object_list=self.locations_list.reset_index().to_dict('records'),
-            per_page=30
+            object_list=object_list,
+            per_page=36
         ).get_page(self.request.GET.get('page'))
 
         # Assemble context
