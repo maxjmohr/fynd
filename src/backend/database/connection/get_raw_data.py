@@ -11,7 +11,7 @@ from data.geography import get_land_coverage
 #from data.places import get_places
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from data.accomodations import accomodations_main
-from data.reachability import process_location_land_reachability
+from data.reachability import process_location_land_reachability, process_location_air_reachability
 from database.db_helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
@@ -183,7 +183,7 @@ def fill_raw_accommodation():
 def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
 
     # iterate over locations
-    for idx, loc in locations.iterrows():
+    for _, loc in locations.iterrows():
 
         # module function returns a dataframe with combinations for all start locations and the current location
         loc_land_reachability_df = process_location_land_reachability(loc, start_refs)
@@ -195,6 +195,35 @@ def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Dat
     end_datetime = datetime.datetime.now()
 
     return end_datetime 
+
+
+def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+
+    locations = locations[~locations['city'].isin(["Shkoder", "Kruje", "Korçë", "Fier",
+                                                   "Berat", "Bashkia Durrës"])]
+
+    if os.path.exists("./res/master_data/location_rename.json"):
+        with open("./res/master_data/location_rename.json", "r", encoding="utf-8") as f:
+            location_rename = json.load(f)
+
+    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])]
+    locations.loc[locations['location_id'] == 206579565, 'city'] = "Hong Kong"
+    locations.loc[locations['location_id'] == 206579565, 'country'] = "Hong Kong"  
+    locations['city'] = locations[['city', 'country']].apply(lambda x: location_rename[f"{x['city']}, {x['country']}"] if f"{x['city']}, {x['country']}" in location_rename.keys() else x['city'],  axis=1)
+
+    # iterate over locations
+    for _, loc in locations.iterrows():
+
+        # module function returns a dataframe with combinations for all start locations and the current location
+        loc_air_reachability_df = process_location_air_reachability(loc, start_refs)
+
+        # insert that into "table_name" if it is not empty
+        if len(loc_air_reachability_df) > 0:
+            db.insert_data(loc_air_reachability_df, table_name, if_exists='append')
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 # Dictonary that maps names of database tables to functions which fill these tables with data
@@ -232,6 +261,7 @@ table_process_id_dict = {
 db = Database()
 db.connect()
 
+# define start references in global scope for reachability
 start_refs = db.fetch_data("core_ref_start_locations")
 
 # Create tables

@@ -1,12 +1,15 @@
-import folium
 import polyline
 import requests
 import pandas as pd
-import sys
 import os
 import flexpolyline as fp
 from geopy.distance import geodesic
 from dateutil import parser
+from bs4 import BeautifulSoup
+import time
+from datetime import datetime, timedelta
+import numpy as np
+from dateutil.parser import parse
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -20,6 +23,20 @@ with open("./res/auth/here_key.txt", "r") as f:
 
 # set key to environment variable
 os.environ["HERE_API_KEY"] = key
+
+
+def generate_periods(start_date, end_date, duration):
+    start_date, end_date = pd.to_datetime(start_date), pd.to_datetime(end_date)
+    start_dates = pd.date_range(start_date, end_date, freq=f'{duration}D')
+
+    periods = []
+    for i, start in enumerate(start_dates):
+        end = start + timedelta(days=duration-1)
+        if end > end_date:
+            end = end_date
+        periods.append((start, end))
+
+    return periods
 
 
 # helper functions
@@ -78,6 +95,67 @@ def getTotalRouteCoords(route) -> str:
     total_route_polyline = fp.encode(coords)
 
     return {"polyline": total_route_polyline, "coords": coords}
+
+
+def convert_to_minutes(time_str):
+    time_parts = time_str.split()
+    total_minutes = 0
+    for part in time_parts:
+        if 'd' in part:
+            total_minutes += int(part.replace('d', '')) * 60 * 24
+        elif 'h' in part:
+            total_minutes += int(part.replace('h', '')) * 60
+        elif 'm' in part:
+            total_minutes += int(part.replace('m', ''))
+    return total_minutes
+
+
+def getLocationJSON(loc_name, country_name):
+    """
+    Returns unique Kayak location identifier for a given location
+    args:
+        loc_name: The name of the location
+    returns:
+        The JSON response of the request
+    """
+
+    url = "https://www.kayak.com/mvm/smartyv2/search"
+
+    querystring = {
+        "f":"j",
+        "s":"50",
+        "where":f"{loc_name}, {country_name}",
+        "sv":"",
+        "cv":"undefined",
+        "c":"undefined",
+                }
+
+    payload = ""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Accept": "*/*",
+        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
+        "Accept-Encoding": "gzip, deflate, br",
+        "X-Requested-With": "XMLHttpRequest",
+        "Origin": "https://www.kayak.de",
+        "DNT": "1",
+        "Sec-GPC": "1",
+        "Connection": "keep-alive",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Content-Length": "0",
+        "TE": "trailers"
+    }
+
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
+
+    if response.status_code == 429:
+        print("Too many requests. Waiting for 3 minutes...")
+        time.sleep(180)
+        return getLocationJSON(loc_name, country_name)
+
+    return response.json()
 
 
 class Route:
@@ -161,10 +239,16 @@ class Route:
                 poly_line = poly_coord_dict['polyline']
                 route_coords = poly_coord_dict['coords']
 
+                departure = parse(json_r['routes'][0]['sections'][0]['departure']['time'])
+                arrival = parse(json_r['routes'][0]['sections'][-1]['arrival']['time'])
+
+                # compute time difference between departure and arrival
+                total_seconds = (arrival - departure).total_seconds()
+
                 return {
                     "start_point": route_coords[0],
                     "end_point": route_coords[-1],
-                    "duration": computeTotalTime(json_r),
+                    "duration": total_seconds,
                     "polyline": poly_line,
                     "route": route_coords,
                     "distance": calculate_total_distance(route_coords),
@@ -173,6 +257,81 @@ class Route:
 
         else:
             return {}
+        
+
+    def createFlightSearchURL(self, orig_iata: str, dest_iata: str, date_leave: str) -> str:
+
+        date_return = (parser.parse(date_leave) + pd.Timedelta(days=7)).strftime('%Y-%m-%d')
+
+        url = f"https://www.kayak.com/flights/{orig_iata}-{dest_iata}/{date_leave}/{date_return}?sort=bestflight_a"
+        return url
+    
+
+    def getFlightData(self, orig, dest, date_leave):
+
+        url = self.createFlightSearchURL(orig, dest, date_leave)
+
+        # set up selenium
+        options = webdriver.ChromeOptions()
+        #options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+
+        driver = webdriver.Chrome(options=options)
+
+        try:
+            driver.get(url)
+            soup = BeautifulSoup(driver.page_source, "html.parser")
+            driver.quit()
+
+        except:
+            driver.quit()
+            return None
+
+        return soup
+        
+
+    def parseFlightData(self, orig, dest, date_leave, soup):
+        """
+
+        """
+
+        flight_data = {
+                'origin': orig,
+                'destination': dest,
+                'date_leave': pd.to_datetime(date_leave),
+                'duration': [],
+                'stops': [],
+                'time': [],
+                'price': [],
+                'full_desc': [],
+            }
+
+        try:
+
+            for nrc6_element in soup.select('.nrc6-inner'):
+                vmXl_elements = nrc6_element.select('.vmXl-mod-variant-default')
+                flight_data['stops'].append(vmXl_elements[0].text)
+                flight_data['duration'].append(vmXl_elements[1].text)
+                flight_data['time'].append(nrc6_element.select('.vmXl-mod-variant-large')[0].text)
+                flight_data['price'].append(int(nrc6_element.select('.f8F1-price-text')[0].text[1:].replace(',', '')))
+                flight_data['full_desc'].append(nrc6_element.text)
+
+            flight_data['stops'] = [0 if stop == "nonstop" else int(stop.split(" ")[0]) for stop in flight_data['stops']]
+            flight_data['duration'] = [convert_to_minutes(dur) for dur in flight_data['duration']]
+
+            return {
+                "orig_iata": orig, "dest_iata": dest,
+                "total_flights": len(flight_data['price']), "dep_date": flight_data['date_leave'].strftime('%Y-%m-%d'),
+                "avg_price": sum(flight_data['price']) / len(flight_data['price']),
+                "min_price": min(flight_data['price']), "max_price": max(flight_data['price']),
+                "avg_duration": sum(flight_data['duration']) / len(flight_data['duration']),
+                "min_duration": min(flight_data['duration']), "max_duration": max(flight_data['duration']),
+                "avg_stops": sum(flight_data['stops']) / len(flight_data['stops'])
+                }
+
+        except:
+            print(f"Error parsing flight data for {orig} to {dest} on {date_leave}")
+            return None
         
 
 def process_location_land_reachability(loc, start_refs):
@@ -196,7 +355,12 @@ def process_location_land_reachability(loc, start_refs):
         }
 
         route = Route(dest, orig)
-        tmp_dict = {}
+        tmp_dict = {
+            'loc_id': loc['location_id'],
+            'ref_id': row['location_id'],
+            'arr_city': loc['city'],
+            'dep_city': row['city']
+                }
 
         # car route
         if route.car_route_available():
@@ -243,6 +407,55 @@ def process_location_land_reachability(loc, start_refs):
     return pd.concat(res)
     
 
-def process_location_air_reachability():
+def process_location_air_reachability(loc, start_refs):
 
-    pass
+    # create dates for each location: 6 weeks intervals starting from today
+    start = "2024-03-01"
+    periods = generate_periods(start, pd.to_datetime(start) + pd.DateOffset(months=6), 42)
+
+    dest = {
+        "lat": float(loc['lat']),
+        "lon": float(loc['lon'])
+    }
+
+    dest_name = loc['city']
+
+    res_list = []
+
+    for period in periods:
+
+        dep_date = period[0].strftime('%Y-%m-%d')
+
+        for _, row in start_refs.iterrows():
+
+            time.sleep(5)
+
+            orig = {
+                "lat": float(row['lat']),
+                "lon": float(row['lon'])
+            }
+
+            orig_iata = row['airport_1']
+            loc_json = getLocationJSON(loc['city'], loc['country'])
+
+            if len(loc_json) > 0:
+                if "apicode" in loc_json[0].keys():
+                    dest_iata = loc_json[0]['apicode']
+
+                    route = Route(dest, orig)
+
+                    # get flight data
+                    soup = route.getFlightData(orig_iata, dest_iata, dep_date)
+                    flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
+
+                    # insert flight data into database
+                    if flight_data is not None:
+                        flight_data['loc_id'] = loc['location_id']
+                        res_list.append(pd.DataFrame(flight_data, index=[0]))
+                        print(f"SUCCESS: data found for {orig_iata} to {dest_name} on {dep_date}")
+                        continue
+
+            print(f"WARNING: No flight data found for {orig_iata} to {dest_name} on {dep_date}")
+                        
+     # after iterating through time periods and locations, return the dataframe                   
+    return pd.concat(res_list)
