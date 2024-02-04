@@ -74,7 +74,7 @@ class WeatherScores:
         data = data.melt(id_vars=["location_id", "start_date", "end_date"], 
                  value_vars=value_vars,
                  var_name="dimension_id", 
-                 value_name="score")
+                 value_name="raw_value_formatted")
 
         # Get dimension_id for each column
         sql = """
@@ -91,13 +91,27 @@ class WeatherScores:
         for dimension_id in data["dimension_id"].unique():
             data.loc[data["dimension_id"] == dimension_id, "score"] = \
                 MinMaxScaler(feature_range=(0, 1)).fit_transform(
-                    data.loc[data["dimension_id"] == dimension_id, ["score"]]
+                    data.loc[data["dimension_id"] == dimension_id, ["raw_value_formatted"]]
                 )
+
+        # Correctly format raw_value_formatted
+        suffix_mapping = {
+            21: "°C",
+            22: "°C",
+            23: "h",
+            24: "h",
+            25: "h",
+            26: "mm",
+            27: "mm",
+            28: "cm",
+            29: "km/h"
+        }
+        data["raw_value_formatted"] = data.apply(lambda row: f"{round(row['raw_value_formatted'],2)} {suffix_mapping.get(row['dimension_id'], '')}", axis=1)
 
         # Add category_id
         data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 2").iloc[0, 0]
 
-        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value_formatted"]]
 
 
     def get(self) -> pd.DataFrame:
@@ -123,7 +137,7 @@ db.connect()
 data = WeatherScores(db).get()
 
 # Display the result
-print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]].sort_values(by="score", ascending=False).head(50))
+print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value_formatted"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """
