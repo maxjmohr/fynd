@@ -20,6 +20,10 @@
 }
 
 /* Base ---------------------------------------------------------------------*/
+.logo {
+    height: 30px;
+}
+
 body {
     overflow-x: hidden;
 }
@@ -107,7 +111,7 @@ body {
     align-items: flex-start;
     flex-wrap: nowrap;
     background-color: white;
-    border: 1px solid green;
+    /*border: 1px solid green;*/
     margin-bottom: 20px;
 }
 
@@ -472,9 +476,15 @@ body {
 
 .home-overview-container {
     align-self: center;
+    width: min(500px, 80%);
 }
-.intro-text {
+.home-intro-text {
     text-align: center;
+    margin-bottom: 20px;
+}
+
+.home-welcome {
+    font-size: 1.5em;
     margin-bottom: 20px;
 }
 
