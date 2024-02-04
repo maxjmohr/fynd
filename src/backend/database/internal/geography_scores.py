@@ -54,7 +54,10 @@ class GeographyScores:
         data["start_date"] = datetime(2023, 1, 1).date()
         data["end_date"] = datetime(2099, 12, 31).date()
 
-        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+        # Add raw_value_formatted
+        data["raw_value_formatted"] = None
+
+        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value_formatted"]]
 
 """
 # Connect to the database

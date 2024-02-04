@@ -70,10 +70,13 @@ class SafetyScores:
                     data.loc[data["dimension_id"] == dimension_id, ["score"]]
                 )
 
+        # Add raw_value_formatted
+        data["raw_value_formatted"] = None
+
         # Add category_id
         data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 1").iloc[0, 0]
 
-        return data[["iso2", "country_name", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+        return data[["iso2", "country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value_formatted"]]
 
 
 
