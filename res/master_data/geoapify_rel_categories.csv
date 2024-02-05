@@ -1,4 +1,5 @@
 place_category
+catering.restaurant
 catering.restaurant.pizza
 catering.restaurant.burger
 catering.restaurant.regional
@@ -105,6 +106,7 @@ catering.pub
 catering.ice_cream
 catering.biergarten
 catering.taproom
+entertainment
 entertainment.culture.theatre
 entertainment.culture.arts_centre
 entertainment.culture.gallery
@@ -121,10 +123,12 @@ entertainment.flying_fox
 entertainment.theme_park
 entertainment.water_park
 entertainment.activity_park
+leisure
 leisure.picnic
 leisure.playground
 leisure.spa
 leisure.park
+natural
 natural.forest
 natural.water
 natural.mountain
