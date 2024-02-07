@@ -456,6 +456,9 @@ class LocationDetailView(DetailView):
                 'category_name': category.category_name,
                 'category_description': category.description,
                 'display_order': category.display_order,
+                'axis_title': category.axis_title,
+                'axis_label_low': category.axis_label_low,
+                'axis_label_high': category.axis_label_high,
                 'text': texts.loc[category.category_id].item(),
                 'dimensions': [
                     {

@@ -48,6 +48,16 @@
             <div class="category-content-container">
                 <div class="dimensions-figure-wrapper">
                     <div class="dimensions-figure">
+                        <div class="dimension-container category-axis-container">
+                            <div class="dimension-name"><div class="dimension-name-text category-axis-title">{{ category.axis_title }}</div></div>
+                            <div class="dimension-score-container">
+                                <div class="category-axis">
+                                    <div class="category-axis-label">{{ category.axis_label_low }}</div>
+                                    <div class="category-axis-line"></div>
+                                    <div class="category-axis-label">{{ category.axis_label_high }}</div>
+                                </div>
+                            </div>
+                        </div>
                         {% for dimension in category.dimensions %}
                         <div class="dimension-container">
                             <div class="dimension-name has-tooltip">

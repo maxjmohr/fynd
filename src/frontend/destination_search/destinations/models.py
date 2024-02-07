@@ -7,6 +7,9 @@ class CoreCategories(models.Model):
     description = models.CharField(max_length=500, blank=True, null=True)
     display_order = models.IntegerField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
+    axis_title = models.CharField(max_length=50, blank=True, null=True)
+    axis_label_low = models.CharField(max_length=50, blank=True, null=True)
+    axis_label_high = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False

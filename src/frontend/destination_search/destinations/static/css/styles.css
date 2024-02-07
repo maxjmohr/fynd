@@ -950,6 +950,58 @@ body {
     left: 50%;
 }
 
+.category-axis-container {
+    margin-bottom: 5px;
+}
+
+.category-axis-title {
+    font-weight: bold;
+}
+
+.category-axis {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    color: var(--normalgrey);
+}
+
+.category-axis-label {
+    font-size: 0.8em;
+}
+
+.category-axis-line {
+    margin-top: 2px; /* Move it a bit lower than center */
+    flex-grow: 1;
+    border-top: 1px solid var(--normalgrey);
+    position: relative;
+}
+
+.category-axis-line::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    border-width: 3px 5px 3px 0;
+    border-style: solid;
+    border-color: transparent var(--normalgrey) transparent transparent;
+    transform: translateY(-50%);
+    margin-top: -0.5px; /* Half of the line's width */
+}
+
+.category-axis-line::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    border-width: 3px 0 3px 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent var(--normalgrey);
+    transform: translateY(-50%);
+    margin-top: -0.5px; /* Half of the line's width */
+}
+
 .map-container {
     padding: 0 !important;
     /*border: none !important;*/
