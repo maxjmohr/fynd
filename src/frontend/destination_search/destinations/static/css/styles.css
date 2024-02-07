@@ -772,6 +772,7 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 10px;
     border-bottom: 2px solid var(--accent3);
     margin-top: 20px;
