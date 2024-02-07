@@ -4,8 +4,8 @@ CREATE TABLE core_dimensions (
     dimension_name      VARCHAR(255),
     description         VARCHAR(500),
     extras              VARCHAR(255),
-    raw_val_decimals    INTEGER,
-    raw_val_unit        VARCHAR(255),
+    raw_value_decimals  INTEGER,
+    raw_value_unit      VARCHAR(255),
     icon_url            VARCHAR(255),
     updated_at          TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc-01'),
     PRIMARY KEY (dimension_id),
@@ -19,13 +19,13 @@ COMMENT ON COLUMN core_dimensions.dimension_id IS 'Unique identifier of the dime
 COMMENT ON COLUMN core_dimensions.dimension_name IS 'Name of the dimension.';
 COMMENT ON COLUMN core_dimensions.description IS 'Description of the dimension.';
 COMMENT ON COLUMN core_dimensions.extras IS 'Extra information about the dimension.';
-COMMENT ON COLUMN core_dimensions.raw_val_decimals IS 'The number of decimal places to round the raw value to.';
-COMMENT ON COLUMN core_dimensions.raw_val_unit IS 'The unit of the raw value.';
+COMMENT ON COLUMN core_dimensions.raw_value_decimals IS 'The number of decimal places to round the raw value to.';
+COMMENT ON COLUMN core_dimensions.raw_value_unit IS 'The unit of the raw value.';
 COMMENT ON COLUMN core_dimensions.icon_url IS 'URL to the icon of the dimension.';
 COMMENT ON COLUMN core_dimensions.updated_at IS 'Timestamp of the last update.';
 
 -- Create subcategories
-INSERT INTO core_dimensions (category_id, dimension_id, dimension_name, description, extras, raw_val_decimals, raw_val_unit, icon_url, updated_at)
+INSERT INTO core_dimensions (category_id, dimension_id, dimension_name, description, extras, raw_value_decimals, raw_value_unit, icon_url, updated_at)
 VALUES  (0, 00, 'General dummy dimension', NULL, NULL, NULL, now()),
         (1, 11, 'Crime rate safety', 'The crime rate safety index provides insights into the prevalence of criminal activities. A higher score refers to lower crime rates.', NULL, NULL, NULL, 'https://static.thenounproject.com/png/1820946-200.png', now()),
         (1, 12, 'Ecological threat safety', 'The ecological threat safety index gauges the potential harm to the environment. A higher score refers to less ecological threats.', NULL, NULL, NULL, 'https://static.thenounproject.com/png/6061985-200.png', now()),
