@@ -22,7 +22,7 @@
         </div>
         <div class="tabs">
             {% for category in data %}
-            <button class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
+            <button id="{{category.category_name}}-tab-button" class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
                 {{ category.category_name }}
                 <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
             </button>
@@ -236,8 +236,10 @@
     // ONLOAD -----------------------------------------------------------------
     window.onload = function() {
         // Click on general tab by default
-        var generalTabButton = document.querySelector(".tablinks.active");
-        openCategory({currentTarget: generalTabButton}, 'General');
+        var generalTabButton = document.getElementById('General-tab-button');
+        if (generalTabButton) {
+            generalTabButton.click();
+        };
 
         // Position tooltips for category descriptions
         var tooltips = document.querySelectorAll('.category-description-tooltip-text');;
@@ -259,7 +261,7 @@
             });
         });
 
-    }
+    };
 
 </script>
 
