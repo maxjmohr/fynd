@@ -48,32 +48,34 @@ def encode_url_parameters(params: dict) -> str:
 
 
 def create_hist_for_slider(data: pd.Series, bins:  int = 30):
-    hist, bin_edges = np.histogram(data, bins=30)
+    hist, bin_edges = np.histogram(data.dropna(), bins=30)  #FIXME drop missings?
     return {'heights': hist.tolist(), 'binLimits': bin_edges.tolist()}
 
 
 def get_scores(
         start_date: str,
         end_date: str,
-        start_location_lat: str,
-        start_location_lon: str,
+        start_location_lat: float|str,
+        start_location_lon: float|str,
         location_id: int = None,
         retrieve_text: bool = False
     ):
     
-    # Convert start and end date to datatime
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
-
-    # Convert start location to float
-    start_location_lat = float(start_location_lat)
-    start_location_lon = float(start_location_lon)
+    # Convert start and end date to datatime  ---------------------------------
+    if start_date is not None:
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date)
+    else:
+        start_date = pd.to_datetime('today')
+        end_date = start_date + pd.Timedelta(days=365)
     
     # Get closest reference location for start location -----------------------
-    #FIXME
-
-    reference_start_location = 'Tübingen'
-
+    if start_location_lat is not None and start_location_lon is not None:
+        # Find closest reference location
+        reference_start_location = None #FIXME
+    else:
+        # Use all reference start locations
+        reference_start_location = None
 
     # Get filtered scores -----------------------------------------------------
 
@@ -81,6 +83,9 @@ def get_scores(
     query = CoreScores.objects.filter(
         Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
     )
+
+    if reference_start_location is not None:
+        query = query.filter(reference_start_location=reference_start_location)
 
     if location_id is not None:
         query = query.filter(
@@ -93,7 +98,7 @@ def get_scores(
     include_fields = [f for f in all_fields if f not in exclude_fields]
 
     # Get as DataFrame
-    scores = read_frame(query.values(*include_fields)).astype({'score': float})
+    scores = read_frame(query.values(*include_fields)).astype({'score': float, 'raw_value': float})
 
     # Convert 'start_date' and 'end_date' to datetime
     scores['start_date'] = pd.to_datetime(scores['start_date'])
@@ -111,13 +116,20 @@ def get_scores(
     ).dt.days
 
     # Calculate the sum of the weighted scores
-    scores['score'] *= scores['overlap_days']
+    value_cols = ['score', 'raw_value']
+    for col in value_cols:
+        scores[col] *= scores['overlap_days']
     scores = (
         scores
         .groupby(['location_id', 'category_id', 'dimension_id'])
-        .agg({'score': 'sum', 'overlap_days': 'sum'})
+        .agg({
+            'score': lambda x: x.sum(skipna=False),
+            'raw_value': lambda x: x.sum(skipna=False),
+            'overlap_days': lambda x: x.sum(skipna=False)
+        })
     )
-    scores['score'] /= scores['overlap_days']
+    for col in value_cols:
+        scores[col] /= scores['overlap_days']
     scores.drop(columns=['overlap_days'], inplace=True)
     scores.reset_index(inplace=True)
 
@@ -128,8 +140,8 @@ def get_scores(
         else:
             #FIXME how to handle start and end date, since we cant average texts?
             texts = CoreTexts.objects.filter(
-                Q(reference_start_location=reference_start_location)
-                & Q(location_id=location_id)
+                Q(location_id=location_id)
+                #& Q(reference_start_location=reference_start_location)
                 & Q(start_date__lte=end_date) 
                 & Q(end_date__gte=start_date)
             ).values('category_id', 'text')
@@ -188,13 +200,25 @@ class SearchView(FormView):
     def form_valid(self, form):
         form_data = form.cleaned_data
         travellers_input_form_data = self.request.session.get('travellers_input_form_data', {})
+
+        # Delete empty fields from form data
+        fields = {
+            'start_date': ['start_date', 'end_date'],
+            'start_location': ['start_location', 'start_location_lat', 'start_location_lon']
+        }
+        for test_field, related_fields in fields.items():
+            if form_data[test_field] == '':
+                for field in related_fields:
+                    del form_data[field]
+
         travellers_input_form_data.update(form_data)
         self.request.session['travellers_input_form_data'] = travellers_input_form_data
         
         location_id = form_data.pop('location')
         url = reverse('location_detail', args=[location_id])
         params = encode_url_parameters(form_data)
-        return HttpResponseRedirect(f'{url}?{params}')
+        url_with_params = f'{url}?{params}' if len(params) > 0 else url
+        return HttpResponseRedirect(url_with_params)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -301,9 +325,15 @@ class LocationsListView(View):
         ti_form_data = self.request.session.get('travellers_input_form_data', {})
 
         # Get locations
-        cols = ['location_id', 'city', 'country', 'country_code', 'lat', 'lon']
+        cols = [
+            'location_id','city', 'country', 'country_code', 'lat', 'lon',
+            'population'
+        ]
         locations = read_frame(CoreLocations.objects.values(*cols))
         locations.set_index('location_id', inplace=True)
+
+        # Store population histogram data
+        self.request.session['population_hist_data'] = create_hist_for_slider(locations['population'])
 
         # Compute distance to start location
         locations['distance_to_start'] = haversine(
@@ -321,6 +351,67 @@ class LocationsListView(View):
             start_location_lat=ti_form_data['start_location_lat'],
             start_location_lon=ti_form_data['start_location_lon']
         )
+
+        # Extract raw_values (for filters, only for a few dimensions)
+
+        # Store raw values format in session
+        relevant_dimensions = [21, 22, 41, 42, 61, 62, 63]
+        raw_values_format = read_frame(
+            CoreDimensions.objects
+            .filter(dimension_id__in=relevant_dimensions)
+            .values('dimension_id', 'raw_value_decimals', 'raw_value_unit')
+        ).set_index('dimension_id')
+        mapping = {
+            21: 'temperature',
+            41: 'travel',
+            42: 'accommodation',
+            61: 'min_reachability'
+        }
+        self.request.session['raw_values_format'] = (
+            raw_values_format
+            .assign(dimension = lambda x: x.index.map(mapping))
+            .dropna()
+            .reset_index(drop=True)
+            .set_index('dimension')
+            .to_dict('index')
+        )
+
+        # Pivot raw values
+        raw_values = (
+            scores
+            .assign(dimension_id=clean_id(scores['dimension_id']))
+            .query('dimension_id in @relevant_dimensions')
+            .pivot(columns='dimension_id', index='location_id', values='raw_value')
+        )
+
+        # Add possibly missing columns + round raw values
+        for dimension_id in relevant_dimensions:
+            if dimension_id not in raw_values.columns:
+                raw_values[dimension_id] = np.nan
+            else:
+                raw_values[dimension_id] = (
+                    raw_values[dimension_id]
+                    .round(int(raw_values_format.loc[dimension_id, 'raw_value_decimals']))
+                )
+        raw_values.rename(columns=lambda x: 'dim_' + str(x), inplace=True)
+        
+        # Add column for min reachability
+        raw_values['min_reachability'] = raw_values[['dim_61', 'dim_62', 'dim_63']].min(axis=1)
+
+        # Add to locations (joined by pandas index)
+        locations = locations.join(raw_values.astype(float), how='left')
+
+        # Create histogram data for raw values
+        self.request.session[f'travel_cost_hist_data'] = create_hist_for_slider(locations['dim_41'])
+        self.request.session[f'accommodation_cost_hist_data'] = create_hist_for_slider(locations['dim_42'])
+        self.request.session[f'min_reachability_hist_data'] = create_hist_for_slider(locations['min_reachability'])
+
+        # Store temperature range limits
+        temperature = raw_values[['dim_21', 'dim_22']].values
+        self.request.session['temperature_range_limits'] = {
+            'min': temperature.min(),
+            'max': temperature.max()
+        }
 
         # Add distance_to_start (as score scaled to [0,1])
         distance_to_start_scores = (
@@ -365,6 +456,24 @@ class LocationsListView(View):
                 (self.locations_list['distance_to_start'] >= min_distance)
                 & (self.locations_list['distance_to_start'] <= max_distance)
             ]
+
+        # Population
+        min_population = filters_form_data['min_population']
+        max_population = filters_form_data['max_population']
+        if min_population is not None and max_population is not None:
+            self.locations_list = self.locations_list[
+                (self.locations_list['population'] >= min_population)
+                & (self.locations_list['population'] <= max_population)
+            ]
+
+        # Temperature
+        min_temperature = filters_form_data['min_temperature']
+        max_temperature = filters_form_data['max_temperature']
+        if min_temperature is not None and max_temperature is not None:
+            self.locations_list = self.locations_list[
+                (self.locations_list['dim_22'] >= min_temperature)
+                & (self.locations_list['dim_21'] <= max_temperature)
+            ]
     
     def get_context_data(self, **kwargs):
         """Assemble context for template."""
@@ -380,6 +489,12 @@ class LocationsListView(View):
             'filters_form': self.filters_form,
             'preferences_form': self.preferences_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
+            'population_hist_data': self.request.session['population_hist_data'],
+            'travel_cost_hist_data': self.request.session['travel_cost_hist_data'],
+            'accommodation_cost_hist_data': self.request.session['accommodation_cost_hist_data'],
+            'min_reachability_hist_data': self.request.session['min_reachability_hist_data'],
+            'temperature_range_limits': self.request.session['temperature_range_limits'],
+            'raw_values_format': self.request.session['raw_values_format'],
             'query_parameters': query_parameters,
             'grouped_locations': get_locations_for_select2(),
             'preselected_previous_locations': self.request.session['travellers_input_form_data']['previous_locations']
@@ -418,7 +533,7 @@ class LocationDetailView(DetailView):
         )
         scores = (
             scores
-            .filter(['dimension_id', 'score'])
+            .filter(['dimension_id', 'score', 'raw_value'])
             .assign(dimension_id=clean_id(scores.dimension_id))
             .set_index('dimension_id')
         )
@@ -433,6 +548,15 @@ class LocationDetailView(DetailView):
             Prefetch('coredimensions_set')
         )
 
+        def format_raw_value(dimension: int) -> str:
+            """Format raw value."""
+            if dimension.dimension_id not in scores.index:
+                return None
+            if pd.isna(scores.loc[dimension.dimension_id, 'raw_value']):
+                return ''
+            raw_value = scores.loc[dimension.dimension_id, 'raw_value']
+            return f' ({raw_value:.{dimension.raw_value_decimals}f}{dimension.raw_value_unit})'
+        
         # Convert to list of dictionaries, with dimensions and scores
         data = [
             {
@@ -440,6 +564,9 @@ class LocationDetailView(DetailView):
                 'category_name': category.category_name,
                 'category_description': category.description,
                 'display_order': category.display_order,
+                'axis_title': category.axis_title,
+                'axis_label_low': category.axis_label_low,
+                'axis_label_high': category.axis_label_high,
                 'text': texts.loc[category.category_id].item(),
                 'dimensions': [
                     {
@@ -447,7 +574,8 @@ class LocationDetailView(DetailView):
                         'dimension_name': dimension.dimension_name,
                         'dimension_description': dimension.description,
                         'dimension_icon_url': dimension.icon_url,
-                        'score': scores.loc[dimension.dimension_id].item() if dimension.dimension_id in scores.index else None, #FIXME
+                        'score': scores.loc[dimension.dimension_id, 'score'].item() if dimension.dimension_id in scores.index else None,
+                        'raw_value_formatted': format_raw_value(dimension),
                     }
                     for dimension in category.coredimensions_set.all()
                 ],
@@ -472,17 +600,30 @@ class LocationDetailView(DetailView):
         )
         weather_data = (
             weather_data
-            .query('year == year.max()')
-            .sort_values('month')
             .astype(weather_dtypes)
-            .copy()
+            .groupby('month')
+            .agg({
+                'year': ['min', 'max'],
+                'temperature_max': 'mean',
+                'temperature_min':
+                'mean', 'precipitation_sum': 'mean'
+            })
+            .reset_index()
+            .sort_values('month')
         )
+        weather_data.columns = [
+            '_'.join(col).strip() if col[0] == 'year' else col[0]
+            for col in weather_data.columns.values
+        ]
         months = {
             1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 
             6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 
             11: 'Nov', 12: 'Dec'
         }
         weather_data['month'] = weather_data['month'].map(months)
+        weather_data_years = {
+            col: weather_data.pop(col).iloc[0] for col in ['year_min', 'year_max']
+        }
         weather_data = weather_data.to_dict('records')
 
         # Get travel warnings
@@ -505,7 +646,10 @@ class LocationDetailView(DetailView):
             .first()
         )
         if top_attractions['text']:
-            context['top_attractions'] = ast.literal_eval(top_attractions['text'])
+            try:
+                top_attractions['text'] = ast.literal_eval(top_attractions['text'])
+            except:
+                top_attractions['text'] = []
 
         # Get previous locations
         previous_locations = [
@@ -527,8 +671,8 @@ class LocationDetailView(DetailView):
             'location': location,
             'data': data,
             'weather_data': weather_data,
+            'weather_data_years': weather_data_years,
         })
-
 
         return context
 

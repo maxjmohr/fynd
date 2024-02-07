@@ -22,7 +22,7 @@
         </div>
         <div class="tabs">
             {% for category in data %}
-            <button class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
+            <button id="{{category.category_name}}-tab-button" class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
                 {{ category.category_name }}
                 <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
             </button>
@@ -48,6 +48,16 @@
             <div class="category-content-container">
                 <div class="dimensions-figure-wrapper">
                     <div class="dimensions-figure">
+                        <div class="dimension-container category-axis-container">
+                            <div class="dimension-name"><div class="dimension-name-text category-axis-title">{{ category.axis_title }}</div></div>
+                            <div class="dimension-score-container">
+                                <div class="category-axis">
+                                    <div class="category-axis-label">{{ category.axis_label_low }}</div>
+                                    <div class="category-axis-line"></div>
+                                    <div class="category-axis-label">{{ category.axis_label_high }}</div>
+                                </div>
+                            </div>
+                        </div>
                         {% for dimension in category.dimensions %}
                         <div class="dimension-container">
                             <div class="dimension-name has-tooltip">
@@ -60,7 +70,10 @@
                                     <div class="dimension-score-slider-range">
                                         {% if dimension.score %}
                                             <div class="dimension-score-knob has-tooltip" style="left: calc({{ dimension.score }} * 100%)">
-                                                <span class="tooltip-text score-tooltip-text">{{ dimension.score|floatformat:2 }}</span>
+                                                <span class="tooltip-text score-tooltip-text">
+                                                    {{ dimension.score|floatformat:2 }}
+                                                    <span class="raw-value-tooltip-text">{{ dimension.raw_value_formatted }}</span>
+                                                </span>
                                             </div>
                                         {% else %}
                                             <div class="dimension-score-no-knob has-tooltip">
@@ -92,7 +105,8 @@
 
         {% elif category.category_id == 2 %}
         <div class="category-content-container weather-diagram-container">
-            <div class="category-content-title weather-diagram-title">Climate diagram ({{ weather_data.0.year }})</div>
+            <div class="category-content-title weather-diagram-title">Climate diagram</div>
+            <div class="weather-diagram-years">Average from {{ weather_data_years.year_min }}-{{ weather_data_years.year_max }}</div>
             <svg id="temperature-diagram" width="500" height="200"></svg>
             <svg id="precipitation-diagram" width="500" height="200"></svg>
         </div>
@@ -236,8 +250,10 @@
     // ONLOAD -----------------------------------------------------------------
     window.onload = function() {
         // Click on general tab by default
-        var generalTabButton = document.querySelector(".tablinks.active");
-        openCategory({currentTarget: generalTabButton}, 'General');
+        var generalTabButton = document.getElementById('General-tab-button');
+        if (generalTabButton) {
+            generalTabButton.click();
+        };
 
         // Position tooltips for category descriptions
         var tooltips = document.querySelectorAll('.category-description-tooltip-text');;
@@ -259,7 +275,7 @@
             });
         });
 
-    }
+    };
 
 </script>
 

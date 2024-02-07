@@ -64,6 +64,28 @@ class FiltersForm(forms.Form):
         required=False,
     )
 
+    min_population = forms.IntegerField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Population',
+        help_text='Population of the destination.'
+    )
+    max_population = forms.IntegerField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
+    min_temperature = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Temperature',
+        help_text='Temperature range at the destination. This filter just checks that the range it not exceeded. The actual range can be much more narrow.'
+    )
+    max_temperature = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
 
 class PreferencesForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -121,3 +143,6 @@ class SearchLocationForm(TravellersInputForm):
     def __init__(self, *args, **kwargs):
         super(SearchLocationForm, self).__init__(*args, **kwargs)
         self.fields.pop('previous_locations')
+
+        for field in ['start_date', 'end_date', 'start_location', 'start_location_lat', 'start_location_lon']:
+            self.fields[field].required = False

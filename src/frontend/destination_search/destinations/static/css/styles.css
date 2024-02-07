@@ -39,7 +39,7 @@ body {
     content: "";
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/b/bc/BlankMap-World-Compact.svg');
     background-repeat: repeat;
-    background-size: auto;
+    background-size: 190%;
     background-position: center;
     background-attachment: fixed;
     opacity: 0.3;
@@ -245,14 +245,17 @@ body {
     font-size: 0.8em;
 }
 
-.range-slider-with-histogram {
+.range-slider {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     width: calc(100% - 16px);
-    margin-top: 25px;
+    margin-top: 15px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.range-slider-with-histogram {
+    align-items: stretch;
 }
 
 .slider {
@@ -266,8 +269,8 @@ body {
 }
 
 .ui-slider {
-    background: none;
-    border: var(--normalgrey);
+    background-color: var(--lightgrey);
+    /*border: 0.5px solid var(--normalgrey) !important;*/
     height: 3px;
 }
 
@@ -277,7 +280,7 @@ body {
     background-color: var(--normalgrey);
     border: none;
     border-radius: 50%;
-    top: -9px;
+    top: -7.5px;
 }
 
 .ui-slider .ui-slider-range {
@@ -346,7 +349,7 @@ body {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 40px;
 }
 
 .form-group-summary {
@@ -611,7 +614,8 @@ body {
 
 .discover-form-container {
     width: 80%;
-    margin: 80px 0px;
+    max-width: 1000px;
+    margin: max(min(100px, 20vh), 10px) 0;
     color: var(--darkgrey);
 }
 
@@ -627,7 +631,8 @@ body {
 .search-container {
     background-color: var(--accent2);
     width: 80%;
-    margin-top: max(min(100px, 20vh), 10px);
+    max-width: 1000px;
+    margin: max(min(100px, 20vh), 10px) 0;
     padding: 30px;
     border-radius: 10px;
 }
@@ -772,6 +777,7 @@ body {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 10px;
     border-bottom: 2px solid var(--accent3);
     margin-top: 20px;
@@ -797,7 +803,7 @@ body {
     display: none;
     width: 100%;
     background-color: var(--accent2);
-    padding-top: 20px;
+    padding: 20px;
     color: var(--darkgrey);
 }
 
@@ -942,11 +948,68 @@ body {
 .score-tooltip-text {
     top: -50%;
     left: 150%;
+    white-space: nowrap;
 }
 
 .missing-score-tooltip-text {
     top: -50%;
     left: 50%;
+}
+
+.raw-value-tooltip-text {
+    color: #ccc;
+}
+
+.category-axis-container {
+    margin-bottom: 5px;
+}
+
+.category-axis-title {
+    font-weight: bold;
+}
+
+.category-axis {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    color: var(--normalgrey);
+}
+
+.category-axis-label {
+    font-size: 0.8em;
+}
+
+.category-axis-line {
+    margin-top: 2px; /* Move it a bit lower than center */
+    flex-grow: 1;
+    border-top: 1px solid var(--normalgrey);
+    position: relative;
+}
+
+.category-axis-line::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    border-width: 3px 5px 3px 0;
+    border-style: solid;
+    border-color: transparent var(--normalgrey) transparent transparent;
+    transform: translateY(-50%);
+    margin-top: -0.5px; /* Half of the line's width */
+}
+
+.category-axis-line::after {
+    content: "";
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    border-width: 3px 0 3px 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent var(--normalgrey);
+    transform: translateY(-50%);
+    margin-top: -0.5px; /* Half of the line's width */
 }
 
 .map-container {
@@ -966,6 +1029,14 @@ body {
 
 .weather-diagram-title {
     text-align: center;
+    margin-bottom: 0px !important;
+}
+
+.weather-diagram-years {
+    text-align: center;
+    font-size: 0.8em;
+    color: var(--normalgrey);
+    margin-bottom: 10px;
 }
 
 .weather-diagram-tooltip {
