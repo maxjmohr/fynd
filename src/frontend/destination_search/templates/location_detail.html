@@ -70,7 +70,10 @@
                                     <div class="dimension-score-slider-range">
                                         {% if dimension.score %}
                                             <div class="dimension-score-knob has-tooltip" style="left: calc({{ dimension.score }} * 100%)">
-                                                <span class="tooltip-text score-tooltip-text">{{ dimension.score|floatformat:2 }}</span>
+                                                <span class="tooltip-text score-tooltip-text">
+                                                    {{ dimension.score|floatformat:2 }}
+                                                    <span class="raw-value-tooltip-text">{{ dimension.raw_value_formatted }}</span>
+                                                </span>
                                             </div>
                                         {% else %}
                                             <div class="dimension-score-no-knob has-tooltip">

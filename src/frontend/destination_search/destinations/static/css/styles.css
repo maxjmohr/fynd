@@ -948,11 +948,16 @@ body {
 .score-tooltip-text {
     top: -50%;
     left: 150%;
+    white-space: nowrap;
 }
 
 .missing-score-tooltip-text {
     top: -50%;
     left: 50%;
+}
+
+.raw-value-tooltip-text {
+    color: #ccc;
 }
 
 .category-axis-container {

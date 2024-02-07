@@ -533,7 +533,7 @@ class LocationDetailView(DetailView):
         )
         scores = (
             scores
-            .filter(['dimension_id', 'score'])
+            .filter(['dimension_id', 'score', 'raw_value'])
             .assign(dimension_id=clean_id(scores.dimension_id))
             .set_index('dimension_id')
         )
@@ -548,6 +548,15 @@ class LocationDetailView(DetailView):
             Prefetch('coredimensions_set')
         )
 
+        def format_raw_value(dimension: int) -> str:
+            """Format raw value."""
+            if dimension.dimension_id not in scores.index:
+                return None
+            if pd.isna(scores.loc[dimension.dimension_id, 'raw_value']):
+                return ''
+            raw_value = scores.loc[dimension.dimension_id, 'raw_value']
+            return f' ({raw_value:.{dimension.raw_value_decimals}f}{dimension.raw_value_unit})'
+        
         # Convert to list of dictionaries, with dimensions and scores
         data = [
             {
@@ -565,7 +574,8 @@ class LocationDetailView(DetailView):
                         'dimension_name': dimension.dimension_name,
                         'dimension_description': dimension.description,
                         'dimension_icon_url': dimension.icon_url,
-                        'score': scores.loc[dimension.dimension_id].item() if dimension.dimension_id in scores.index else None, #FIXME
+                        'score': scores.loc[dimension.dimension_id, 'score'].item() if dimension.dimension_id in scores.index else None,
+                        'raw_value_formatted': format_raw_value(dimension),
                     }
                     for dimension in category.coredimensions_set.all()
                 ],
