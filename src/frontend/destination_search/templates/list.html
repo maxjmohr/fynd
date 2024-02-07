@@ -309,33 +309,33 @@ Results
     function submitForm(e) {
         e.preventDefault();
 
-        // Create a new URL object with the current URL
         var url = new URL(window.location.href);
-
-        // Iterate over all form inputs
         var formData = new FormData(e.target);
+        var formHasChanged = false;
+
         for (var pair of formData.entries()) {
-            // If the parameter already exists, delete it
             if (url.searchParams.has(pair[0])) {
+                if (url.searchParams.get(pair[0]) !== pair[1]) {
+                    formHasChanged = true;
+                }
                 url.searchParams.delete(pair[0]);
             }
         }
 
-        // Iterate over all form inputs again to set the new values
         for (var pair of formData.entries()) {
-            // Add the input's value as a parameter to the URL
             url.searchParams.append(pair[0], pair[1]);
         }
 
-        // Iterate over all existing URL parameters
         for (var pair of new URLSearchParams(window.location.search).entries()) {
-            // If the parameter is not already present in the URL, add it
             if (!url.searchParams.has(pair[0])) {
                 url.searchParams.append(pair[0], pair[1]);
             }
         }
 
-        // Navigate to the new URL
+        if (formHasChanged) {
+            url.searchParams.set('page', '1');
+        }
+
         window.location.href = url.href;
     }
 </script>
@@ -344,6 +344,9 @@ Results
 <script>
     function setParam(key, value) {
         var url = new URL(window.location.href);
+        if (key !== 'page' && url.searchParams.get(key) !== value) {
+            url.searchParams.set('page', '1');
+        }
         url.searchParams.set(key, value);
         window.location.href = url.href;
     }
