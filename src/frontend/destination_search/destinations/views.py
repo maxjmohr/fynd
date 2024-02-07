@@ -505,7 +505,10 @@ class LocationDetailView(DetailView):
             .first()
         )
         if top_attractions['text']:
-            context['top_attractions'] = ast.literal_eval(top_attractions['text'])
+            try:
+                top_attractions['text'] = ast.literal_eval(top_attractions['text'])
+            except:
+                top_attractions['text'] = []
 
         # Get previous locations
         previous_locations = [
