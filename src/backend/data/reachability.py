@@ -518,8 +518,6 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
         for dep_date in start_dates:
 
-            driver = webdriver.Chrome(options=configureChromeDriver())
-
             orig_iata = row['mapped_start_airport'].strip()
             print(f"processing {orig_iata} {dest_iata} {dep_date}")
 
@@ -530,6 +528,8 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
                 continue
 
             else:
+
+                driver = webdriver.Chrome(options=configureChromeDriver())
 
                 try:
                     print(f"Processing {dep_date}, {orig_iata}, {dest_iata}")
