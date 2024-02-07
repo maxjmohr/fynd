@@ -12,8 +12,8 @@ from data.geography import get_land_coverage
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from data.accomodations import accomodations_main
 from data.reachability import process_location_land_reachability, process_location_air_reachability
-from database.db_helpers import Database
 import datetime
+from database.db_helpers import Database
 from multiprocessing import Pool
 from geopy.distance import geodesic
 from dateutil.relativedelta import relativedelta
@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 import random
 import time
+from tqdm import tqdm
 
 ###----| STEPS |----###
 ## Step 1: Functions to create and fill tables in database
@@ -260,12 +261,36 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
 
     # drop duplicates of first airport to create unique orig -> dest combinations
     locations = locations.drop_duplicates(subset=['airport_1'])
+    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])] # Kayak shows no results for some countries due to poltical reasons
 
     # remove locations for which data was already scraped
     try:
         db.connect()
         raw_reachability = db.fetch_data("raw_reachability_air")
         db.disconnect()
+
+        start_dates = [
+            "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
+            "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
+            "2024-12-12", "2025-01-17", 
+            #"2025-02-22", "2025-03-02" # dates cannot exceed the current date + 1 year
+        ]
+
+        not_fully_processed = []
+
+        # Iterate over all locations and starting airports
+        for ap in locations['airport_1'].values.tolist():
+            for start_ref in start_refs['mapped_start_airport'].values.tolist():
+                if raw_reachability[(raw_reachability['dest_iata'] == ap) & (raw_reachability['orig_iata'] == start_ref)].shape[0] < len(start_dates):
+                    not_fully_processed.append(ap)
+                    break
+
+        # Convert the list of not fully processed locations to a pandas Series
+        not_fully_processed = pd.Series(not_fully_processed)
+
+        # Filter the locations DataFrame to only include not fully processed locations
+        locations = locations[locations['airport_1'].isin(not_fully_processed)]
+        locations = locations.sort_values(by="county", ascending=False)
 
     except:
         raw_reachability = None
@@ -275,14 +300,13 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
         results = p.map(worker, [(loc, start_refs, raw_reachability) for _, loc in locations.iterrows()])
 
     # iterate over the results and insert them into the database
-    for loc_air_reachability_df in results:
-        if len(loc_air_reachability_df) > 0:
-            db.insert_data(loc_air_reachability_df, table_name, if_exists='append')
+    #for loc_air_reachability_df in results:
+    #    if len(loc_air_reachability_df) > 0:
+    #        db.insert_data(loc_air_reachability_df, table_name, if_exists='append')
 
     end_datetime = datetime.datetime.now()
 
     return end_datetime
-
 
 if __name__ == '__main__':
 

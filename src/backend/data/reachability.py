@@ -8,15 +8,15 @@ from dateutil import parser
 from bs4 import BeautifulSoup
 import time
 from datetime import datetime, timedelta
-import numpy as np
 from dateutil.parser import parse
-from tqdm import tqdm
+from database.db_helpers import Database
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException
 from dateutil import parser
 
 with open("./res/auth/here_key.txt", "r") as f:
@@ -26,7 +26,10 @@ with open("./res/auth/here_key.txt", "r") as f:
 os.environ["HERE_API_KEY"] = key
 
 
-def generate_periods(start_date, end_date, duration):
+def generate_periods(start_date: str, end_date: str, duration: int) -> list:
+    """
+    Generates a list of periods of a given duration between two dates.
+    """
     start_date, end_date = pd.to_datetime(start_date), pd.to_datetime(end_date)
     start_dates = pd.date_range(start_date, end_date, freq=f'{duration}D')
 
@@ -40,8 +43,22 @@ def generate_periods(start_date, end_date, duration):
     return periods
 
 
-# helper functions
-def calculate_total_distance(coords):
+def configureChromeDriver(headless: bool =False) -> webdriver.ChromeOptions:
+    """
+    Configures the Chrome driver options.
+    """
+
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    if headless: options.add_argument('--headless')
+
+    return options
+
+
+def calculate_total_distance(coords: list) -> float:
+    """
+    Calculates the total distance of a route given its coordinates.
+    """
     total_distance = 0
     for i in range(len(coords) - 1):
         total_distance += geodesic(coords[i], coords[i+1]).meters
@@ -60,7 +77,7 @@ def countNonPedestrianRoutes(route):
     return count
 
 
-def computeTotalTime(route) -> float:
+def computeTotalTime(route: dict) -> float:
     """
     Computes the time difference between the departure time at the origin and the arrival time at the destination.
     Args:
@@ -80,7 +97,10 @@ def computeTotalTime(route) -> float:
     return end - start
 
 
-def getTotalRouteCoords(route) -> str:
+def getTotalRouteCoords(route: dict) -> str:
+    """
+    Returns the total route coordinates as a polyline string.
+    """
 
     assert route is not None
 
@@ -98,7 +118,10 @@ def getTotalRouteCoords(route) -> str:
     return {"polyline": total_route_polyline, "coords": coords}
 
 
-def convert_to_minutes(time_str):
+def convert_to_minutes(time_str: str) -> int:
+    """
+    Converts a time string to minutes.
+    """
     time_parts = time_str.split()
     total_minutes = 0
     for part in time_parts:
@@ -160,6 +183,9 @@ def getLocationJSON(loc_name, country_name):
 
 
 class Route:
+    """
+    Class for route computation and reachability analysis.
+    """
 
     def __init__(self, dest: dict, orig: dict):
         self.dest = dest
@@ -167,6 +193,9 @@ class Route:
 
 
     def get_car_route(self):
+        """
+        Returns the car route from the origin to the destination.
+        """
 
         start = "{},{}".format(self.orig['lon'], self.orig['lat'])
         end = "{},{}".format(self.dest['lon'], self.dest['lat'])
@@ -196,6 +225,9 @@ class Route:
     
 
     def car_route_available(self):
+        """
+        Returns True if a car route is available, False otherwise.
+        """
 
         if self.get_car_route() == {}:
             return False
@@ -206,12 +238,15 @@ class Route:
                     (self.dest['lat'] - car_route['end_point']['lat'] <= 0.1))
         
 
-    def get_public_transport_route(self, orig, dest, key, max_distance="2000"):
+    def get_public_transport_route(self, key: str, max_distance: str ="2000") -> dict:
+        """
+        Returns the public transport route from the origin to the destination via the HERE API.
+        """
 
         params = {
             "apiKey": key,
-            "origin": str(orig['lat']) + "," + str(orig['lon']),
-            "destination": str(dest['lat']) + "," + str(dest['lon']),
+            "origin": str(self.orig['lat']) + "," + str(self.orig['lon']),
+            "destination": str(self.dest['lat']) + "," + str(self.dest['lon']),
             "pedestrian[maxDistance]": max_distance,
             "return": "polyline,intermediate,fares,bookingLinks,travelSummary"
         }
@@ -260,51 +295,77 @@ class Route:
         
 
     def createFlightSearchURL(self, orig_iata: str, dest_iata: str, date_leave: str) -> str:
+        """
+        Creates a flight search URL for a given origin, destination and departure date.
+        Args:
+            orig_iata (str): The IATA code of the origin airport.
+            dest_iata (str): The IATA code of the destination airport.
+            date_leave (str): The departure date.
+
+        Returns:
+            str: The flight search URL.
+        """
 
         date_ret_ts = datetime.strptime(date_leave, "%Y-%m-%d") + timedelta(days=7)
         date_ret = date_ret_ts.strftime("%Y-%m-%d")
 
-        url = f"https://www.kayak.com/flights/{orig_iata}-{dest_iata}/{date_leave}/{date_ret}?sort=bestflight_a"
+        url = f"https://www.kayak.com/flights/{orig_iata}-{dest_iata}/{date_leave}/{date_ret}"
         return url
     
 
-    def getFlightData(self, orig, dest, date_leave):
+    def getFlightData(self, driver: webdriver.Chrome, orig_iata: str, dest_iata: str, date_leave: str) -> BeautifulSoup:
+        """
+        Scrapes flight data from the Kayak website.
+        Args:
+            driver (webdriver.Chrome): The Chrome driver.
+            orig_iata (str): The IATA code of the origin airport.
+            dest_iata (str): The IATA code of the destination airport.
+            date_leave (str): The departure date.
+        Returns:
+            BeautifulSoup: The parsed HTML of the Kayak website.
+        """
 
-        url = self.createFlightSearchURL(orig, dest, date_leave)
+        url = self.createFlightSearchURL(orig_iata, dest_iata, date_leave)
 
-        # FIXME: 404 page not found and Belarus
-
-        # set up selenium
-        options = webdriver.ChromeOptions()
-        #options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-
-        driver = webdriver.Chrome(options=options)
+        # if "No flight founds" element pops up, return -1
+        try:
+            driver.find_element(By.CSS_SELECTOR, '.IVAL-title')
+            print(f"No flights available for {orig_iata} to {dest_iata} on {date_leave}.")
+            return -1
+        
+        except NoSuchElementException:
+            pass
 
         try:
 
             # wait for presence of the x / y results element
-            max_wait = 40
+            max_wait = 180
             driver.get(url)
             WebDriverWait(driver, max_wait).until(EC.presence_of_element_located((By.CLASS_NAME, "nrc6")))
             soup = BeautifulSoup(driver.page_source, "html.parser")
-            driver.quit()
 
-        except:
-            driver.quit()
-            return None
+        except TimeoutException as e:
+            print(f"Getting Flight data from {orig_iata} to {dest_iata} on {date_leave} timed out.")
+            return -1
 
         return soup
         
 
-    def parseFlightData(self, orig, dest, date_leave, soup):
+    def parseFlightData(self, orig_iata: str, dest_iata: str, date_leave: str, soup: BeautifulSoup):
         """
-
+        Parses soup returned by getFlightData method.
+        Args:
+            orig_iata (str): The IATA code of the origin airport.
+            dest_iata (str): The IATA code of the destination airport.
+            date_leave (str): The departure date.
+            soup (BeautifulSoup): The parsed HTML of the Kayak website.
+        Returns:
+            dict: The parsed flight data.
         """
 
         flight_data = {
-                'origin': orig,
-                'destination': dest,
+                'origin': orig_iata,
+                'destination': dest_iata,
                 'date_leave': pd.to_datetime(date_leave),
                 'duration': [],
                 'stops': [],
@@ -327,7 +388,7 @@ class Route:
             flight_data['duration'] = [convert_to_minutes(dur) for dur in flight_data['duration']]
 
             return {
-                "orig_iata": orig, "dest_iata": dest,
+                "orig_iata": orig_iata, "dest_iata": dest_iata,
                 "total_flights": len(flight_data['price']), "dep_date": flight_data['date_leave'].strftime('%Y-%m-%d'),
                 "avg_price": sum(flight_data['price']) / len(flight_data['price']),
                 "min_price": min(flight_data['price']), "max_price": max(flight_data['price']),
@@ -337,11 +398,18 @@ class Route:
                 }
 
         except:
-            print(f"Error parsing flight data for {orig} to {dest} on {date_leave}")
             return None
-        
+    
 
-def process_location_land_reachability(loc, start_refs):
+def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFrame) -> pd.DataFrame:
+    """
+    Processes the land reachability of a given location and a set of reference locations.
+    Args:
+        loc (pd.DataFrame): The location.
+        start_refs (pd.DataFrame): The reference locations.
+    Returns:
+        pd.DataFrame: The land reachability data.
+    """
 
     res, counter = [], 0
 
@@ -424,11 +492,14 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
         pd.DataFrame: The air reachability data.
     """
 
+    db = Database()
+
     # set periods manually: each day of the week one time per season (winter summer); Febrary and March twice (2024 and 2025) because they are closest to the start date
     start_dates = [
         "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
         "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
-        "2024-12-12", "2025-01-17", "2025-02-22", "2025-03-02"
+        "2024-12-12", "2025-01-17", 
+        #"2025-02-22", "2025-03-02" # dates cannot exceed the current date + 1 year
     ]
 
     # create destination coordinate dict for Route object constructor
@@ -437,51 +508,70 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
         "lon": float(loc['lon'])
     }
 
-    dest_iata = loc['airport_1']
+    dest_iata = loc['airport_1'].strip()
     res_list = []
 
+    # FIXME: Use same cookies for all dates from same starting airport
+
     # loop over all periods and reference airports
-    for dep_date in start_dates:
+    for _, row in start_refs.iterrows():
 
-        for _, row in start_refs.iterrows():
+        for dep_date in start_dates:
 
-            orig_iata = row['mapped_start_airport']
+            driver = webdriver.Chrome(options=configureChromeDriver())
+
+            orig_iata = row['mapped_start_airport'].strip()
+            print(f"processing {orig_iata} {dest_iata} {dep_date}")
 
             # check if flight data for this route and date has already been processed
-            if processed_locs is not None:
-                if len(processed_locs[(processed_locs['orig_iata'] == orig_iata & processed_locs['dest_iata'] == dest_iata & processed_locs['dep_date'] == dep_date)]) > 0:
-                    continue
+            if processed_locs[(processed_locs['orig_iata'] == orig_iata) & (processed_locs['dest_iata'] == dest_iata) & (processed_locs['dep_date'] == dep_date)].shape[0] > 0:
 
-            #time.sleep(5)
+                print(f"Already processed flight data for {orig_iata} to {loc['city']} on {dep_date}")
+                continue
 
-            # specify origin coordinates for Route object constructor
-            orig = {
-                "lat": float(row['lat']),
-                "lon": float(row['lon'])
-            }
+            else:
 
-            # set origin iata code, create Route object
-            route = Route(dest, orig)
+                try:
+                    print(f"Processing {dep_date}, {orig_iata}, {dest_iata}")
 
-            # get flight data
-            soup = route.getFlightData(orig_iata, dest_iata, dep_date)
-            print(f"Kayak page fetched successfully for {orig_iata} to {dest_iata} on {dep_date}")
-            try:
-                flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
-                print(f"Flight data parsed successfully for {orig_iata} to {dest_iata} on {dep_date}")
+                    # specify origin coordinates for Route object constructor
+                    orig = {
+                        "lat": float(row['lat']),
+                        "lon": float(row['lon'])
+                    }
 
-                # insert flight data into database
-                if flight_data is not None:
-                    flight_data['orig_iata'] = orig_iata
-                    flight_data['dest_iata'] = dest_iata
-                    res_list.append(pd.DataFrame(flight_data, index=[0]))
-                    print(f"SUCCESS: data found for {orig_iata} to {loc['city']} on {dep_date}")
-                    continue
+                    # set origin iata code, create Route object
+                    route = Route(dest, orig)
 
-            except:
-                pass
+                    # get flight data
+                    soup = route.getFlightData(driver, orig_iata, dest_iata, dep_date)
+                    #print(f"Kayak page fetched successfully for {orig_iata} to {dest_iata} on {dep_date}")
+                    flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
+                    #print(f"Flight data parsed successfully for {orig_iata} to {dest_iata} on {dep_date}")
 
-            print(f"WARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}")
+                    # insert flight data into database
+                    if flight_data is not None:
+                        flight_data['orig_iata'], flight_data['dest_iata'] = orig_iata, dest_iata
+                        res_list.append(pd.DataFrame(flight_data, index=[0]))
+                        print(f"SUCCESS: data found for {orig_iata} to {loc['city']} on {dep_date}")
+                        db.connect()
+                        db.insert_data(pd.DataFrame(flight_data, index=[0]), "raw_reachability_air")
+                        db.disconnect()   
+
+                    else:
+                        print(f"WARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}")
+
+                except KeyboardInterrupt as e:
+                    print("Flight fetching script interrupted. Returning remaining values...")
+                    #db.connect()
+                    #db.insert_data(pd.concat(res_list), "raw_reachability_air")
+                    #db.disconnect() 
+
+        driver.quit() 
                         
-     # after iterating through time periods and locations, return the dataframe                   
+     # after iterating through time periods and locations, return the dataframe
+    #db.connect()
+    #db.insert_data(pd.concat(res_list), "raw_reachability_air")
+    #db.disconnect()   
+    print(f"Inserted {pd.concat(res_list).shape[0]} columns into the database")         
     return pd.concat(res_list)
