@@ -88,6 +88,24 @@ Results
                     {{ filters_form.max_distance.errors }}
                     {{ filters_form.max_distance.as_widget }}
                 </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_population.id_for_label }}">
+                            {{ filters_form.min_population.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_population_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_population_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_population.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider-with-histogram" id="population_range"></div>
+                    {{ filters_form.min_population.errors }}
+                    {{ filters_form.min_population.as_widget }}
+                    {{ filters_form.max_population.errors }}
+                    {{ filters_form.max_population.as_widget }}
+                </div>
             </div>
         </details>
 
@@ -380,6 +398,12 @@ Results
         var data = {{ distance_to_start_hist_data|safe }};
         rangeSlider("distance_to_start_range", "id_min_distance", "id_max_distance", data, d3.format(",.0f"), " km");
     });
+
+    $(function() {
+        var data = {{ population_hist_data|safe }};
+        rangeSlider("population_range", "id_min_population", "id_max_population", data, d3.format(",.0f"), "");
+    });
+
 </script>
 
 <!-- Preferences form -->

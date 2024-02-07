@@ -64,6 +64,17 @@ class FiltersForm(forms.Form):
         required=False,
     )
 
+    min_population = forms.IntegerField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Population',
+        help_text="Population of the destination."
+    )
+    max_population = forms.IntegerField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
 
 class PreferencesForm(forms.Form):
     def __init__(self, *args, **kwargs):

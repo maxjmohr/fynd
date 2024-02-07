@@ -48,7 +48,7 @@ def encode_url_parameters(params: dict) -> str:
 
 
 def create_hist_for_slider(data: pd.Series, bins:  int = 30):
-    hist, bin_edges = np.histogram(data, bins=30)
+    hist, bin_edges = np.histogram(data.dropna(), bins=30)  #FIXME drop missings?
     return {'heights': hist.tolist(), 'binLimits': bin_edges.tolist()}
 
 
@@ -301,9 +301,15 @@ class LocationsListView(View):
         ti_form_data = self.request.session.get('travellers_input_form_data', {})
 
         # Get locations
-        cols = ['location_id', 'city', 'country', 'country_code', 'lat', 'lon']
+        cols = [
+            'location_id','city', 'country', 'country_code', 'lat', 'lon',
+            'population'
+        ]
         locations = read_frame(CoreLocations.objects.values(*cols))
         locations.set_index('location_id', inplace=True)
+
+        # Store population histogram data
+        self.request.session['population_hist_data'] = create_hist_for_slider(locations['population'])
 
         # Compute distance to start location
         locations['distance_to_start'] = haversine(
@@ -365,6 +371,15 @@ class LocationsListView(View):
                 (self.locations_list['distance_to_start'] >= min_distance)
                 & (self.locations_list['distance_to_start'] <= max_distance)
             ]
+
+        # Population
+        min_population = filters_form_data['min_population']
+        max_population = filters_form_data['max_population']
+        if min_population is not None and max_population is not None:
+            self.locations_list = self.locations_list[
+                (self.locations_list['population'] >= min_population)
+                & (self.locations_list['population'] <= max_population)
+            ]
     
     def get_context_data(self, **kwargs):
         """Assemble context for template."""
@@ -380,6 +395,7 @@ class LocationsListView(View):
             'filters_form': self.filters_form,
             'preferences_form': self.preferences_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
+            'population_hist_data': self.request.session['population_hist_data'],
             'query_parameters': query_parameters,
             'grouped_locations': get_locations_for_select2(),
             'preselected_previous_locations': self.request.session['travellers_input_form_data']['previous_locations']
