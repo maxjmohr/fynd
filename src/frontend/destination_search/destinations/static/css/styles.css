@@ -1019,6 +1019,14 @@ body {
 
 .weather-diagram-title {
     text-align: center;
+    margin-bottom: 0px !important;
+}
+
+.weather-diagram-years {
+    text-align: center;
+    font-size: 0.8em;
+    color: var(--normalgrey);
+    margin-bottom: 10px;
 }
 
 .weather-diagram-tooltip {

@@ -491,17 +491,30 @@ class LocationDetailView(DetailView):
         )
         weather_data = (
             weather_data
-            .query('year == year.max()')
-            .sort_values('month')
             .astype(weather_dtypes)
-            .copy()
+            .groupby('month')
+            .agg({
+                'year': ['min', 'max'],
+                'temperature_max': 'mean',
+                'temperature_min':
+                'mean', 'precipitation_sum': 'mean'
+            })
+            .reset_index()
+            .sort_values('month')
         )
+        weather_data.columns = [
+            '_'.join(col).strip() if col[0] == 'year' else col[0]
+            for col in weather_data.columns.values
+        ]
         months = {
             1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 
             6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 
             11: 'Nov', 12: 'Dec'
         }
         weather_data['month'] = weather_data['month'].map(months)
+        weather_data_years = {
+            col: weather_data.pop(col).iloc[0] for col in ['year_min', 'year_max']
+        }
         weather_data = weather_data.to_dict('records')
 
         # Get travel warnings
@@ -549,8 +562,8 @@ class LocationDetailView(DetailView):
             'location': location,
             'data': data,
             'weather_data': weather_data,
+            'weather_data_years': weather_data_years,
         })
-
 
         return context
 

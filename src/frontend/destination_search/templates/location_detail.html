@@ -102,7 +102,8 @@
 
         {% elif category.category_id == 2 %}
         <div class="category-content-container weather-diagram-container">
-            <div class="category-content-title weather-diagram-title">Climate diagram ({{ weather_data.0.year }})</div>
+            <div class="category-content-title weather-diagram-title">Climate diagram</div>
+            <div class="weather-diagram-years">Average from {{ weather_data_years.year_min }}-{{ weather_data_years.year_max }}</div>
             <svg id="temperature-diagram" width="500" height="200"></svg>
             <svg id="precipitation-diagram" width="500" height="200"></svg>
         </div>
