@@ -611,7 +611,8 @@ body {
 
 .discover-form-container {
     width: 80%;
-    margin: 80px 0px;
+    max-width: 1000px;
+    margin: max(min(100px, 20vh), 10px) 0;
     color: var(--darkgrey);
 }
 
@@ -627,7 +628,8 @@ body {
 .search-container {
     background-color: var(--accent2);
     width: 80%;
-    margin-top: max(min(100px, 20vh), 10px);
+    max-width: 1000px;
+    margin: max(min(100px, 20vh), 10px) 0;
     padding: 30px;
     border-radius: 10px;
 }
