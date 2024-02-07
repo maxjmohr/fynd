@@ -5,7 +5,7 @@ CREATE TABLE core_scores (
     start_date          DATE DEFAULT '2024-01-01' NOT NULL,
     end_date            DATE DEFAULT '2099-12-31' NOT NULL,
     score               NUMERIC(10,5) NOT NULL,
-    raw_value_formatted VARCHAR(255),
+    raw_value           NUMERIC,
     updated_at          TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc-01'),
     PRIMARY KEY (location_id, category_id, dimension_id, start_date, end_date),
     FOREIGN KEY (location_id) REFERENCES core_locations(location_id),
@@ -21,5 +21,5 @@ COMMENT ON COLUMN core_scores.dimension_id IS 'Foreign key to the dimension tabl
 COMMENT ON COLUMN core_scores.start_date IS 'Start date of the period the score is valid for. If not filled, score is valid during entire period';
 COMMENT ON COLUMN core_scores.end_date IS 'End date of the period the score is valid for. If not filled, score is valid during entire period';
 COMMENT ON COLUMN core_scores.score IS 'dimension_id of the location for the dimension';
-COMMENT ON COLUMN core_scores.raw_value_formatted IS 'Raw value of the score, formatted for display';
+COMMENT ON COLUMN core_scores.raw_value IS 'Raw value of the score';
 COMMENT ON COLUMN core_scores.updated_at IS 'Timestamp of the last update of the score table';

@@ -45,10 +45,10 @@ class HealthScores:
         data.rename(columns={"health_score": "score"}, inplace=True)
         data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(data[["score"]])
 
-        # Add empty column for raw_value_formatted
-        data["raw_value_formatted"] = None
+        # Add empty column for raw_value
+        data["raw_value"] = None
 
-        return data[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value_formatted"]]
+        return data[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
 
 """
 # Connect to the database
