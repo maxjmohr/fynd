@@ -11,7 +11,10 @@ Discover destinations
         <form method="post">
             {% csrf_token %}
             <div class="search-intro-text">
-                Search for a specific location and hit "GO". You will be redirected to a page with more details about this location.
+                Search for a specific destination and hit "Go".
+                You will be redirected to a page with more details about this destination.
+                <br>
+                To tailor your search, you can also specify your travel characteristics (dates and starting location).
             </div>
             <div class="location-search-bar">
                 {{ search_location_form.location.errors }}
@@ -50,7 +53,6 @@ Discover destinations
 <script>
     // Location select
     var preselectedValues = {{ searched_location|safe }};
-    console.log(preselectedValues);
-    initializeSelect2('id_location', preselectedValues);
+    initializeSelect2('id_location', preselectedValues, 'Select destination...');
 </script>
 {% endblock %}

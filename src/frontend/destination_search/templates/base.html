@@ -358,7 +358,7 @@
 
     <!-- Select2 Location(s) choice -->
     <script>
-        function initializeSelect2(elementId) {
+        function initializeSelect2(elementId, preselectedValues, placeholderText = "Select destination(s)...") {
             var grouped_locations = JSON.parse('{{ grouped_locations|escapejs }}');
             var data = $.map(grouped_locations, function(locations, country) {
                 return {
@@ -371,7 +371,7 @@
                 var selectElement = $('#' + elementId);
                 selectElement.select2({
                     data: data,
-                    placeholder: "Select destination(s)...",
+                    placeholder: placeholderText,
                     allowClear: true,
                     minimumInputLength: 1,
                 });

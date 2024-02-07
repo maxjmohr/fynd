@@ -55,25 +55,27 @@ def create_hist_for_slider(data: pd.Series, bins:  int = 30):
 def get_scores(
         start_date: str,
         end_date: str,
-        start_location_lat: str,
-        start_location_lon: str,
+        start_location_lat: float|str,
+        start_location_lon: float|str,
         location_id: int = None,
         retrieve_text: bool = False
     ):
     
-    # Convert start and end date to datatime
-    start_date = pd.to_datetime(start_date)
-    end_date = pd.to_datetime(end_date)
-
-    # Convert start location to float
-    start_location_lat = float(start_location_lat)
-    start_location_lon = float(start_location_lon)
+    # Convert start and end date to datatime  ---------------------------------
+    if start_date is not None:
+        start_date = pd.to_datetime(start_date)
+        end_date = pd.to_datetime(end_date)
+    else:
+        start_date = pd.to_datetime('today')
+        end_date = start_date + pd.Timedelta(days=365)
     
     # Get closest reference location for start location -----------------------
-    #FIXME
-
-    reference_start_location = 'Tübingen'
-
+    if start_location_lat is not None and start_location_lon is not None:
+        # Find closest reference location
+        reference_start_location = None #FIXME
+    else:
+        # Use all reference start locations
+        reference_start_location = None
 
     # Get filtered scores -----------------------------------------------------
 
@@ -81,6 +83,9 @@ def get_scores(
     query = CoreScores.objects.filter(
         Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
     )
+
+    if reference_start_location is not None:
+        query = query.filter(reference_start_location=reference_start_location)
 
     if location_id is not None:
         query = query.filter(
@@ -128,8 +133,8 @@ def get_scores(
         else:
             #FIXME how to handle start and end date, since we cant average texts?
             texts = CoreTexts.objects.filter(
-                Q(reference_start_location=reference_start_location)
-                & Q(location_id=location_id)
+                Q(location_id=location_id)
+                #& Q(reference_start_location=reference_start_location)
                 & Q(start_date__lte=end_date) 
                 & Q(end_date__gte=start_date)
             ).values('category_id', 'text')
@@ -188,13 +193,25 @@ class SearchView(FormView):
     def form_valid(self, form):
         form_data = form.cleaned_data
         travellers_input_form_data = self.request.session.get('travellers_input_form_data', {})
+
+        # Delete empty fields from form data
+        fields = {
+            'start_date': ['start_date', 'end_date'],
+            'start_location': ['start_location', 'start_location_lat', 'start_location_lon']
+        }
+        for test_field, related_fields in fields.items():
+            if form_data[test_field] == '':
+                for field in related_fields:
+                    del form_data[field]
+
         travellers_input_form_data.update(form_data)
         self.request.session['travellers_input_form_data'] = travellers_input_form_data
         
         location_id = form_data.pop('location')
         url = reverse('location_detail', args=[location_id])
         params = encode_url_parameters(form_data)
-        return HttpResponseRedirect(f'{url}?{params}')
+        url_with_params = f'{url}?{params}' if len(params) > 0 else url
+        return HttpResponseRedirect(url_with_params)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

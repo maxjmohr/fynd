@@ -132,3 +132,6 @@ class SearchLocationForm(TravellersInputForm):
     def __init__(self, *args, **kwargs):
         super(SearchLocationForm, self).__init__(*args, **kwargs)
         self.fields.pop('previous_locations')
+
+        for field in ['start_date', 'end_date', 'start_location', 'start_location_lat', 'start_location_lon']:
+            self.fields[field].required = False
