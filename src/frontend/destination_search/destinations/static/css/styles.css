@@ -798,7 +798,7 @@ body {
     display: none;
     width: 100%;
     background-color: var(--accent2);
-    padding-top: 20px;
+    padding: 20px;
     color: var(--darkgrey);
 }
 
