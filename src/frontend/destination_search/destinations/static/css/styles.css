@@ -245,14 +245,17 @@ body {
     font-size: 0.8em;
 }
 
-.range-slider-with-histogram {
+.range-slider {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     width: calc(100% - 16px);
-    margin-top: 25px;
+    margin-top: 15px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.range-slider-with-histogram {
+    align-items: stretch;
 }
 
 .slider {
@@ -266,8 +269,8 @@ body {
 }
 
 .ui-slider {
-    background: none;
-    border: var(--normalgrey);
+    background-color: var(--lightgrey);
+    /*border: 0.5px solid var(--normalgrey) !important;*/
     height: 3px;
 }
 
@@ -277,7 +280,7 @@ body {
     background-color: var(--normalgrey);
     border: none;
     border-radius: 50%;
-    top: -9px;
+    top: -7.5px;
 }
 
 .ui-slider .ui-slider-range {
@@ -346,7 +349,7 @@ body {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 40px;
 }
 
 .form-group-summary {

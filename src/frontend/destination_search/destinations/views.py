@@ -98,7 +98,7 @@ def get_scores(
     include_fields = [f for f in all_fields if f not in exclude_fields]
 
     # Get as DataFrame
-    scores = read_frame(query.values(*include_fields)).astype({'score': float})
+    scores = read_frame(query.values(*include_fields)).astype({'score': float, 'raw_value': float})
 
     # Convert 'start_date' and 'end_date' to datetime
     scores['start_date'] = pd.to_datetime(scores['start_date'])
@@ -116,13 +116,20 @@ def get_scores(
     ).dt.days
 
     # Calculate the sum of the weighted scores
-    scores['score'] *= scores['overlap_days']
+    value_cols = ['score', 'raw_value']
+    for col in value_cols:
+        scores[col] *= scores['overlap_days']
     scores = (
         scores
         .groupby(['location_id', 'category_id', 'dimension_id'])
-        .agg({'score': 'sum', 'overlap_days': 'sum'})
+        .agg({
+            'score': lambda x: x.sum(skipna=False),
+            'raw_value': lambda x: x.sum(skipna=False),
+            'overlap_days': lambda x: x.sum(skipna=False)
+        })
     )
-    scores['score'] /= scores['overlap_days']
+    for col in value_cols:
+        scores[col] /= scores['overlap_days']
     scores.drop(columns=['overlap_days'], inplace=True)
     scores.reset_index(inplace=True)
 
@@ -345,6 +352,67 @@ class LocationsListView(View):
             start_location_lon=ti_form_data['start_location_lon']
         )
 
+        # Extract raw_values (for filters, only for a few dimensions)
+
+        # Store raw values format in session
+        relevant_dimensions = [21, 22, 41, 42, 61, 62, 63]
+        raw_values_format = read_frame(
+            CoreDimensions.objects
+            .filter(dimension_id__in=relevant_dimensions)
+            .values('dimension_id', 'raw_value_decimals', 'raw_value_unit')
+        ).set_index('dimension_id')
+        mapping = {
+            21: 'temperature',
+            41: 'travel',
+            42: 'accommodation',
+            61: 'min_reachability'
+        }
+        self.request.session['raw_values_format'] = (
+            raw_values_format
+            .assign(dimension = lambda x: x.index.map(mapping))
+            .dropna()
+            .reset_index(drop=True)
+            .set_index('dimension')
+            .to_dict('index')
+        )
+
+        # Pivot raw values
+        raw_values = (
+            scores
+            .assign(dimension_id=clean_id(scores['dimension_id']))
+            .query('dimension_id in @relevant_dimensions')
+            .pivot(columns='dimension_id', index='location_id', values='raw_value')
+        )
+
+        # Add possibly missing columns + round raw values
+        for dimension_id in relevant_dimensions:
+            if dimension_id not in raw_values.columns:
+                raw_values[dimension_id] = np.nan
+            else:
+                raw_values[dimension_id] = (
+                    raw_values[dimension_id]
+                    .round(int(raw_values_format.loc[dimension_id, 'raw_value_decimals']))
+                )
+        raw_values.rename(columns=lambda x: 'dim_' + str(x), inplace=True)
+        
+        # Add column for min reachability
+        raw_values['min_reachability'] = raw_values[['dim_61', 'dim_62', 'dim_63']].min(axis=1)
+
+        # Add to locations (joined by pandas index)
+        locations = locations.join(raw_values.astype(float), how='left')
+
+        # Create histogram data for raw values
+        self.request.session[f'travel_cost_hist_data'] = create_hist_for_slider(locations['dim_41'])
+        self.request.session[f'accommodation_cost_hist_data'] = create_hist_for_slider(locations['dim_42'])
+        self.request.session[f'min_reachability_hist_data'] = create_hist_for_slider(locations['min_reachability'])
+
+        # Store temperature range limits
+        temperature = raw_values[['dim_21', 'dim_22']].values
+        self.request.session['temperature_range_limits'] = {
+            'min': temperature.min(),
+            'max': temperature.max()
+        }
+
         # Add distance_to_start (as score scaled to [0,1])
         distance_to_start_scores = (
             (locations['distance_to_start']/locations['distance_to_start'].max())
@@ -397,6 +465,15 @@ class LocationsListView(View):
                 (self.locations_list['population'] >= min_population)
                 & (self.locations_list['population'] <= max_population)
             ]
+
+        # Temperature
+        min_temperature = filters_form_data['min_temperature']
+        max_temperature = filters_form_data['max_temperature']
+        if min_temperature is not None and max_temperature is not None:
+            self.locations_list = self.locations_list[
+                (self.locations_list['dim_22'] >= min_temperature)
+                & (self.locations_list['dim_21'] <= max_temperature)
+            ]
     
     def get_context_data(self, **kwargs):
         """Assemble context for template."""
@@ -413,6 +490,11 @@ class LocationsListView(View):
             'preferences_form': self.preferences_form,
             'distance_to_start_hist_data': self.request.session['distance_to_start_hist_data'],
             'population_hist_data': self.request.session['population_hist_data'],
+            'travel_cost_hist_data': self.request.session['travel_cost_hist_data'],
+            'accommodation_cost_hist_data': self.request.session['accommodation_cost_hist_data'],
+            'min_reachability_hist_data': self.request.session['min_reachability_hist_data'],
+            'temperature_range_limits': self.request.session['temperature_range_limits'],
+            'raw_values_format': self.request.session['raw_values_format'],
             'query_parameters': query_parameters,
             'grouped_locations': get_locations_for_select2(),
             'preselected_previous_locations': self.request.session['travellers_input_form_data']['previous_locations']

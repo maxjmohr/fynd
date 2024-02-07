@@ -27,6 +27,8 @@ class CoreDimensions(models.Model):
     extras = models.CharField(max_length=255, blank=True, null=True)
     icon_url = models.CharField(max_length=255, blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
+    raw_value_decimals = models.CharField(max_length=255, blank=True, null=True)
+    raw_value_unit = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -54,6 +56,9 @@ class CoreLocations(models.Model):
     box_top_right_lon = models.TextField(blank=True, null=True)
     geojson = models.TextField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
+    airport_1 = models.CharField(max_length=3, blank=True, null=True)
+    airport_2 = models.CharField(max_length=3, blank=True, null=True)
+    airport_3 = models.CharField(max_length=3, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -82,6 +87,7 @@ class CoreScores(models.Model):
     updated_at = models.DateTimeField(blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
+    raw_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
 
     class Meta:
         managed = False

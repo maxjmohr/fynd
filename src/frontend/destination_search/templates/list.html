@@ -11,6 +11,8 @@ Results
 <!--- Forms -->
 <div class="form-container" id="formContainer">
     <form method="get" id="listForm" onsubmit="submitForm(event);">
+
+        <!-- Travel characteristics -->
         <details class="form-group-box">
             <summary class="form-group-summary">Travel characteristics</summary>
             <div class="form-group-content">
@@ -67,6 +69,7 @@ Results
             </div>
         </details>
 
+        <!-- Filters -->
         <details class="form-group-box"  open>
             <summary class="form-group-summary">Filters</summary>
             <div class="form-group-content">
@@ -82,7 +85,7 @@ Results
                             {{ filters_form.min_distance.help_text }}
                         </div>
                     </div>
-                    <div class="range-slider-with-histogram" id="distance_to_start_range"></div>
+                    <div class="range-slider range-slider-with-histogram" id="distance_to_start_range"></div>
                     {{ filters_form.min_distance.errors }}
                     {{ filters_form.min_distance.as_widget }}
                     {{ filters_form.max_distance.errors }}
@@ -100,15 +103,34 @@ Results
                             {{ filters_form.min_population.help_text }}
                         </div>
                     </div>
-                    <div class="range-slider-with-histogram" id="population_range"></div>
+                    <div class="range-slider range-slider-with-histogram" id="population_range"></div>
                     {{ filters_form.min_population.errors }}
                     {{ filters_form.min_population.as_widget }}
                     {{ filters_form.max_population.errors }}
                     {{ filters_form.max_population.as_widget }}
                 </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_temperature.id_for_label }}">
+                            {{ filters_form.min_temperature.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_temperature_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_temperature_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_temperature.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="temperature_range"></div>
+                    {{ filters_form.min_temperature.errors }}
+                    {{ filters_form.min_temperature.as_widget }}
+                    {{ filters_form.max_temperature.errors }}
+                    {{ filters_form.max_temperature.as_widget }}
+                </div>
             </div>
         </details>
 
+        <!-- Preferences -->
         <details class="form-group-box">
             <summary class="form-group-summary">Preferences</summary>
             <div class="form-group-content">
@@ -397,14 +419,22 @@ Results
 
 <!-- Range sliders -->
 <script>
+
     $(function() {
         var data = {{ distance_to_start_hist_data|safe }};
-        rangeSlider("distance_to_start_range", "id_min_distance", "id_max_distance", data, d3.format(",.0f"), " km");
+        histRangeSlider("distance_to_start_range", "id_min_distance", "id_max_distance", data, d3.format(",.0f"), " km");
     });
 
     $(function() {
         var data = {{ population_hist_data|safe }};
-        rangeSlider("population_range", "id_min_population", "id_max_population", data, d3.format(",.0f"), "");
+        histRangeSlider("population_range", "id_min_population", "id_max_population", data, d3.format(",.0f"), "");
+    });
+
+    $(function() {
+        var data = {{ temperature_range_limits|safe }};
+        var format = {{ raw_values_format.temperature|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        rangeSlider("temperature_range", "id_min_temperature", "id_max_temperature", data.min, data.max , d3.format(formatString), format.raw_value_unit);
     });
 
 </script>

@@ -213,7 +213,7 @@
     <!-- Slider widget with histogram -->
     <script src="https://d3js.org/d3.v5.min.js"></script> <!-- D3.js also for other plotting -->
     <script>
-        function rangeSlider(containerId, minFieldId, maxFieldId, data, format, suffix) {
+        function histRangeSlider(containerId, minFieldId, maxFieldId, data, format, suffix) {
 
             // Define the svg variable at the top of the function
             var svg;
@@ -317,6 +317,60 @@
             // Update the colors of the bars initially
             updateBarColors(sliderMinValue, sliderMaxValue);
 
+        }
+    </script>
+
+    <!-- Simple range slider (e.g. for temperature filter) -->
+    <script>
+        function rangeSlider(containerId, minFieldId, maxFieldId, minValue, maxValue, format, suffix) {
+            // Create the div for the slider
+            var container = $("#" + containerId);
+            var sliderId = containerId + "_slider";
+            var minLabelId = containerId + "_min_label";
+            var maxLabelId = containerId + "_max_label";
+            container.append('<div id="' + sliderId + '" style="margin-bottom: 10px;"></div>');
+            container.append(
+                '<div style="display: flex; justify-content: space-between;">' +
+                    '<div class="form-input-label" id="' + minLabelId + '"></div>' +
+                    '<div class="form-input-label" id="' + maxLabelId + '"></div>' +
+                '</div>'
+            );
+
+            // Create a new format function that adds the suffix
+            var formatWithSuffix = function(value) {
+                return format(value) + suffix;
+            };
+
+            // Check if there are any values from the GET request
+            var getMinValue = $("#"+minFieldId).val();
+            var getMaxValue = $("#"+maxFieldId).val();
+
+            // If values exist in the GET request, use them. 
+            // Otherwise, use min and max values from the data.
+            sliderMinValue = getMinValue ? getMinValue : minValue;
+            sliderMaxValue = getMaxValue ? getMaxValue : maxValue;
+
+            // Initialize the min/max labels
+            $("#" + minLabelId).text(formatWithSuffix(sliderMinValue));
+            $("#" + maxLabelId).text(formatWithSuffix(sliderMaxValue));
+
+            // Set initial values for min and max distance form fields
+            $("#" + minFieldId).val(sliderMinValue);
+            $("#" + maxFieldId).val(sliderMaxValue);
+
+            // Create the slider
+            $("#" + sliderId).slider({
+                range: true,
+                min: minValue,
+                max: maxValue,
+                values: [sliderMinValue, sliderMaxValue],
+                slide: function(event, ui) {
+                    $("#" + minFieldId).val(ui.values[0]);
+                    $("#" + maxFieldId).val(ui.values[1]);
+                    $("#" + minLabelId).text(formatWithSuffix(ui.values[0]));
+                    $("#" + maxLabelId).text(formatWithSuffix(ui.values[1]));
+                }
+            });
         }
     </script>
 
