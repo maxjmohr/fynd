@@ -19,10 +19,38 @@ class CostScores:
         self.db = db
 
 
+    def accommodation_scores(self) -> pd.DataFrame:
+        ''' Calculate the accommodation scores based on the Numbeo data
+        Input:  self.db: Database object
+        Output: None
+        '''
+        # Fetch the data
+        data = self.db.fetch_data(total_object="raw_accommodation")
+
+        # Get dimension_id for accommodation
+        data["dimension_id"] = 42
+
+        # Covert USD to EUR (04.02.2024)
+        data["comp_median"] = data["comp_median"] * 0.93
+
+        # Add raw_value
+        data["raw_value"] = data['comp_median']
+
+        # Normalize scores between 0 and 1 using Min-Max scaling
+        data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(data[["comp_median"]])
+
+        """for start_date in data["start_date"].unique():
+            data.loc[data["start_date"] == start_date, "score"] = \
+                MinMaxScaler(feature_range=(0, 1)).fit_transform(
+                    data.loc[data["start_date"] == start_date, ["comp_median"]]
+                )"""
+
+        return data[["location_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+
+
     def numbeo_scores(self):
         ''' Calculate the cost scores based on the Numbeo data
-        Input:  - self.db: Database object
-                - num_clusters: number of clusters to use for K-means clustering
+        Input:  self.db: Database object
         Output: None
         '''
         # Fetch the data
@@ -58,6 +86,7 @@ class CostScores:
 
                 # Calculate scores based on the sum of cost variables (cheaper has higher score)
                 loc_results["score"] = relevant_features.sum()
+                loc_results["raw_value"] = loc_results["score"]
 
                 # Add dimension_id
                 loc_results["dimension_id"] = dimension_id
@@ -71,23 +100,30 @@ class CostScores:
         for dimension_id in results["dimension_id"].unique():
             results.loc[results["dimension_id"] == dimension_id, "score"] = \
                 MinMaxScaler(feature_range=(0, 1)).fit_transform(
-                    results.loc[results["dimension_id"] == dimension_id, ["score"]]
+                    -results.loc[results["dimension_id"] == dimension_id, ["score"]]  # Lower costs result in higher score
                 )
 
-        return results[["location_id", "city", "country", "dimension_id", "score"]]
+        # Add start_date and end_date column
+        results["start_date"] = "2024-01-01"
+        results["end_date"] = "2099-12-31"
+
+        return results[["location_id", "city", "country", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
 
 
-    def get(self) -> pd.DataFrame:
+    def get(self, dimension:str) -> pd.DataFrame:
         ''' Get all scores
-        Input:  self: database and functions
+        Input:  - self: database and functions
+                - dimension: which dimension scores to get
         Output: None
         '''
-        # Collect all scores
-        data = self.numbeo_scores()
+        # Collect the scores
+        if dimension == "accommodation":
+            data = self.accommodation_scores()
+        elif dimension == "cost_of_living":
+            data = self.numbeo_scores()
 
         # Add category_id
-        category_id = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 4").iloc[0, 0]
-        data["category_id"] = category_id
+        data["category_id"] = 4
         assert data["category_id"].notnull().all()
 
         return data
@@ -95,12 +131,16 @@ class CostScores:
 """
 # Connect to the database
 db = Database()
-db.connect()
+db.connect()s
 
-data = CostScores(db).get()
+#data = CostScores(db).get(dimension="accommodation")
+data = CostScores(db).get(dimension="cost_of_living")
+
+# Save data to csv
+data.to_csv("cost_scores.csv", index=False)
 
 # Display the result
-print(data[["location_id", "city", "country", "category_id", "dimension_id", "score"]].sort_values(by="score", ascending=False).head(50))
+print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """
