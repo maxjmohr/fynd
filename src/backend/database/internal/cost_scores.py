@@ -6,6 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
@@ -30,14 +31,17 @@ class CostScores:
         # Get dimension_id for accommodation
         data["dimension_id"] = 42
 
-        # Covert USD to EUR (04.02.2024)
+        # Convert USD to EUR (04.02.2024)
         data["comp_median"] = data["comp_median"] * 0.93
 
         # Add raw_value
-        data["raw_value"] = data['comp_median']
+        data["raw_value"] = data["comp_median"]
+
+        # Convert comp_median to log scale
+        data["comp_median"] = np.log(data["comp_median"])
 
         # Normalize scores between 0 and 1 using Min-Max scaling
-        data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(data[["comp_median"]])
+        data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-data[["comp_median"]])
 
         """for start_date in data["start_date"].unique():
             data.loc[data["start_date"] == start_date, "score"] = \
@@ -96,6 +100,9 @@ class CostScores:
 
             assert results["dimension_id"].notnull().all()
 
+        # Convert score to log scale
+        results["score"] = np.log(results["score"])
+
         # Normalize scores between 0 and 1 using Min-Max scaling for each dimension
         for dimension_id in results["dimension_id"].unique():
             results.loc[results["dimension_id"] == dimension_id, "score"] = \
@@ -131,13 +138,13 @@ class CostScores:
 """
 # Connect to the database
 db = Database()
-db.connect()s
+db.connect()
 
-#data = CostScores(db).get(dimension="accommodation")
-data = CostScores(db).get(dimension="cost_of_living")
+data = CostScores(db).get(dimension="accommodation")
+#data = CostScores(db).get(dimension="cost_of_living")
 
 # Save data to csv
-data.to_csv("cost_scores.csv", index=False)
+data.to_csv("cost_scores_median_log.csv", index=False)
 
 # Display the result
 print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))

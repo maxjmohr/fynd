@@ -322,7 +322,7 @@ db = Database()
 db.connect()
 which_scores = {
     #'accommodation_cost': FillScores(db).accommodation_cost_scores,
-    'cost_of_living': FillScores(db).cost_of_living_scores
+    #'cost_of_living': FillScores(db).cost_of_living_scores
     #'safety': FillScores(db).safety_scores
     #'culture': FillScores(db).culture_scores,
     #'weather': FillScores(db).weather_scores
