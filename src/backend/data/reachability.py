@@ -331,7 +331,7 @@ class Route:
         try:
             driver.find_element(By.CSS_SELECTOR, '.IVAL-title')
             print(f"No flights available for {orig_iata} to {dest_iata} on {date_leave}.")
-            return -1
+            return 0
         
         except NoSuchElementException:
             pass
@@ -339,7 +339,7 @@ class Route:
         try:
 
             # wait for presence of the x / y results element
-            max_wait = 180
+            max_wait = 300
             driver.get(url)
             WebDriverWait(driver, max_wait).until(EC.presence_of_element_located((By.CLASS_NAME, "nrc6")))
             soup = BeautifulSoup(driver.page_source, "html.parser")
@@ -362,8 +362,19 @@ class Route:
         Returns:
             dict: The parsed flight data.
         """
+        
+        if soup == 0:
+            return {
+                "orig_iata": orig_iata, "dest_iata": dest_iata,
+                "total_flights": 0, "dep_date": date_leave,
+                "avg_price": None, "min_price": None, "max_price": None,
+                "avg_duration": None, "min_duration": None, "max_duration": None,
+                "avg_stops": None
+            }
 
-        flight_data = {
+        try:
+
+            flight_data = {
                 'origin': orig_iata,
                 'destination': dest_iata,
                 'date_leave': pd.to_datetime(date_leave),
@@ -373,8 +384,6 @@ class Route:
                 'price': [],
                 'full_desc': [],
             }
-
-        try:
 
             for nrc6_element in soup.select('.nrc6-inner'):
                 vmXl_elements = nrc6_element.select('.vmXl-mod-variant-default')
@@ -448,7 +457,7 @@ def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFra
             # public transport route
             if car_route['duration'] < 3600*20:
                 print("public transport route available")
-                pt_route = route.get_public_transport_route(orig, dest, key)
+                pt_route = route.get_public_transport_route(key)
                 tmp_dict['pt_distance'] = pt_route['distance']
                 tmp_dict['pt_duration'] = pt_route['duration']
                 tmp_dict['pt_polyline'] = pt_route['polyline']
@@ -509,7 +518,7 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
     }
 
     dest_iata = loc['airport_1'].strip()
-    res_list = []
+    res_list, driver = [], None
 
     # FIXME: Use same cookies for all dates from same starting airport
 
@@ -519,7 +528,6 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
         for dep_date in start_dates:
 
             orig_iata = row['mapped_start_airport'].strip()
-            print(f"processing {orig_iata} {dest_iata} {dep_date}")
 
             # check if flight data for this route and date has already been processed
             if processed_locs[(processed_locs['orig_iata'] == orig_iata) & (processed_locs['dest_iata'] == dest_iata) & (processed_locs['dep_date'] == dep_date)].shape[0] > 0:
@@ -529,7 +537,8 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
             else:
 
-                driver = webdriver.Chrome(options=configureChromeDriver())
+                if not driver:
+                    driver = webdriver.Chrome(options=configureChromeDriver(headless=True))
 
                 try:
                     print(f"Processing {dep_date}, {orig_iata}, {dest_iata}")
@@ -567,11 +576,12 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
                     #db.insert_data(pd.concat(res_list), "raw_reachability_air")
                     #db.disconnect() 
 
-        driver.quit() 
+        if driver:
+            driver.quit() 
                         
-     # after iterating through time periods and locations, return the dataframe
+    # after iterating through time periods and locations, return the dataframe
     #db.connect()
     #db.insert_data(pd.concat(res_list), "raw_reachability_air")
     #db.disconnect()   
-    print(f"Inserted {pd.concat(res_list).shape[0]} columns into the database")         
+    #print(f"Inserted {pd.concat(res_list).shape[0]} columns into the database")         
     return pd.concat(res_list)

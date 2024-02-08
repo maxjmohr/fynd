@@ -185,6 +185,16 @@ def fill_raw_accommodation():
 
 def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
 
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    processed_locs = db.fetch_data("raw_reachability_land")
+    db.disconnect()
+
+    # remove locations for which data was already scraped (one row for each reference start location)
+    rem_loc_ids = [loc for loc in locations['location_id'].values if processed_locs[processed_locs['loc_id'] == loc].shape[0] < start_refs.shape[0]]
+    locations = locations[locations['location_id'].isin(rem_loc_ids)]
+
     # iterate over locations
     for _, loc in locations.iterrows():
 
@@ -202,7 +212,14 @@ def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Dat
 
 def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     """
-    
+    Fill function for raw reachability air table
+    Args:
+        locations: DataFrame with locations
+        table_name: name of the table in the database
+        db: Database object
+
+    Returns:
+        datetime.datetime: end datetime
     """
 
     # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
@@ -240,13 +257,24 @@ def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Data
     return end_datetime
 
 
-def worker(args):
+def worker(args: list):
+    """
+    Worker function for multiprocessing execution of fill_raw_reachability_air_par function
+    """
     loc, start_refs, raw_reachability = args
     return process_location_air_reachability(loc, start_refs, raw_reachability)
 
+
 def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     """
-    
+    Fill function for raw reachability air table in parallel
+    Args:
+        locations: DataFrame with locations
+        table_name: name of the table in the database
+        db: Database object
+
+    Returns:
+        datetime.datetime: end datetime
     """
 
     num_workers = 4
@@ -290,7 +318,7 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
 
         # Filter the locations DataFrame to only include not fully processed locations
         locations = locations[locations['airport_1'].isin(not_fully_processed)]
-        locations = locations.sort_values(by="county", ascending=False)
+        #locations = locations.sort_values(by="county", ascending=False)
 
     except:
         raw_reachability = None
