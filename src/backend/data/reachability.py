@@ -134,54 +134,6 @@ def convert_to_minutes(time_str: str) -> int:
     return total_minutes
 
 
-def getLocationJSON(loc_name, country_name):
-    """
-    Returns unique Kayak location identifier for a given location
-    args:
-        loc_name: The name of the location
-    returns:
-        The JSON response of the request
-    """
-
-    url = "https://www.kayak.com/mvm/smartyv2/search"
-
-    querystring = {
-        "f":"j",
-        "s":"50",
-        "where":f"{loc_name}, {country_name}",
-        "sv":"",
-        "cv":"undefined",
-        "c":"undefined",
-                }
-
-    payload = ""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
-        "Accept": "*/*",
-        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
-        "Accept-Encoding": "gzip, deflate, br",
-        "X-Requested-With": "XMLHttpRequest",
-        "Origin": "https://www.kayak.de",
-        "DNT": "1",
-        "Sec-GPC": "1",
-        "Connection": "keep-alive",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-        "Content-Length": "0",
-        "TE": "trailers"
-    }
-
-    response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
-
-    if response.status_code == 429:
-        print("Too many requests. Waiting for 3 minutes...")
-        time.sleep(180)
-        return getLocationJSON(loc_name, country_name)
-
-    return response.json()
-
-
 class Route:
     """
     Class for route computation and reachability analysis.
@@ -508,7 +460,6 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
         "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
         "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
         "2024-12-12", "2025-01-17", 
-        #"2025-02-22", "2025-03-02" # dates cannot exceed the current date + 1 year
     ]
 
     # create destination coordinate dict for Route object constructor
@@ -519,8 +470,6 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
     dest_iata = loc['airport_1'].strip()
     res_list, driver = [], None
-
-    # FIXME: Use same cookies for all dates from same starting airport
 
     # loop over all periods and reference airports
     for _, row in start_refs.iterrows():
@@ -571,17 +520,9 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
                         print(f"WARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}")
 
                 except KeyboardInterrupt as e:
-                    print("Flight fetching script interrupted. Returning remaining values...")
-                    #db.connect()
-                    #db.insert_data(pd.concat(res_list), "raw_reachability_air")
-                    #db.disconnect() 
+                    print("Flight fetching script interrupted.")
 
         if driver:
             driver.quit() 
-                        
-    # after iterating through time periods and locations, return the dataframe
-    #db.connect()
-    #db.insert_data(pd.concat(res_list), "raw_reachability_air")
-    #db.disconnect()   
-    #print(f"Inserted {pd.concat(res_list).shape[0]} columns into the database")         
+                             
     return pd.concat(res_list)
