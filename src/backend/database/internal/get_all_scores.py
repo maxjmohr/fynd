@@ -6,6 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 from database.internal.cost_scores import CostScores
+from database.internal.culture_scores import CultureScores
 from database.internal.geography_scores import GeographyScores
 from database.internal.health_scores import HealthScores
 from database.internal.safety_scores import SafetyScores
@@ -73,14 +74,24 @@ class FillScores:
 
 ###----| Costs |----###
 
-    def cost_scores(self) -> pd.DataFrame:
-        ''' Fill in the cost scores
+    def accommodation_cost_scores(self) -> pd.DataFrame:
+        ''' Fill in the accommodation cost scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the scores
+        return CostScores(self.db).get(dimension="accommodation")
+
+
+    def cost_of_living_scores(self) -> pd.DataFrame:
+        ''' Fill in the cost of living scores
         Input:  - self.db: Database object
                 - self.locations: master data
         Output: location scores
         '''        
         # Get the cost of living scores
-        scores = CostScores(self.db).get()
+        scores = CostScores(self.db).get(dimension="cost_of_living")
         # Delete the currently saved cost of living scores
         for dimension_id in scores["dimension_id"].unique():
             sql = f"DELETE FROM core_scores WHERE dimension_id = '{dimension_id}'"
@@ -89,13 +100,13 @@ class FillScores:
         #####---| City level scores |---#####
         # Filter scores where location_id is not null and turn into int
         city_scores = scores[scores["location_id"].notnull()]
-        city_scores["location_id"] = city_scores["location_id"].astype(int)
+        city_scores.loc[:, "location_id"] = city_scores["location_id"].astype(int)
         # Filter scores where location_id is null
         country_scores = scores[scores["location_id"].isnull()]
 
         # Merge city scores
         city_data = self.locations.merge(
-            city_scores[["location_id", "category_id", "dimension_id", "score"]],
+            city_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
             on=["location_id"],
             how="left")
 
@@ -106,28 +117,23 @@ class FillScores:
         city_data = city_data[city_data["score"].notnull()]
 
         # Delete the columns in no_scores that were added in the merge
-        no_scores = no_scores.drop(["category_id", "dimension_id", "score"], axis=1)
+        no_scores = no_scores.drop(["category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"], axis=1)
 
         # Merge country scores
         country_data = no_scores.merge(
-            country_scores[["country", "category_id", "dimension_id", "score"]],
+            country_scores[["country", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
             on=["country"],
             how="left")
 
         # Filter out locations that do not have a score
         country_data = country_data[country_data["score"].notnull()]
 
-
         ######---| Combine the results |---#####
         # Combine the results of both merges
         location_scores = pd.concat([city_data, country_data])
 
-        # Add start_date and end_date column
-        location_scores["start_date"] = "2024-01-01"
-        location_scores["end_date"] = "2099-12-31"
-
         # Reorder
-        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
 
         return location_scores
 
@@ -145,12 +151,23 @@ class FillScores:
 
         # Assign each location by country_code to score
         location_scores = self.locations.merge(
-            scores[["iso2", "category_id", "dimension_id", "start_date", "end_date", "score"]],
+            scores[["iso2", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
             left_on=["country_code"], right_on=["iso2"],
             how="inner")
 
         # Reorder
-        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+
+
+###----| Culture |----###
+    def culture_scores(self) -> pd.DataFrame:
+        ''' Fill in the culture scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the culture scores
+        return CultureScores(self.db).get()
 
 
 ###----| Weather |----###
@@ -200,12 +217,12 @@ class FillScores:
 
         # Assign each location by country_code to score
         location_scores = self.locations.merge(
-            scores[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score"]],
+            scores[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
             left_on=["country"], right_on=["country_name"],
             how="inner")
 
         # Reorder
-        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]]
+        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
 
 
     def fill_scores(self, which_scores:dict, explicitely_update:bool = False):
@@ -217,7 +234,7 @@ class FillScores:
         Output: None
         '''
         # Get the scores
-        scores = pd.DataFrame(columns=["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"])
+        scores = pd.DataFrame(columns=["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"])
         for category, function in which_scores.items():
             # Execute the function
             print(f"Getting scores for category {category}...")
@@ -262,6 +279,9 @@ class FillScores:
                 start_date = row["start_date"]
                 end_date = row["end_date"]
                 score = row["score"]
+                raw_value = row["raw_value"]
+                if raw_value is None:
+                    raw_value = "NULL"
 
                 # Check if there is a score for this location, dimension and subcategory
                 sql = f"""
@@ -278,8 +298,8 @@ class FillScores:
                     # Add score
                     print(f"Adding category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
                     sql = sql = f"""
-                        INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, score)
-                        VALUES ({location_id}, '{category_id}', '{dimension_id}', '{start_date}', '{end_date}', {score})
+                        INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, score, raw_value)
+                        VALUES ({location_id}, '{category_id}', '{dimension_id}', '{start_date}', '{end_date}', {score}, {raw_value})
                         """
                     self.db.execute_sql(sql, commit=True)
                 else:
@@ -287,7 +307,7 @@ class FillScores:
                     print(f"Updating category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
                     sql = f"""
                         UPDATE core_scores
-                        SET score = {score}
+                        SET score = {score}, raw_value = {raw_value}
                         WHERE
                             location_id = {location_id}
                             AND category_id = '{category_id}'
@@ -301,10 +321,12 @@ class FillScores:
 db = Database()
 db.connect()
 which_scores = {
-    #'cost': FillScores(db).cost_scores
+    #'accommodation_cost': FillScores(db).accommodation_cost_scores,
+    'cost_of_living': FillScores(db).cost_of_living_scores
     #'safety': FillScores(db).safety_scores
+    #'culture': FillScores(db).culture_scores,
     #'weather': FillScores(db).weather_scores
-    'geography_coverage': FillScores(db).geography_coverage_scores
+    #'geography_coverage': FillScores(db).geography_coverage_scores
     #'health': FillScores(db).health_scores
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
