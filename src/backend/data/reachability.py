@@ -6,7 +6,6 @@ import flexpolyline as fp
 from geopy.distance import geodesic
 from dateutil import parser
 from bs4 import BeautifulSoup
-import time
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from database.db_helpers import Database
@@ -279,6 +278,15 @@ class Route:
 
         url = self.createFlightSearchURL(orig_iata, dest_iata, date_leave)
 
+        # Kayak restricts access to certain countries (Russia, Belarus, Iran)
+        try:
+            driver.find_element(By.CSS_SELECTOR, '.errorContent')
+            print(f"No results due to government restrictions for {orig_iata} to {dest_iata} on {date_leave}.")
+            return -1
+        
+        except NoSuchElementException:
+            pass
+
         # if "No flight founds" element pops up, return -1
         try:
             driver.find_element(By.CSS_SELECTOR, '.IVAL-title')
@@ -478,6 +486,12 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
             orig_iata = row['mapped_start_airport'].strip()
 
+            # manual replacing for destinations in Kazakhstan with airports in Russia (not serviced by Kayak)
+            if orig_iata == "ASF":
+                orig_iata = "GUW"
+            elif orig_iata == "UFA":
+                orig_iata = "AKX"
+
             # check if flight data for this route and date has already been processed
             if processed_locs[(processed_locs['orig_iata'] == orig_iata) & (processed_locs['dest_iata'] == dest_iata) & (processed_locs['dep_date'] == dep_date)].shape[0] > 0:
 
@@ -487,7 +501,7 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
             else:
 
                 if not driver:
-                    driver = webdriver.Chrome(options=configureChromeDriver(headless=True))
+                    driver = webdriver.Chrome(options=configureChromeDriver())
 
                 try:
                     print(f"Processing {dep_date}, {orig_iata}, {dest_iata}")
@@ -525,4 +539,4 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
         if driver:
             driver.quit() 
                              
-    return pd.concat(res_list)
+    return res_list

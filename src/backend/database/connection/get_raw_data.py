@@ -327,11 +327,6 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
     with Pool(num_workers) as p:
         results = p.map(worker, [(loc, start_refs, raw_reachability) for _, loc in locations.iterrows()])
 
-    # iterate over the results and insert them into the database
-    #for loc_air_reachability_df in results:
-    #    if len(loc_air_reachability_df) > 0:
-    #        db.insert_data(loc_air_reachability_df, table_name, if_exists='append')
-
     end_datetime = datetime.datetime.now()
 
     return end_datetime
