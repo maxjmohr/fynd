@@ -2,6 +2,7 @@ CREATE TABLE raw_subscores_culture (
     location_id             INTEGER NOT NULL,
     category_id             INTEGER NOT NULL,
     dimension_id            INTEGER NOT NULL,
+    dimension_name          VARCHAR(255) NOT NULL,
     start_date              DATE DEFAULT '2024-01-01' NOT NULL,
     end_date                DATE DEFAULT '2099-12-31' NOT NULL,
     ref_start_location_id   INTEGER DEFAULT -1 NOT NULL,
@@ -21,6 +22,7 @@ COMMENT ON TABLE raw_subscores_culture IS 'Table stores location subscores for t
 COMMENT ON COLUMN raw_subscores_culture.location_id IS 'Foreign key to the location table';
 COMMENT ON COLUMN raw_subscores_culture.category_id IS 'Foreign key to the category table';
 COMMENT ON COLUMN raw_subscores_culture.dimension_id IS 'Dimension of the location for the category';
+COMMENT ON COLUMN raw_subscores_culture.dimension_name IS 'Name of the dimension';
 COMMENT ON COLUMN raw_subscores_culture.start_date IS 'Start date of the period the score is valid for. If not filled, score is valid during entire period';
 COMMENT ON COLUMN raw_subscores_culture.end_date IS 'End date of the period the score is valid for. If not filled, score is valid during entire period';
 COMMENT ON COLUMN raw_subscores_culture.ref_start_location_id IS 'Foreign key to the start location table. If filled, score is valid for the location and all its children';

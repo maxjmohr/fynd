@@ -308,10 +308,17 @@ def prepare_text_generation(db:Database, filter_cats:list) -> pd.DataFrame:
     locations = db.fetch_data("core_locations")
     start_locations = db.fetch_data("core_ref_start_locations")
     categories = db.fetch_data("core_categories")
+    dimensions = db.fetch_data("core_dimensions")
 
     # Filter categories
     if filter_cats:
         scores = scores[scores["category_id"].isin(filter_cats)]
+
+    # Join dimension names (must be done here due to culture exception that has it loaded already)
+    scores = scores.merge(
+        dimensions[["dimension_id", "dimension_name"]],
+        on="dimension_id", how="inner"
+        )
 
     # If categories include 3 (culture), get scores and distances from other table and append
     if 3 in filter_cats:
@@ -319,9 +326,12 @@ def prepare_text_generation(db:Database, filter_cats:list) -> pd.DataFrame:
         scores = scores[scores["category_id"] != 3]
 
         # Get scores and distances from the culture table
-        scores_culture = db.fetch_data("core_scores_culture")
+        scores_culture = db.fetch_data("raw_subscores_culture")
         scores_culture = scores_culture[scores_culture["category_id"] == 3]
-        scores = pd.concat([scores, scores_culture], ignore_index=True)
+
+        # Concat with same column order
+        column_order = ["location_id", "category_id", "dimension_id", "dimension_name", "start_date", "end_date", "ref_start_location_id", "score", "raw_value", "distance_to_median", "distance_to_bound"]
+        scores = pd.concat([scores[column_order], scores_culture[column_order]], ignore_index=True)
 
     scores = scores.groupby(["location_id", "category_id", "ref_start_location_id"])
 

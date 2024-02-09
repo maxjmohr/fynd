@@ -35,12 +35,14 @@ class CultureSubdimensionsScores:
 
         # Assign dimension id by 3000 + range of ascending place categories (301,302,...)
         data = data.assign(dimension_id=3000 + data.groupby("place_category").ngroup())
+        # Save dimension names
+        data["dimension_name"] = data["place_category"]
 
         # Drop duplicate places for the same location_id and dimension_id
         data = data.drop_duplicates(subset=["location_id", "dimension_id", "place_name"])
 
         # Per location_id and dimension_id, count distinct places
-        data = data.groupby(["location_id", "dimension_id"])["dimension_id"] \
+        data = data.groupby(["location_id", "dimension_id", "dimension_name"])["dimension_id"] \
             .count() \
             .reset_index(name="score")
 
@@ -50,7 +52,9 @@ class CultureSubdimensionsScores:
         # If a location_id and dimension_id combination is not present, add a dummy entry
         for location_id, dimension_id in zip(data["location_id"].unique(), data["dimension_id"].unique()):
             if dimension_id not in data[data["location_id"] == location_id]["dimension_id"].values:
-                data = pd.concat([data, pd.DataFrame({"location_id": [location_id], "dimension_id": [dimension_id], "score": [0.]})])
+                # Get the dimension_name associated with the dimension_id
+                dimension_name = data[data["dimension_id"] == dimension_id]["dimension_name"].iloc[0]
+                data = pd.concat([data, pd.DataFrame({"location_id": [location_id], "dimension_id": [dimension_id], "dimension_name": [dimension_name], "score": [0.]})])
 
         # Normalize scores between 0 and 1 using Min-Max scaling for each dimension
         for dimension_id in data["dimension_id"].unique():
@@ -69,7 +73,7 @@ class CultureSubdimensionsScores:
         # Add raw_value
         data["raw_value"] = None
 
-        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        return data[["location_id", "category_id", "dimension_id", "dimension_name", "start_date", "end_date", "score", "raw_value"]]
 
 """
 # Connect to the database
@@ -78,10 +82,10 @@ db.connect()
 
 data = CultureSubdimensionsScores(db).get()
 # Save to csv
-data.to_csv("culture_subdimensions_scores.csv", index=False)
+#data.to_csv("culture_subdimensions_scores.csv", index=False)
 
 # Display the result
-print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))
+print(data[["location_id", "category_id", "dimension_id", "dimension_name", "start_date", "end_date", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """
