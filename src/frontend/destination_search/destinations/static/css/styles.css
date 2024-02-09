@@ -832,6 +832,14 @@ body {
     font-weight: bold;
 }
 
+.tablinks:hover {
+    filter: brightness(90%);
+}
+
+.tablinks.active {
+    background-color: var(--accent2);
+}
+
 .tabcontent {
     display: none;
     width: 100%;
@@ -844,10 +852,6 @@ body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-.tablinks.active {
-    background-color: var(--accent2);
 }
 
 .category-description-tooltip-text {
