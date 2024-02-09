@@ -54,8 +54,9 @@
                                 </a>
                             </li>
                             <li class="nav-item {% if request.path == '/compare' %}active-link{% endif %}">
-                                <a class="nav-link has-tooltip" href="/compare">
+                                <a class="nav-link has-tooltip" id="compare-link" href="/compare">
                                     Compare
+                                    <div id="compare-count">0</div>
                                     <span class="tooltip-text nav-link-tooltip-text">Compare different destinations</span>
                                 </a>
                             </li>
@@ -483,6 +484,70 @@
                 selectElement.val(preselectedValues).trigger('change');  // Preselect values
             });
         }
+    </script>
+
+    <!-- Comparison -->
+    <script>
+        let selectedCompareLocations = JSON.parse(localStorage.getItem('selectedCompareLocations')) || [];
+
+        // Update the counter
+        let compareCountElement = document.querySelector('#compare-count');
+        compareCountElement.textContent = selectedCompareLocations.length;
+        if (selectedCompareLocations.length === 0) {
+            compareCountElement.style.visibility = 'hidden';  // Hide the element
+        } else {
+            compareCountElement.style.visibility = 'visible';  // Show the element
+        }
+
+        document.querySelectorAll('.add-to-comparison-icon').forEach(icon => {
+            let img = icon.querySelector('img');
+            let locationId = icon.dataset.locationId;
+
+            // If the location is selected, update the icon and add the 'selected' class
+            if (selectedCompareLocations.includes(locationId)) {
+                icon.classList.add('selected');
+                img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+            }
+
+            icon.addEventListener('click', function() {
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                    img.src = "{% static 'images/comparison_icon.svg' %}";
+                    selectedCompareLocations = selectedCompareLocations.filter(id => id !== locationId);
+                } else {
+                    if (selectedCompareLocations.length >= 5) {
+                        alert('You can only select up to 5 destinations for comparison.');
+                        return;
+                    }
+
+                    this.classList.add('selected');
+                    img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+                    selectedCompareLocations.push(locationId);
+                }
+
+                localStorage.setItem('selectedCompareLocations', JSON.stringify(selectedCompareLocations));
+                compareCountElement.textContent = selectedCompareLocations.length;
+
+                // Hide or show the compare count element
+                if (selectedCompareLocations.length === 0) {
+                    compareCountElement.style.visibility = 'hidden';
+                } else {
+                    compareCountElement.style.visibility = 'visible';
+                }
+
+                // Update the href of the 'Compare' link
+                let compareLink = document.querySelector('#compare-link');
+                let url = '/compare?locations=' + selectedCompareLocations.join('&locations=');
+                compareLink.href = url;
+            });
+        });
+
+        document.querySelector('#compare-link').addEventListener('click', function(e) {
+            if (selectedCompareLocations.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one destination to compare.');
+            }
+        });
     </script>
 
     {% block javascripts %}{% endblock %}
