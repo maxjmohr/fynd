@@ -98,10 +98,9 @@ class CoreScores(models.Model):
 class CoreTexts(models.Model):
     location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
     category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
-    start_date = models.DateField(blank=True, null=True)
-    end_date = models.DateField(blank=True, null=True)
-    reference_start_location = models.CharField(max_length=100, blank=True, null=True)
-    text = models.TextField(blank=True, null=True)
+    ref_start_location_id = models.IntegerField()
+    text_general = models.TextField()
+    text_anomaly = models.TextField()
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:

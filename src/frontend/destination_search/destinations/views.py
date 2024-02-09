@@ -144,9 +144,7 @@ def get_scores(
             texts = CoreTexts.objects.filter(
                 Q(location_id=location_id)
                 #& Q(reference_start_location=reference_start_location)
-                & Q(start_date__lte=end_date) 
-                & Q(end_date__gte=start_date)
-            ).values('category_id', 'text')
+            ).values('category_id', 'text_general', 'text_anomaly')
             texts = read_frame(texts)
 
         return scores, texts, reference_start_location
@@ -594,7 +592,8 @@ class LocationDetailView(DetailView):
                 'axis_title': category.axis_title,
                 'axis_label_low': category.axis_label_low,
                 'axis_label_high': category.axis_label_high,
-                'text': texts.loc[category.category_id].item(),
+                'text_general': texts.loc[category.category_id, 'text_general'].item() if category.category_id in texts.index else None,
+                'text_anomaly': texts.loc[category.category_id, 'text_anomaly'].item() if category.category_id in texts.index else None,
                 'dimensions': [
                     {
                         'dimension_id': dimension.dimension_id,
