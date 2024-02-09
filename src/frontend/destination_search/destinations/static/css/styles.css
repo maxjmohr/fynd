@@ -893,6 +893,7 @@ body {
     background-color: var(--accent2);
     padding: 20px;
     color: var(--darkgrey);
+    border-radius: 0 0 10px 10px;
 }
 
 .tabcontent.active {
@@ -920,7 +921,7 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     background-color: var(--light);
-    border: 1px solid var(--normalgrey);
+    /*border: 1px solid var(--normalgrey);*/
     border-radius: 10px;
     padding: 20px;
     flex-grow: 1;
