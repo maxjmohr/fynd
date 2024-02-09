@@ -232,6 +232,16 @@ body {
     border: 1px solid rgb(170, 170, 170);
 }
 
+
+.ui-autocomplete {
+    z-index: 100000;
+}
+
+.ui-menu-item-wrapper:hover {
+    background-color: var(--accent5);
+    border-color: var(--accent5);
+}
+
 .select2.select2-container.select2-container--default {
     width: 100% !important;
 }
@@ -241,10 +251,6 @@ body {
 }
 
 .select2-dropdown {
-    z-index: 100000;
-}
-
-.ui-autocomplete {
     z-index: 100000;
 }
 
