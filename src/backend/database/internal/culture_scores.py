@@ -6,6 +6,7 @@ sys.path.append(parent_dir)
 
 from database.db_helpers import Database
 from datetime import datetime
+import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
@@ -100,8 +101,8 @@ class CultureScores:
             if dimension_id not in data[data["location_id"] == location_id]["dimension_id"].values:
                 data = data.append({"location_id": location_id, "dimension_id": dimension_id, "score": 0.}, ignore_index=True)
 
-        # Convert scores to float for Min-Max scaling
-        data["score"] = data["score"].astype(float)
+        # Convert score to log scale
+        data["score"] = np.log(data["score"]).astype(float)
 
         # Normalize scores between 0 and 1 using Min-Max scaling for each dimension
         for dimension_id in data["dimension_id"].unique():
