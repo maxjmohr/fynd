@@ -154,6 +154,27 @@ def get_scores(
     return scores, reference_start_location
 
 
+def clean_previous_locations(previous_locations: list[str], locations: pd.DataFrame = None):
+    """
+    Split the previous locations into locations and countries.
+    If the location is a country, return all locations in that country.
+    """
+    if locations is None:
+        locations = read_frame(
+            CoreLocations.objects.values('location_id', 'country', 'country_code')
+        ).set_index('location_id')
+    
+    selected_locations = []
+    selected_countries = {}
+    for location in previous_locations:
+        try:
+            selected_locations.append(int(location))
+        except:
+            locations_country = locations.loc[locations.country_code == location, :]
+            selected_countries[locations_country.country.iloc[0]] = locations_country.index.tolist()
+    return selected_locations, selected_countries
+
+
 class HomeView(TemplateView):
     template_name = 'home.html'
 
@@ -427,8 +448,12 @@ class LocationsListView(View):
         # Compute relevance score and add to DataFrame
         # (correctly joined by pandas index)
         previous_locations = ti_form_data['previous_locations']
+        previous_locations, previous_countries = clean_previous_locations(
+            previous_locations, locations
+        )
         locations['relevance'] = compute_relevance(
             previous_locations=previous_locations,
+            previous_countries=previous_countries,
             scores=scores,
             preferences=self.request.session.get('preferences_form_data')
         )
@@ -654,9 +679,9 @@ class LocationDetailView(DetailView):
                 top_attractions['text'] = []
 
         # Get previous locations
-        previous_locations = [
-            int(id) for id in self.request.GET.getlist('previous_locations', [])
-        ]
+        previous_locations, previous_countries = clean_previous_locations(
+            self.request.GET.getlist('previous_locations', [])
+        )
         if len(previous_locations) > 0:
             previous_locations = (
                 CoreLocations
@@ -665,6 +690,7 @@ class LocationDetailView(DetailView):
                 .values('location_id', 'city', 'country')
             )
             context['previous_locations'] = previous_locations
+            context['previous_countries'] = previous_countries
             
         # Add to context
         context.update({
