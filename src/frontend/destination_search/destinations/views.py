@@ -21,12 +21,15 @@ import ast
 
 def get_locations_for_select2():
     """Get locations for use in Select2."""
-    locations = CoreLocations.objects.values('location_id', 'city', 'country')
-    grouped_locations = {}
+    locations = CoreLocations.objects.values('location_id', 'city', 'country', 'country_code')
+    grouped_locations = []
     for location in locations:
-        if location['country'] not in grouped_locations:
-            grouped_locations[location['country']] = []
-        grouped_locations[location['country']].append({'id': location['location_id'], 'text': location['city']})
+        group = next((group for group in grouped_locations if group['text'] == location['country']), None)
+        if group is None:
+            group = {'id': location['country'], 'text': location['country'], 'isCountry': True, 'children': []}
+            grouped_locations.append(group)
+        group['children'].append({'id': location['location_id'], 'text': location['city'], 'isCountry': False, 'parent': location['country']})
+    print(json.dumps(grouped_locations))
     return json.dumps(grouped_locations)
 
 

@@ -47,7 +47,7 @@ class TravellersInputForm(forms.Form):
     def clean_previous_locations(self):
         previous_locations = self.cleaned_data.get('previous_locations')
         if previous_locations is not None:
-            return [int(location_id) for location_id in ast.literal_eval(previous_locations)]
+            return [location for location in ast.literal_eval(previous_locations)]
         return None
 
 

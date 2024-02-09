@@ -414,12 +414,24 @@
     <script>
         function initializeSelect2(elementId, preselectedValues, placeholderText = "Select destination(s)...") {
             var grouped_locations = JSON.parse('{{ grouped_locations|escapejs }}');
-            var data = $.map(grouped_locations, function(locations, country) {
-                return {
-                    text: country,
-                    children: locations
-                };
+            var data = [];
+            $.each(grouped_locations, function(index, group) {
+                // Add the country as a normal option
+                data.push({
+                    id: group.id,
+                    text: group.text,
+                    isCountry: group.isCountry  // Add a flag to distinguish countries from locations
+                });
+                // Add the locations
+                $.each(group.children, function(index, location) {
+                    data.push({
+                        id: location.id,
+                        text: location.text,
+                        parent: group.id  // Add a reference to the parent country
+                    });
+                });
             });
+
 
             $(document).ready(function() {
                 var selectElement = $('#' + elementId);
@@ -428,6 +440,45 @@
                     placeholder: placeholderText,
                     allowClear: true,
                     minimumInputLength: 1,
+                    templateResult: function(data) {
+                        if (data.isCountry) {
+                            return $('<strong>').text(data.text);
+                        }
+                        return $('<span style="padding-left: 20px;">').text(data.text);
+                    },
+                    matcher: function(params, data) {
+                        // If there are no search terms, return all data
+                        if ($.trim(params.term) === '') {
+                            return data;
+                        }
+
+                        // If the data object is a country
+                        if (data.isCountry) {
+                            // Check if any of the country's locations match the search term
+                            var matchingLocation = grouped_locations.find(function(group) {
+                                return group.id === data.id && group.children.some(function(location) {
+                                    return location.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1;
+                                });
+                            });
+                            // If a location matches the search term, return the country data object
+                            if (matchingLocation) {
+                                return data;
+                            }
+                        }
+
+                        // If the text property of data object matches the search term
+                        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                            return data;
+                        }
+
+                        // If the parent property of data object matches the search term
+                        if (data.parent && data.parent.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                            return data;
+                        }
+
+                        // Return null if the data object does not match the search term
+                        return null;
+                    }
                 });
                 selectElement.val(preselectedValues).trigger('change');  // Preselect values
             });
