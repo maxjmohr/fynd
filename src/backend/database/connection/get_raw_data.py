@@ -176,12 +176,6 @@ def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, 
 
     ####----| STEP 4: EXECUTE STEPS 1, 2 AND 3 |----####   
 
-def fill_raw_accommodation():
-
-    accomodations_main()
-
-    return None
-
 
 def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
 
@@ -317,7 +311,7 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
     locations = locations[locations['airport_1'].isin(pd.Series(not_fully_processed))]
     locations['missing'] = locations['airport_1'].apply(lambda x: x not in raw_reachability['dest_iata'].unique())
     locations = locations.sort_values(by='missing', ascending=False)
-    
+
     # create a multiprocessing Pool with the specified number of workers
     with Pool(num_workers) as p:
         results = p.map(worker, [(loc, start_refs, raw_reachability) for _, loc in locations.iterrows()])

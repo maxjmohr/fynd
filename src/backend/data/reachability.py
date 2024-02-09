@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from database.db_helpers import Database
+from urllib3.exceptions import MaxRetryError
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -49,6 +50,7 @@ def configureChromeDriver(headless: bool =False) -> webdriver.ChromeOptions:
 
     options = webdriver.ChromeOptions()
     options.add_argument('--no-sandbox')
+    options.add_argument('--disable-blink-features=AutomationControlled')
     if headless: options.add_argument('--headless')
 
     return options
@@ -532,11 +534,15 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
                     else:
                         print(f"WARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}")
-
-                except KeyboardInterrupt as e:
-                    print("Flight fetching script interrupted.")
+                
+                except MaxRetryError as e:
+                    print(f"Max retries exceeded for {orig_iata} to {loc['city']} on {dep_date}")
+                    if driver:
+                        driver.quit()
+                    driver = webdriver.Chrome(options=configureChromeDriver())
+                    continue
 
         if driver:
-            driver.quit() 
+            driver.quit()
                              
     return res_list

@@ -727,20 +727,25 @@ def parseAccommodationData(json_body):
             
             else:
 
-                acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
+                if 'price' in json_body['filterData']:
+                    acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
 
-                for i, v in enumerate(json_body['filterData']['price']['values']):
-                    acc_data[f"bin_bound_{i+1}"] = v
+                    for i, v in enumerate(json_body['filterData']['price']['values']):
+                        acc_data[f"bin_bound_{i+1}"] = v
 
-                for i, v in enumerate(json_body['filterData']['price']['count']):
-                    acc_data[f"bin_height_{i+1}"] = v
+                    for i, v in enumerate(json_body['filterData']['price']['count']):
+                        acc_data[f"bin_height_{i+1}"] = v
 
-                # compute median and average from the scraped bins
-                bin_heights = json_body['filterData']['price']['count']
-                bin_bounds = json_body['filterData']['price']['values']
-                acc_data['comp_median'], acc_data['comp_avg'] = calculate_median_average(bin_bounds, bin_heights)
+                    # compute median and average from the scraped bins
+                    bin_heights = json_body['filterData']['price']['count']
+                    bin_bounds = json_body['filterData']['price']['values']
+                    acc_data['comp_median'], acc_data['comp_avg'] = calculate_median_average(bin_bounds, bin_heights)
 
-                return acc_data
+                    return acc_data
+                
+                else:
+                    print(json_body['filterData'].keys())
+                    return None
 
     # if getAccommodationData() does not returns 0, there are no properties to be found
     elif json_body == 0:
@@ -841,8 +846,8 @@ def process_period(period):
     locations = locations.sort_values(by='country', ascending=False) # from Z to A
 
     # batched processing of locations
-    if len(locations) >= 200:
-        locations = locations[:200]
+    #if len(locations) >= 200:
+    #    locations = locations[:200]
 
     ### -------------------------------------------------- ###
         
@@ -895,18 +900,22 @@ def process_period(period):
 
         # in all other cases (0 and actual data), parse the data and insert it into the database
         else:
-            print("Data received, parsing and inserting into database...")
+            print(f"Data for {city}, {country} ({period}) received, parsing and inserting into database...")
             acc_data = parseAccommodationData(json_body)
-            total_booking_days = (getDaysBetweenDates(period[0], period[1]) + 1)
-            acc_data['location_id'] = loc_id
-            acc_data['kayak_city'], acc_data['kayak_country'] = city, country
-            acc_data['start_date'], acc_data['end_date'] = period[0], period[1]
-            acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
-            acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
 
-            db.connect()
-            db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
-            db.disconnect()    
+            if acc_data is not None:
+                total_booking_days = (getDaysBetweenDates(period[0], period[1]) + 1)
+                acc_data['location_id'] = loc_id
+                acc_data['kayak_city'], acc_data['kayak_country'] = city, country
+                acc_data['start_date'], acc_data['end_date'] = period[0], period[1]
+                acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
+                acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
+                db.connect()
+                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
+                db.disconnect()    
+
+            else:
+                print(f"Could not parse data for {city}, {country} ({period})")
 
     if driver:
         driver.quit()  
