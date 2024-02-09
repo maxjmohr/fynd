@@ -26,10 +26,9 @@ def get_locations_for_select2():
     for location in locations:
         group = next((group for group in grouped_locations if group['text'] == location['country']), None)
         if group is None:
-            group = {'id': location['country'], 'text': location['country'], 'isCountry': True, 'children': []}
+            group = {'id': location['country_code'], 'text': location['country'], 'isCountry': True, 'children': []}
             grouped_locations.append(group)
         group['children'].append({'id': location['location_id'], 'text': location['city'], 'isCountry': False, 'parent': location['country']})
-    print(json.dumps(grouped_locations))
     return json.dumps(grouped_locations)
 
 
