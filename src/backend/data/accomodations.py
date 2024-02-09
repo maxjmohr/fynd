@@ -24,6 +24,10 @@ from multiprocessing import Pool
 # import database class from database module located in src/backend
 sys.path.append("./src/backend")
 from database.db_helpers import Database
+
+MAX_RETRIES = 80
+SLEEP_TIMER = 300
+COUNTER = 0
     
 
 def getLocationJSON(loc_name, country_name, mode):
@@ -158,8 +162,6 @@ def createURLfromCityAndDate(city, country, dates, mode="accomodation", num_adul
         str: The URL for the given city and date.
     """
 
-    # get the location id by issuing post request to Kayak, return none if location ID is not found
-
     loc_json = parseLocationJSON(city, country, mode=mode)
 
     if loc_json is None:
@@ -185,7 +187,7 @@ def getDaysBetweenDates(start_date, end_date):
     return (end_date - start_date).days
     
 
-def getAccommodationData(url, driver):
+def getAccommodationData(kayak_url, driver):
     """
     Gets the counts, interval bounds and the average price from a search request URL
     args:
@@ -196,7 +198,7 @@ def getAccommodationData(url, driver):
         average_price: The average price of the hotels in the search request
     """
     
-    driver.get(url)
+    driver.get(kayak_url)
 
     # Check for the presence of the security check element
     try:
@@ -236,7 +238,6 @@ def getAccommodationData(url, driver):
             url = event['params']['response']['url']
             if url == "https://www.kayak.com/i/api/search/dynamic/hotels/poll":
                 poll_events.append(event)
-                resp_url = url # save the url of the poll request
             
         except:
             pass
@@ -253,7 +254,7 @@ def getAccommodationData(url, driver):
 
     except:
 
-        print(f"Could not get response body for {resp_url}")
+        print(f"Could not get response body for {kayak_url} (No matching response found).")
         return None
     
 
@@ -300,8 +301,8 @@ def parseAccommodationData(json_body):
 
                     return acc_data
                 
-                # for some locations no listings have prices
-                elif 'price' not in json_body['filterData'] & 'totalCount' in json_body:
+                # for some locations none of the hotels have a price, but there are hotels
+                elif ('price' not in json_body['filterData']) and ('totalCount' in json_body):
                     acc_data['n_hotels'] = json_body['totalCount']
                     acc_data['avg_price'] = np.nan
                     acc_data['comp_avg'] = np.nan
@@ -312,6 +313,8 @@ def parseAccommodationData(json_body):
                         acc_data[f"bin_bound_{i+1}"] = np.nan
 
                     acc_data['bin_bound_31'] = np.nan
+
+                    return acc_data
                 
                 else:
                     print(json_body['filterData'].keys())
@@ -346,7 +349,6 @@ def configureChromeDriver(headless=False):
     options.add_argument("--no-sandbox")
     #options.add_argument("--disable-dev-shm-usage")
     options.add_argument('--window-size=720,480')
-    
     if headless: options.add_argument("--headless")
 
     return caps, options
@@ -358,7 +360,6 @@ def process_period(period):
     period = [period[0].strftime("%Y-%m-%d"), period[1].strftime("%Y-%m-%d")]
 
     # configuration of parameters
-    max_retries, sleep_timer = 80, 300
     cur_country, driver = None, None
     caps, options = configureChromeDriver()
 
@@ -394,7 +395,6 @@ def process_period(period):
 
     # select only locations that have not been processed yet
     processed_locs = accommodation_raw['location_id'].values.tolist()
-
     locations = locations[~locations['location_id'].isin(processed_locs)]
 
     if len(locations) == 0:
@@ -416,18 +416,13 @@ def process_period(period):
 
     locations = locations.sort_values(by='country', ascending=False) # from Z to A
 
-    # batched processing of locations
-    #if len(locations) >= 200:
-    #    locations = locations[:200]
-
     ### -------------------------------------------------- ###
-        
+    
+    counter = COUNTER
+
     # loop through loc_id, city, country triplets
     for loc_id, city, country in tqdm(locations.values):
         print(f"Processing {city}, {country} for period {period}...")
-
-        #if driver:
-        #    _ = driver.get_log('browser') # clear the logs after each location
 
         # start a new driver for each country
         if cur_country != country:
@@ -450,28 +445,22 @@ def process_period(period):
             print(f"Security check detected for {city}, {country}. Returning and sleeping for 180 seconds")
             if driver:
                 driver.quit()
-            time.sleep(sleep_timer)
-            counter = 0
-            continue
+            time.sleep(SLEEP_TIMER)
+            counter = COUNTER
 
         # if getAccommodationData() returns None, there was an error getting the response
         elif json_body is None:
             print(f"Could not get data for {city}, {country}")
             counter += 1
 
-            if counter >= max_retries:
+            if counter >= MAX_RETRIES:
                 print("Maximum number of retries reached, skipping...")
-                counter = 0
+                counter = COUNTER
                 if driver:
                     driver.quit()
-                break
-
-            else:
-                continue    
 
         # in all other cases (0 and actual data), parse the data and insert it into the database
         else:
-            print(f"Data for {city}, {country} ({period}) received, parsing and inserting into database...")
             acc_data = parseAccommodationData(json_body)
 
             if acc_data is not None:
@@ -492,26 +481,3 @@ def process_period(period):
         driver.quit()  
 
     return None
-
-
-def accomodations_main():
-
-    num_workers = 4
-    today_2025 = str(datetime.now().date()).replace("2024", "2025")
-    periods = generate_periods("2024-02-17", today_2025, 14)
-
-    # check which periods still need to be processed by checking the database
-    db = Database()
-    db.connect()
-    raw_acc = db.fetch_data("raw_accommodation_costs")
-    db.disconnect()
-
-    # 688 is the number of total locations minus the ones with bad links or countries not serviced by Kayak
-    rem_periods = [period for period in periods if raw_acc[raw_acc['start_date'] == period[0].date()].shape[0] < 688]
-
-    with Pool(num_workers) as p:
-        p.map(process_period, rem_periods)
-
-
-if __name__ == "__main__":
-    accomodations_main()
