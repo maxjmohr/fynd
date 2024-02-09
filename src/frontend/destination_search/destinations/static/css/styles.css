@@ -164,8 +164,12 @@ body {
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+.submit-button:hover {
+    filter: brightness(90%);
+}
+
 .submit-button:active {
-    filter: brightness(85%);
+    filter: brightness(80%);
     box-shadow: none;
 }
 
@@ -232,12 +236,35 @@ body {
     width: 100% !important;
 }
 
+.select2-selection__placeholder {
+    font-weight: normal;
+}
+
 .select2-dropdown {
     z-index: 100000;
 }
 
 .ui-autocomplete {
     z-index: 100000;
+}
+
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--accent5);
+}
+
+.daterangepicker td.active, .daterangepicker td.active:hover {
+    background-color: var(--accent5);
+}
+
+.btn-primary {
+    background-color: var(--accent5);
+    border-color: var(--accent5);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent5);
+    border-color: var(--accent5);
+    filter: brightness(90%);
 }
 
 .form-input-label {
