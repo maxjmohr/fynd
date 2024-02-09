@@ -2,6 +2,8 @@ import polyline
 import requests
 import pandas as pd
 import os
+import random
+import time
 import flexpolyline as fp
 from geopy.distance import geodesic
 from dateutil import parser
@@ -24,6 +26,13 @@ with open("./res/auth/here_key.txt", "r") as f:
 
 # set key to environment variable
 os.environ["HERE_API_KEY"] = key
+
+RANDOM_SLEEP_MIN = 0
+RANDOM_SLEEP_MAX = 3
+CAPTCHA_WAIT_TIME = 30
+MAX_WAIT_TIME = 300
+CAPTCHA_DETECTED = -1
+NO_RESULTS_FOUND = 0
 
 
 def generate_periods(start_date: str, end_date: str, duration: int) -> list:
@@ -51,6 +60,7 @@ def configureChromeDriver(headless: bool =False) -> webdriver.ChromeOptions:
     options = webdriver.ChromeOptions()
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_argument('--window-size=1280,720')
     if headless: options.add_argument('--headless')
 
     return options
@@ -278,39 +288,52 @@ class Route:
             BeautifulSoup: The parsed HTML of the Kayak website.
         """
 
+        # sleep random amount between 0 and 3 seconds
+        sleep_time = random.uniform(RANDOM_SLEEP_MIN, RANDOM_SLEEP_MAX)
+        time.sleep(sleep_time)
         url = self.createFlightSearchURL(orig_iata, dest_iata, date_leave)
+        driver.get(url)
+
+        try:
+            # wait for presence of the x / y results element
+            WebDriverWait(driver, MAX_WAIT_TIME).until(EC.presence_of_element_located((By.CLASS_NAME, "nrc6")))
+            soup = BeautifulSoup(driver.page_source, "html.parser")
+            return soup
+        
+        except TimeoutException:
+            print("Empty connection detection timed out")
+            pass
+        
+        # check for captcha
+        try:
+            element_text = "Please confirm that you are a real KAYAK user."
+            error_element = WebDriverWait(driver, CAPTCHA_WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{element_text}')]")))
+            print("Captcha detected.")
+            return CAPTCHA_DETECTED
+
+        except TimeoutException as e:
+            print("Captcha detection timed out")
+            pass
 
         # Kayak restricts access to certain countries (Russia, Belarus, Iran)
         try:
-            driver.find_element(By.CSS_SELECTOR, '.errorContent')
-            print(f"No results due to government restrictions for {orig_iata} to {dest_iata} on {date_leave}.")
-            return -1
+            element_text = "Due to government restrictions, we are unable to show results for this search."
+            error_element = WebDriverWait(driver, CAPTCHA_WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{element_text}')]")))
+            return NO_RESULTS_FOUND
         
-        except NoSuchElementException:
+        except TimeoutException:
+            print("Government restriction detection timed out")
             pass
 
         # if "No flight founds" element pops up, return -1
         try:
             driver.find_element(By.CSS_SELECTOR, '.IVAL-title')
             print(f"No flights available for {orig_iata} to {dest_iata} on {date_leave}.")
-            return 0
-        
-        except NoSuchElementException:
-            pass
+            return NO_RESULTS_FOUND
 
-        try:
-
-            # wait for presence of the x / y results element
-            max_wait = 300
-            driver.get(url)
-            WebDriverWait(driver, max_wait).until(EC.presence_of_element_located((By.CLASS_NAME, "nrc6")))
-            soup = BeautifulSoup(driver.page_source, "html.parser")
-
-        except TimeoutException as e:
+        except Exception as e:
             print(f"Getting Flight data from {orig_iata} to {dest_iata} on {date_leave} timed out.")
-            return -1
-
-        return soup
+            return None
         
 
     def parseFlightData(self, orig_iata: str, dest_iata: str, date_leave: str, soup: BeautifulSoup):
@@ -334,8 +357,10 @@ class Route:
                 "avg_stops": None
             }
 
-        try:
-
+        elif soup == -1:
+            return -1
+        
+        else:
             flight_data = {
                 'origin': orig_iata,
                 'destination': dest_iata,
@@ -367,9 +392,6 @@ class Route:
                 "min_duration": min(flight_data['duration']), "max_duration": max(flight_data['duration']),
                 "avg_stops": sum(flight_data['stops']) / len(flight_data['stops'])
                 }
-
-        except:
-            return None
     
 
 def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFrame) -> pd.DataFrame:
@@ -483,64 +505,91 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
     # loop over all periods and reference airports
     for _, row in start_refs.iterrows():
-
         for dep_date in start_dates:
 
             orig_iata = row['mapped_start_airport'].strip()
 
             # manual replacing for destinations in Kazakhstan with airports in Russia (not serviced by Kayak)
-            if orig_iata == "ASF":
-                orig_iata = "GUW"
-            elif orig_iata == "UFA":
-                orig_iata = "AKX"
+            if dest_iata == "ASF":
+                dest_iata = "GUW"
+            elif dest_iata == "UFA":
+                dest_iata = "AKX"
+
+            # all airports in Russia, Iran, and Belarus get no results
+            restricted = ['SVO', 'DME', 'VKO', 'THR', 'LED', 'MHD', 'IKA', 'AER', 'SVX',
+                'OVB', 'MSQ', 'SYZ', 'KRR', 'AWZ', 'KIH', 'UFA', 'IFN', 'ROV',
+                'KUF', 'KZN', 'KJA', 'MRV', 'VVO', 'KHV', 'IKT', 'TBZ', 'TJM',
+                'KGD', 'SGC', 'CEK', 'AAQ', 'PEE', 'BND', 'MCX', 'VOG', 'UUS',
+                'GOJ', 'OMS', 'NUX', 'YKS', 'ARH', 'PGU', 'MMK', 'KER', 'AZD',
+                'REN', 'NJC', 'PKC', 'ABD', 'TOF', 'BUZ', 'VOZ', 'NBC', 'ASF',
+                'ZAH', 'BAX', 'NSK', 'EGO', 'OMH', 'SCW', 'RAS', 'RTW', 'BQS',
+                'HTA', 'OGZ', 'STW', 'IJK', 'GDZ', 'SLY', 'MJZ', 'UUD', 'KEJ',
+                'CSY', 'ULY', 'NAL', 'HMA', 'CEE', 'IAA', 'GRV', 'IGT', 'NNM',
+                'NOJ', 'ABA', 'NOZ', 'NYM', 'KVX', 'USK', 'PEZ', 'MQF', 'BTK',
+                'KGP']
+            
+            if dest_iata in restricted:
+                db.connect()
+                db.insert_data(pd.DataFrame({
+                    "orig_iata": orig_iata, "dest_iata": dest_iata,
+                    "total_flights": 0, "dep_date": dep_date,
+                    "avg_price": None, "min_price": None, "max_price": None,
+                    "avg_duration": None, "min_duration": None, "max_duration": None,
+                    "avg_stops": None
+                }, index=[0]), "raw_reachability_air")
+                db.disconnect()
+                continue
 
             # check if flight data for this route and date has already been processed
             if processed_locs[(processed_locs['orig_iata'] == orig_iata) & (processed_locs['dest_iata'] == dest_iata) & (processed_locs['dep_date'] == dep_date)].shape[0] > 0:
-
                 print(f"Already processed flight data for {orig_iata} to {loc['city']} on {dep_date}")
                 continue
 
             else:
-
                 if not driver:
                     driver = webdriver.Chrome(options=configureChromeDriver())
 
-                try:
-                    print(f"Processing {dep_date}, {orig_iata}, {dest_iata}")
+                print(f"Processing {dep_date}, {orig_iata}, {dest_iata}")
 
-                    # specify origin coordinates for Route object constructor
-                    orig = {
-                        "lat": float(row['lat']),
-                        "lon": float(row['lon'])
-                    }
+                # specify origin coordinates for Route object constructor
+                orig = {
+                    "lat": float(row['lat']),
+                    "lon": float(row['lon'])
+                }
 
-                    # set origin iata code, create Route object
-                    route = Route(dest, orig)
+                # set origin iata code, create Route object
+                route = Route(dest, orig)
+                soup = route.getFlightData(driver, orig_iata, dest_iata, dep_date)
+                flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
 
-                    # get flight data
-                    soup = route.getFlightData(driver, orig_iata, dest_iata, dep_date)
-                    #print(f"Kayak page fetched successfully for {orig_iata} to {dest_iata} on {dep_date}")
-                    flight_data = route.parseFlightData(orig_iata, dest_iata, dep_date, soup)
-                    #print(f"Flight data parsed successfully for {orig_iata} to {dest_iata} on {dep_date}")
-
-                    # insert flight data into database
-                    if flight_data is not None:
-                        flight_data['orig_iata'], flight_data['dest_iata'] = orig_iata, dest_iata
-                        res_list.append(pd.DataFrame(flight_data, index=[0]))
-                        print(f"SUCCESS: data found for {orig_iata} to {loc['city']} on {dep_date}")
-                        db.connect()
-                        db.insert_data(pd.DataFrame(flight_data, index=[0]), "raw_reachability_air")
-                        db.disconnect()   
-
-                    else:
-                        print(f"WARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}")
-                
-                except MaxRetryError as e:
-                    print(f"Max retries exceeded for {orig_iata} to {loc['city']} on {dep_date}")
+                if flight_data == -1:
+                    print(f"CAPTCHA detected for {orig_iata} to {loc['city']} on {dep_date}")
                     if driver:
                         driver.quit()
                     driver = webdriver.Chrome(options=configureChromeDriver())
                     continue
+
+                # insert flight data into database
+                elif flight_data is not None:
+                    flight_data['orig_iata'], flight_data['dest_iata'] = orig_iata, dest_iata
+                    res_list.append(pd.DataFrame(flight_data, index=[0]))
+                    print(f"SUCCESS: data found for {orig_iata} to {loc['city']} on {dep_date}")
+                    db.connect()
+                    db.insert_data(pd.DataFrame(flight_data, index=[0]), "raw_reachability_air")
+                    db.disconnect()   
+
+                elif flight_data is None:
+                    print(f"\033[1;31mWARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}\033[0m")
+
+                else:
+                    print(f"\033[1;31mWARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}\033[0m")
+                
+                #except MaxRetryError as e:
+                #    print(f"Max retries exceeded for {orig_iata} to {loc['city']} on {dep_date}")
+                #    if driver:
+                #        driver.quit()
+                #    driver = webdriver.Chrome(options=configureChromeDriver())
+                #    continue
 
         if driver:
             driver.quit()

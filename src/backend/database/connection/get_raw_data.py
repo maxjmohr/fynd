@@ -333,7 +333,7 @@ def fill_raw_accommodation_costs(locations: pd.DataFrame, table_name: str, db: D
         datetime.datetime: end datetime
     """
 
-    num_workers = 5
+    num_workers = 1
     today_2025 = str(datetime.datetime.now().date()).replace("2024", "2025")
     periods = generate_periods("2024-02-17", today_2025, 14)
 
