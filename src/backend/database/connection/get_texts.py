@@ -13,7 +13,7 @@ import pandas as pd
 class PromptEngine:
     "Class to generate prompts for the GPT chatbot and return the generated texts"
 
-    def __init__(self, db:Database, model:str="gpt-3.5-turbo", temperature:float=0.) -> None:
+    def __init__(self, db:Database, model:str="gpt-3.5-turbo", temperature:float=0.7) -> None:
         ''' Initialize the class
         Input:  - db: the database connection
                 - model: the model to be used for the chatbot
@@ -33,12 +33,16 @@ class PromptEngine:
         "Create the message for the general text of a location category"
         return {
             "role": "system",
-            "content": """
-You are a data interpretation system, adept at analyzing numerical variables and generating descriptive insights of travel destinations.\n
-You are asked to generate a general text for a destination category based on the distances to the median of the dimensions.\n
-A positive distance indicates that the destination is above the median, while a negative distance indicates that the destination is below the median.\n
-Larger distances indicate a larger deviation from the median.\n
-Never generate a text with numeric values such as distances but rather use the distances to generate a qualitative description of the destination.
+            "content": """You are a data interpretation system, adept at analyzing numerical variables and generating descriptive insights of travel destinations.
+You are generating the text for a reader interested in traveling to the specific destination. Use easy and understandable language and short sentences.
+Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
+You are asked to generate a general text for a destination category based on the distances to the median of the dimensions.
+A positive distance indicates that the destination is above the median, while a negative distance indicates that the destination is below the median.
+Lower i.e. negative values correlate with a worse respective score in the category, while higher i.e. positive values correlate with a better respective score in the category.
+Larger distances indicate a larger deviation from the median. Larger distances should be highlighted more in the generated text than smaller ones.
+Try to phrase a key message for the destination in this category, weighing all dimensions equally. Avoid generic phrases and rather focus on the specific destination.
+Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
+Do not use the word 'median' too often but try to exchange it with logical synonyms (e.g. 'compared to other destinations').\n
 """
         }
 
@@ -48,12 +52,21 @@ Never generate a text with numeric values such as distances but rather use the d
         "Create the message for the anomaly text of a location category"
         return {
             "role": "system",
-            "content": """
-You are a data interpretation system, adept at analyzing numerical variables and generating descriptive insights of travel destinations based on detected anomalies.\n
-You are asked to generate a general text for a destination category based on the distances to the anomaly bounds of the dimensions.\n
-A positive distance indicates that the destination is above the upper bound, while a negative distance indicates that the destination is below the lower bound.\n
-Larger distances indicate a larger deviation from the bounds (i.e. a stronger anomaly).\n
-Never generate a text with numeric values such as distances but rather use the distances to generate a qualitative description of the destination.
+            "content": """You are a data interpretation system, adept at analyzing numerical variables and generating descriptive insights of travel destinations based on detected anomalies.
+You are generating the text for a reader interested in traveling to the specific destination. Use easy and understandable language and short sentences.
+Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
+You are asked to generate an anomaly text for a destination category based on the distances to the anomaly bounds (highest or lowest 10%) of the dimensions.
+All displayed values are anomalies. Integrate all anomalies into the core message of the anomaly text and especially highlight those that are most significant.
+A positive distance indicates that the destination is above the upper bound, while a negative distance indicates that the destination is below the lower bound.
+Lower i.e. negative values correlate with a worse respective score in the category, while higher i.e. positive values correlate with a better respective score in the category.
+Larger distances indicate a larger deviation from the bounds (i.e. a stronger anomaly). Stronger anomalies should be highlighted more in the generated text than weaker ones.
+You will be given a general text (where every dimension should already be generally described) that you should use as a basis for generating the anomaly text.
+Analyze the key message of the general text and further intensify the message by now more noteably highlighting the anomalies.
+Do not repeat any messages from the general text but rather add new information in terms of anomalies. Rather generate less sentences than repeat the same information.
+Do not start the anomaly text with a sentence that describes the core message of the general text. Avoid generic phrases and rather focus on the specific destination.
+The transition should be seemless and try to use different wording than in the general text. Only output the newly generated text (not the general text).
+Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
+Do not use the word 'bound' too often but try to exchange it with logical synonyms (e.g. 'compared to other destinations').\n
 """
         }
 
@@ -75,22 +88,24 @@ Never generate a text with numeric values such as distances but rather use the d
         data = data.sort_values(by=["start_date", "dimension_id"], ascending=True)
 
         # Initialize an empty string to store the formatted content
-        formatted_content = f"""
-Take into account the seasonal differences in the distances to the {distance_metric}s of the dimensions.\n
+        formatted_content = f"""Take into account the seasonal differences in the distances to the {distance_metric}s of the dimensions.
 The following table shows the distances to the {distance_metric}s for the corresponding dimensions and time periods:\n
 """
 
-        # Iterate through each row of the DataFrame
-        for _, row in data.iterrows():
-            # Format the time period
-            time_period = f"* Time period: {row['start_date']} - {row['end_date']}\n"
-            formatted_content += time_period
-            
+        # Iterate through each time period
+        for start_date in (data["start_date"].unique()):
+
+            # Get the data for the specific start_date
+            data_start_date = data[data["start_date"] == start_date]
+
+            # Format the start_date
+            formatted_content += f"* Time period: {start_date} - {data_start_date['end_date'].unique()[0]}\n"
+
             # Format the dimension name and distance
             dimension_distance_pairs = ""
-            for dimension_name, distance in zip(row['dimension_name'], row[which_distance]):
+            for dimension_name, distance in zip(data_start_date['dimension_name'], data_start_date[which_distance]):
                 dimension_distance_pairs += f"  * {dimension_name}: {distance}\n"
-            
+
             # Add the dimension name and distance to the formatted content
             formatted_content += dimension_distance_pairs
 
@@ -114,8 +129,7 @@ The following table shows the distances to the {distance_metric}s for the corres
         data = data.sort_values(by="dimension_id", ascending=True)
 
         # Initialize an empty string to store the formatted content
-        formatted_content = f"""
-Take into account the differences in the distances to the {distance_metric}s of the dimensions.\n
+        formatted_content = f"""Take into account the differences in the distances to the {distance_metric}s of the dimensions.
 The following table shows the distances to the {distance_metric}s for the corresponding dimensions:\n
 """
         
@@ -140,18 +154,24 @@ The following table shows the distances to the {distance_metric}s for the corres
 
         message = {"role": "user"}
 
-        # For weather, reachability and travel/accommodation costs
-        if data["category_id"].any() in [2, 6] or data["dimension_id"].any() in [41, 42]:
+        # For weather, reachability
+        if 2 in data["category_id"].unique() or 6 in data["category_id"].unique():
 
-            message["content"] = f"""
-Use a maximum of five sentences in the paragraph to generally describe the characteristics of the location for the following dimensions of this category:
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to generally describe the characteristics of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
 {self.content_seasonal_distances(data, "distance_to_median")}
+"""
+
+        # For costs, especially for travel/accommodation costs
+        elif 4 in data["category_id"].unique():
+
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to generally describe the characteristics of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
+{self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_median")}
+{self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_median")}
 """
 
         else:
 
-            message["content"] = f"""
-Use a maximum of five sentences in the paragraph to generally describe the characteristics of the location for the following dimensions of this category:
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to generally describe the characteristics of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
 {self.content_non_seasonal_distances(data, "distance_to_median")}
 """
         return message
@@ -169,26 +189,42 @@ Use a maximum of five sentences in the paragraph to generally describe the chara
 
         message = {"role": "user"}
 
-        # For weather, reachability and travel/accommodation costs
-        if data["category_id"].any() in [2, 6] or data["dimension_id"].any() in [41, 42]:
+        # For testing: Drop null values in column distance_to_bound
+        data = data[data["distance_to_bound"].notnull()]
 
-            message["content"] = f"""
-Use a maximum of five sentences in the paragraph to describe the anomalies of the travel destination for the dimensions of the category '{data['category_name']}'.\n
+        # For weather, reachability and travel/accommodation costs
+        if 2 in data["category_id"].unique() or 6 in data["category_id"].unique():
+
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to highlight the anomalies of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
 {self.content_seasonal_distances(data, "distance_to_bound")}
-Generate the anomaly text in a way that it is consistent with the general text and fits right after the general text.\n
-General text: '''\n
-{text_general}\n
+Generate the anomaly text in a way that it is consistent with the general text and fits right after the general text.
+Only output the newly generated text (not the general text).\n
+General text: '''
+{text_general}
+'''
+"""
+
+        # For costs, especially for travel/accommodation costs
+        elif 4 in data["category_id"].unique():
+
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to highlight the anomalies of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
+{self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_bound")}
+{self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_bound")}
+Generate the anomaly text in a way that it is consistent with the general text and fits right after the general text.
+Only output the newly generated text (not the general text).\n
+General text: '''
+{text_general}
 '''
 """
 
         else:
 
-            message["content"] = f"""
-Use a maximum of five sentences in the paragraph to describe the anomalies of the travel destination for the dimensions of the category '{data['category_name']}'.\n
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to highlight the anomalies of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
 {self.content_non_seasonal_distances(data, "distance_to_bound")}
-Generate the anomaly text in a way that it is consistent with the general text and fits right after the general text.\n
-General text: '''\n
-{text_general}\n
+Generate the anomaly text in a way that fits right after the general text. The transition should be seemless and try to use different wording than in the general text.
+Only output the newly generated text (not the general text).\n
+General text: '''
+{text_general}
 '''
 """
         return message
@@ -260,16 +296,32 @@ Based on your selected start location, the reference start location is {data['st
         return df
 
 
-def prepare_text_generation(db:Database) -> pd.DataFrame:
+def prepare_text_generation(db:Database, filter_cats:list) -> pd.DataFrame:
     ''' Preprocess the data from core_scores into the batches for the text generation
-    Input:  db: the database connection
+    Input:  - db: the database connection
+            - filter_cats: the categories to be filtered
     Output: data: the preprocessed data
     '''
     # Load data
     scores = db.fetch_data("core_scores")
     loaded_texts = db.fetch_data("core_texts")
     locations = db.fetch_data("core_locations")
-    start_locations = db.fetch("core_ref_start_locations")
+    start_locations = db.fetch_data("core_ref_start_locations")
+    categories = db.fetch_data("core_categories")
+
+    # Filter categories
+    if filter_cats:
+        scores = scores[scores["category_id"].isin(filter_cats)]
+
+    # If categories include 3 (culture), get scores and distances from other table and append
+    if 3 in filter_cats:
+        # Delete the scores from the main table+
+        scores = scores[scores["category_id"] != 3]
+
+        # Get scores and distances from the culture table
+        scores_culture = db.fetch_data("core_scores_culture")
+        scores_culture = scores_culture[scores_culture["category_id"] == 3]
+        scores = pd.concat([scores, scores_culture], ignore_index=True)
 
     scores = scores.groupby(["location_id", "category_id", "ref_start_location_id"])
 
@@ -277,7 +329,7 @@ def prepare_text_generation(db:Database) -> pd.DataFrame:
     scores = scores.filter(lambda x: x.name not in loaded_texts[["location_id", "category_id", "ref_start_location_id"]])
     scores = scores.reset_index(drop=True)
 
-    # Join the names of the locations and start_locations
+    # Join the names of the locations and start_locations and categories
     scores = scores.merge(
         locations[["location_id", "city", "country"]],
         on="location_id", how="inner"
@@ -290,6 +342,11 @@ def prepare_text_generation(db:Database) -> pd.DataFrame:
         )
     scores.rename(columns={"city": "start_location_city", "country": "start_location_country"}, inplace=True)
 
+    scores = scores.merge(
+        categories[["category_id", "category_name"]],
+        on="category_id", how="inner"
+        )
+
     return scores
 
 
@@ -299,7 +356,17 @@ if __name__ == "__main__":
     db.connect()
 
     # Get data
-    data = prepare_text_generation(db)
+    filter_cats = [
+        #0, # General
+        #1, # Safety
+        #2, # Weather
+        #3, # Culture
+        #4, # Cost
+        #5, # Geography
+        #6, # Reachability
+        #7 # Health
+    ]
+    data = prepare_text_generation(db, filter_cats)
 
     # Generate texts
     prompt_engine = PromptEngine(db)
