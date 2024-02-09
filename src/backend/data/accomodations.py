@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
+from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import numpy as np
 import time
@@ -185,7 +186,6 @@ def parseLocationJSON(loc_name, country_name, mode):
         return None
 
     for res in loc_json:
-
         if res['loctype'] == "city":
 
             return {
@@ -347,7 +347,6 @@ def getAccommodationData(url, driver):
         try:
             url = event['params']['response']['url']
             if url == "https://www.kayak.com/i/api/search/dynamic/hotels/poll":
-                request_url = url
                 poll_events.append(event)
             
         except:
@@ -366,50 +365,422 @@ def getAccommodationData(url, driver):
         return body
 
     except:
-        logging.warning(f"Could not get response body for {request_url}")
-        print(f"Could not get response body for {request_url}")
+
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+
+        # for some locations the histogram visualization is not available and the poll request is not sent
+        try:
+
+            # for these, the first results page is loaded and the prices are extracted from there
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            prices = [int(res.text[1:].replace(",", "")) for res in soup.select('.zV27-price')]
+            n_props = int(soup.select(".gfww").text.replace("results", ""))
+            body = {'prices': prices, 'n_props': n_props}
+
+        except:
+
+            print(f"Could not get response body for {url}")
+            return None
+    
+
+def parseAccommodationData(json_body):
+    
+    acc_data = {}
+
+    # check for valid response from getAccommodationData()
+    if isinstance(json_body, int):
+
+        # CASE 1: histogram visible and request to get histogram data successful
+        if 'totalCount' in json_body:
+    
+            acc_data['n_hotels'] = json_body['totalCount']
+
+            if acc_data['n_hotels'] == 0:
+                acc_data['avg_price'] = np.nan
+                acc_data['comp_avg'] = np.nan
+                acc_data['comp_median'] = np.nan
+
+                for i in range(30):
+                    acc_data[f"bin_height_{i+1}"] = np.nan
+                    acc_data[f"bin_bound_{i+1}"] = np.nan
+
+                acc_data['bin_bound_31'] = np.nan
+
+                return acc_data
+            
+            else:
+
+                acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
+
+                for i, v in enumerate(json_body['filterData']['price']['values']):
+
+                    acc_data[f"bin_bound_{i+1}"] = v
+
+                for i, v in enumerate(json_body['filterData']['price']['count']):
+                    acc_data[f"bin_height_{i+1}"] = v
+
+                # compute median and average from the scraped bins
+                bin_heights = json_body['filterData']['price']['count']
+                bin_bounds = json_body['filterData']['price']['values']
+                acc_data['comp_median'], acc_data['comp_avg'] = calculate_median_average(bin_bounds, bin_heights)
+
+                return acc_data
+            
+        # CASE 2: data not received from request, but scraped from the first ~20 results (no histogram visualization available)
+        elif 'prices' in json_body.keys():
+
+            # pass on the scraped price data
+            acc_data['avg_price'] = np.mean(json_body['prices'])
+            acc_data['comp_avg'] = np.mean(json_body['prices'])
+            acc_data['comp_median'] = np.median(json_body['prices'])
+            acc_data['n_hotels'] = json_body['n_props']
+
+            # fill bin data with zeros
+            for i in range(30):
+                acc_data[f"bin_height_{i+1}"] = np.nan
+                acc_data[f"bin_bound_{i+1}"] = np.nan
+
+            acc_data['bin_bound_31'] = np.nan
+
+            return acc_data
+
+    # if getAccommodationData() does not returns 0, there are no properties to be found
+    elif json_body == 0:
+
+        # pass on the scraped price data
+        acc_data['avg_price'] = np.nan
+        acc_data['comp_avg'] = np.nan
+        acc_data['comp_median'] = np.nan
+        acc_data['n_hotels'] = 0
+
+        # fill bin data with zeros
+        for i in range(30):
+            acc_data[f"bin_height_{i+1}"] = np.nan
+            acc_data[f"bin_bound_{i+1}"] = np.nan
+
+        acc_data['bin_bound_31'] = np.nan
+
+        return acc_data
+
+    # if getAccommodationData() does not return dict, the response is invalid
+    else:
+        return None
+    
+
+def getLocationJSON(loc_name, country_name, mode):
+    """
+    Returns unique Kayak location identifier for a given location
+    args:
+        loc_name: The name of the location
+    returns:
+        The JSON response of the request
+    """
+
+    url = "https://www.kayak.com/mvm/smartyv2/search"
+
+    querystring = {"f":"j",
+                "s":"airportonly" if mode == "airport" else "50",
+                "where":f"{loc_name}, {country_name}",
+                "sv":"",
+                "cv":"undefined",
+                "c":"undefined",
+                "searchId":"undefined",
+                "v":"undefined"
+                }
+
+    payload = ""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Accept": "*/*",
+        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
+        "Accept-Encoding": "gzip, deflate, br",
+        "X-Requested-With": "XMLHttpRequest",
+        "Origin": "https://www.kayak.de",
+        "DNT": "1",
+        "Sec-GPC": "1",
+        "Connection": "keep-alive",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+        "Content-Length": "0",
+        "TE": "trailers"
+    }
+
+    response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
+
+    if response.status_code != 200:
+        print(f"{response.status_code} ({response.text})")
+        return -1
+    
+    else:
+        return response.json()
+
+def parseLocationJSON(loc_name, country_name, mode):
+    """
+    Returns unique Kayak location identifier by parsing the json response
+
+    """
+
+    loc_json = getLocationJSON(loc_name, country_name, mode=mode)
+
+    if loc_json == -1:
+        return None
+    
+    elif len(loc_json) == 0:
+        return None
+
+    for res in loc_json:
+
+        if res['loctype'] == "city":
+
+            return {
+                "city_id": None if "ctid" not in res else res['ctid'],
+                "lat": None if "lat" not in res else res['lat'],
+                "lon": None if "lng" not in res else res['lng'],
+                "box_maxX": None if "box_maxX" not in res else res["box_maxX"],
+                "box_maxY": None if "box_maxY" not in res else res["box_maxY"],
+                "box_minX": None if "box_minX" not in res else res["box_minX"],
+                "box_minY": None if "box_minY" not in res else res["box_minY"],
+                "iata_code": None if "apicode" not in res else res["apicode"]
+                        }
+        
+    return None
+
+
+def calculate_median_average(bounds, heights):
+    # Check if the sizes of bounds and heights are compatible
+    if len(bounds) != len(heights) + 1:
+        raise ValueError("The size of bounds should be one more than the size of heights")
+
+    # Calculate the midpoints of the bins
+    midpoints = [(bounds[i] + bounds[i+1]) / 2 for i in range(len(bounds) - 1)]
+
+    # Calculate the total number of data points
+    total_points = sum(heights)
+
+    # Calculate the average
+    average = sum(midpoints[i] * heights[i] for i in range(len(midpoints))) / total_points
+
+    # Calculate the cumulative heights
+    cumulative_heights = np.cumsum(heights)
+
+    # Find the bin that contains the median
+    median_bin_index = np.searchsorted(cumulative_heights, total_points / 2)
+
+    # Calculate the median
+    if total_points % 2 == 0:
+        # If there's an even number of data points, the median is the average of the two middle points
+        median = (bounds[median_bin_index] + bounds[median_bin_index + 1]) / 2
+    else:
+        # If there's an odd number of data points, the median is the middle point
+        median = bounds[median_bin_index]
+
+    return median, average
+
+def generate_periods(start_date, end_date, duration):
+    start_date, end_date = pd.to_datetime(start_date), pd.to_datetime(end_date)
+    start_dates = pd.date_range(start_date, end_date, freq=f'{duration}D')
+
+    periods = []
+    for i, start in enumerate(start_dates):
+        end = start + timedelta(days=duration-1)
+        if end > end_date:
+            end = end_date
+        periods.append((start, end))
+
+    return periods
+
+
+def createURLfromCityAndDate(city, country, dates, mode="accomodation", num_adults=2):
+    """
+    Creates a URL for a given city and date.
+    Args:
+        city (str): The city to search for.
+        dates (list): A list of dates in the format YYYY-mm-dd.
+    Returns:
+        str: The URL for the given city and date.
+    """
+
+    # get the location id by issuing post request to Kayak, return none if location ID is not found
+
+    loc_json = parseLocationJSON(city, country, mode=mode)
+
+    if loc_json is None:
+        return None
+        
+    city_id, country, city = loc_json['city_id'], country.replace(" ", "-"), city.replace(" ", "-")
+
+    return f"https://www.kayak.com/hotels/{city},{country}-c{city_id}/{dates[0]}/{dates[1]}/{num_adults}adults?sort=rank_a"
+
+
+def getDaysBetweenDates(start_date, end_date):
+    """
+    Returns the number of days between two dates
+    args:
+        start_date: The start date
+        end_date: The end date
+    returns:
+        The number of days between the two dates
+    """
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+
+    return (end_date - start_date).days
+    
+
+def getAccommodationData(url, driver):
+    """
+    Gets the counts, interval bounds and the average price from a search request URL
+    args:
+        url: The URL of the search request
+    returns:
+        count: The number of hotels in the search request
+        interval_bounds: The interval bounds of the price filter
+        average_price: The average price of the hotels in the search request
+    """
+    
+    driver.get(url)
+
+    # Check for the presence of the security check element
+    try:
+        driver.find_element(By.CSS_SELECTOR, '.WZTU-wrap')
+        return -1
+    
+    except NoSuchElementException:
+        pass
+
+    # Wait until the page is completely loaded (the progress bar is gone)
+    try:
+        time.sleep(2) # Wait a bit to make sure the progress bar is there
+        max_wait = 40
+        WebDriverWait(driver, max_wait).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.skp2-bar.skp2-zeroPct')))
+        
+    except:
+        pass
+
+    try:
+        n_props = int(driver.find_element(By.CSS_SELECTOR, '.gfww').text.replace(" results", ""))
+        if n_props == "0 properties":
+            return 0
+
+    except:
+        pass
+
+    _ = driver.get_log('browser') # Clear the logs after each successful poll request
+    browser_log = driver.get_log('performance') 
+    events = [json.loads(entry['message'])['message'] for entry in browser_log]
+
+    # Filter events
+    events = [event for event in events if 'Network.response' in event['method']]
+    poll_events = []
+    for event in events:
+        try:
+            url = event['params']['response']['url']
+            if url == "https://www.kayak.com/i/api/search/dynamic/hotels/poll":
+                poll_events.append(event)
+                resp_url = url # save the url of the poll request
+            
+        except:
+            pass
+    
+    # Only keep the one with the latest timestamp
+    poll_events.sort(key=lambda x: x['params']['timestamp'])
+
+    try:
+        last_rec = poll_events[-1]
+        response = driver.execute_cdp_cmd('Network.getResponseBody', {'requestId': last_rec["params"]["requestId"]})
+        body = json.loads(response['body'])
+
+        return body
+
+    except:
+
+        print(f"Could not get response body for {resp_url}")
         return None
     
 
 def parseAccommodationData(json_body):
     
-    try: 
-        acc_data = {}
+    acc_data = {}
 
-        acc_data['n_hotels'] = json_body['totalCount']
+    # check for valid response from getAccommodationData()
+    if isinstance(json_body, dict):
 
-        if acc_data['n_hotels'] == 0:
-            acc_data['avg_price'] = 0
+        # CASE 1: histogram visible and request to get histogram data successful
+        if 'totalCount' in json_body:
+    
+            acc_data['n_hotels'] = json_body['totalCount']
 
-            for i in range(30):
-                acc_data[f"bin_height_{i+1}"] = 0
-                acc_data[f"bin_bound_{i+1}"] = 0
+            if acc_data['n_hotels'] == 0:
+                acc_data['avg_price'] = np.nan
+                acc_data['comp_avg'] = np.nan
+                acc_data['comp_median'] = np.nan
 
-            acc_data['bin_bound_31'] = 0
+                for i in range(30):
+                    acc_data[f"bin_height_{i+1}"] = np.nan
+                    acc_data[f"bin_bound_{i+1}"] = np.nan
 
-            return acc_data
+                acc_data['bin_bound_31'] = np.nan
 
-        acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
+                return acc_data
+            
+            else:
 
-        for i, v in enumerate(json_body['filterData']['price']['values']):
+                acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
 
-            acc_data[f"bin_bound_{i+1}"] = v
+                for i, v in enumerate(json_body['filterData']['price']['values']):
+                    acc_data[f"bin_bound_{i+1}"] = v
 
-        for i, v in enumerate(json_body['filterData']['price']['count']):
-            acc_data[f"bin_height_{i+1}"] = v
+                for i, v in enumerate(json_body['filterData']['price']['count']):
+                    acc_data[f"bin_height_{i+1}"] = v
+
+                # compute median and average from the scraped bins
+                bin_heights = json_body['filterData']['price']['count']
+                bin_bounds = json_body['filterData']['price']['values']
+                acc_data['comp_median'], acc_data['comp_avg'] = calculate_median_average(bin_bounds, bin_heights)
+
+                return acc_data
+
+    # if getAccommodationData() does not returns 0, there are no properties to be found
+    elif json_body == 0:
+
+        # pass on the scraped price data
+        acc_data['avg_price'] = np.nan
+        acc_data['comp_avg'] = np.nan
+        acc_data['comp_median'] = np.nan
+        acc_data['n_hotels'] = 0
+
+        # fill bin data with zeros
+        for i in range(30):
+            acc_data[f"bin_height_{i+1}"] = np.nan
+            acc_data[f"bin_bound_{i+1}"] = np.nan
+
+        acc_data['bin_bound_31'] = np.nan
 
         return acc_data
-    
-    except:
-        return None
 
+    # if getAccommodationData() does not return dict, the response is invalid
+    else:
+        return None
+    
+def configureChromeDriver(headless=False):
+    caps = DesiredCapabilities.CHROME
+    caps['goog:loggingPrefs'] = {'performance': 'ALL'}
+    options = webdriver.ChromeOptions()
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    
+    if headless: options.add_argument("--headless")
+
+    return caps, options
+    
 
 def process_period(period):
 
     # convert periods to string
     period = [period[0].strftime("%Y-%m-%d"), period[1].strftime("%Y-%m-%d")]
 
-    max_retries, sleep_timer = 80, 180
+    max_retries, sleep_timer = 80, 300
     cur_country, driver = None, None
     caps, options = configureChromeDriver()
 
@@ -417,13 +788,13 @@ def process_period(period):
     db.connect()
 
     locations = db.fetch_data("core_locations")[['location_id', 'city', 'country']]
-    accommodation_raw = db.fetch_data("raw_accommodation")
+    #accommodation_raw = db.fetch_data("raw_accommodation")
 
     db.disconnect()
 
     # select rows from database that have start_date and end_date equal to the current period
-    accommodation_raw = accommodation_raw[(pd.to_datetime(accommodation_raw['start_date']) == pd.to_datetime(period[0])) 
-                                          & (pd.to_datetime(accommodation_raw['end_date']) == pd.to_datetime(period[1]))]
+    #accommodation_raw = accommodation_raw[(pd.to_datetime(accommodation_raw['start_date']) == pd.to_datetime(period[0])) 
+    #                                      & (pd.to_datetime(accommodation_raw['end_date']) == pd.to_datetime(period[1]))]
 
     ### -------- LOCATION FILTERING AND PREPROCESSING -------- ###
 
@@ -447,12 +818,11 @@ def process_period(period):
             location_rename = json.load(f)
 
     # select only locations that have not been processed yet
-    processed_locs = accommodation_raw['location_id'].values.tolist()
+    #processed_locs = accommodation_raw['location_id'].values.tolist()
 
-    locations = locations[~locations['location_id'].isin(processed_locs)]
+    #locations = locations[~locations['location_id'].isin(processed_locs)]
 
     if len(locations) == 0:
-        logging.info(f"All locations have been processed for period {period}")
         print(f"All locations have been processed for period {period}")
         return None
 
@@ -461,7 +831,12 @@ def process_period(period):
     locations.loc[locations['location_id'] == 206579565, 'city'] = "Hong Kong"
     locations.loc[locations['location_id'] == 206579565, 'country'] = "Hong Kong"    
     locations['city'] = locations[['city', 'country']].apply(lambda x: location_rename[f"{x['city']}, {x['country']}"] if f"{x['city']}, {x['country']}" in location_rename.keys() else x['city'],  axis=1)
-    locations = locations[~locations['city'].isin(b.split(", ")[0] for b in bad_links)] 
+    locations = locations[~locations['city'].isin(b.split(", ")[0] for b in bad_links)]
+
+    # drop the first city for each country
+    first_cities = locations.drop_duplicates(subset='country', keep='first')['city']
+    locations = locations[~locations['city'].isin(first_cities)]
+
     locations = locations.sort_values(by='country', ascending=False) # from Z to A
 
     # batched processing of locations
@@ -474,6 +849,8 @@ def process_period(period):
     for loc_id, city, country in tqdm(locations.values):
 
         counter = 0
+        if driver:
+            _ = driver.get_log('browser') # clear the logs after each location
 
         if cur_country != country:
             if driver:
@@ -482,7 +859,6 @@ def process_period(period):
             driver = webdriver.Chrome(desired_capabilities=caps, options=options)
 
         print(f"Processing {city}, {country} for period {period}...")
-
         url = createURLfromCityAndDate(city, country, period)
 
         if url is None:
@@ -513,7 +889,7 @@ def process_period(period):
             if driver:
                 driver.quit()
             time.sleep(sleep_timer)
-            break
+            continue
 
         elif json_body is None:
             print(f"Could not get data for {city}, {country}")
@@ -526,23 +902,18 @@ def process_period(period):
             continue
 
         else:
-
             try:
+
                 acc_data = parseAccommodationData(json_body)
-
-                bin_heights = [acc_data[k] for k in acc_data.keys() if "bin_height" in k]
-                bin_bounds = [acc_data[k] for k in acc_data.keys() if "bin_bound" in k]
-
-                appr_mean, appr_median = calculate_median_average(bin_bounds, bin_heights)
                 total_booking_days = (getDaysBetweenDates(period[0], period[1]) + 1)
 
                 acc_data['location_id'] = loc_id
                 acc_data['kayak_city'], acc_data['kayak_country'] = city, country
                 acc_data['start_date'], acc_data['end_date'] = period[0], period[1]
                 acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
-                acc_data['appr_mean'], acc_data['appr_median'] = appr_mean/total_booking_days, appr_median/total_booking_days
+                acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
                 db.connect()
-                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation")
+                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
                 db.disconnect()
 
             except:
@@ -567,7 +938,7 @@ def accomodations_main():
     # check which periods still need to be processed by checking the database
     db = Database()
     db.connect()
-    raw_acc = db.fetch_data("raw_accommodation")
+    raw_acc = db.fetch_data("raw_accommodation_costs")
     db.disconnect()
 
     # 688 is the number of total locations minus the ones with bad links or countries not serviced by Kayak

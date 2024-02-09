@@ -10,7 +10,7 @@ from data.costs import numbeoScraper
 from data.geography import get_land_coverage
 #from data.places import get_places
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
-from data.accomodations import accomodations_main
+from data.accomodations import generate_periods, process_period
 from data.reachability import process_location_land_reachability, process_location_air_reachability
 import datetime
 from database.db_helpers import Database
@@ -277,7 +277,7 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
         datetime.datetime: end datetime
     """
 
-    num_workers = 4
+    num_workers = 1
 
     # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
     db.connect()
@@ -316,6 +316,8 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
         # Convert the list of not fully processed locations to a pandas Series
         not_fully_processed = pd.Series(not_fully_processed)
 
+        print
+
         # Filter the locations DataFrame to only include not fully processed locations
         locations = locations[locations['airport_1'].isin(not_fully_processed)]
         #locations = locations.sort_values(by="county", ascending=False)
@@ -331,6 +333,38 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
 
     return end_datetime
 
+
+def fill_raw_accommodation_costs(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    """
+    Fill function for raw accommodation costs table
+    Args:
+        locations: DataFrame with locations
+        table_name: name of the table in the database
+        db: Database object
+
+    Returns:
+        datetime.datetime: end datetime
+    """
+
+    num_workers = 4
+    today_2025 = str(datetime.datetime.now().date()).replace("2024", "2025")
+    periods = generate_periods("2024-02-17", today_2025, 14)
+
+    # check which periods still need to be processed by checking the database
+    #db = Database()
+    #db.connect()
+    #raw_acc = db.fetch_data("raw_accommodation_costs")
+    #db.disconnect()
+    #rem_periods = [period for period in periods if raw_acc[raw_acc['start_date'] == period[0].date()].shape[0] < 688]
+
+    with Pool(num_workers) as p:
+        p.map(process_period, periods)
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+
+
 if __name__ == '__main__':
 
     # Dictonary that maps names of database tables to functions which fill these tables with data
@@ -342,8 +376,8 @@ if __name__ == '__main__':
         # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
         #"raw_weather_historical": [fill_raw_weather_historical, 6],
         #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
-        #"raw_accommodation" : [fill_raw_accommodation, 8],
-        "raw_reachability_air" : [fill_raw_reachability_air_par, 9],
+        "raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
+        #"raw_reachability_air" : [fill_raw_reachability_air_par, 9],
         #"raw_reachability_land" : [fill_raw_reachability_land, 10]
     }
 
