@@ -561,7 +561,7 @@
 
                 // Update the href of the 'Compare' link
                 let compareLink = document.querySelector('#compare-link');
-                let url = '/compare?locations=' + selectedCompareLocations.join('&locations=');
+                let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
                 compareLink.href = url;
 
                 // Update the position of the tooltip
@@ -569,6 +569,7 @@
 
             });
 
+            // Tooltip event listeners
             icon.addEventListener('mouseover', function() {
                 // Update the position of the tooltip
                 updateTooltipPosition(this, tooltipText);

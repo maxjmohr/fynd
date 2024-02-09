@@ -48,6 +48,17 @@ def encode_url_parameters(params: dict) -> str:
             encoded_params.append((key, value))
     return urlencode(encoded_params)
 
+def get_comparison_params(session: dict) -> str:
+    """Get comparison parameters for use in URL."""
+    ti_form_data = session.get('travellers_input_form_data', {})
+    params_to_include = ['start_date', 'end_date', 'start_location_lat', 'start_location_lon']
+    params = {
+        param_name: ti_form_data.get(param_name)
+        for param_name in params_to_include
+        if ti_form_data.get(param_name) is not None
+    }
+    return encode_url_parameters(params)
+
 
 def create_hist_for_slider(data: pd.Series, bins:  int = 30):
     hist, bin_edges = np.histogram(data.dropna(), bins=30)  #FIXME drop missings?
@@ -249,8 +260,43 @@ class SearchView(FormView):
         return context
 
 
-class CompareView(TemplateView):
+class CompareView(View):
     template_name = 'compare.html'
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)
+    
+    def get_context_data(self, **kwargs):
+
+        # Get location ids
+        location_ids = [
+            int(location_id) for location_id in self.request.GET.getlist('locations')
+        ]
+
+        # Get locations
+        locations = read_frame(
+            CoreLocations.objects
+            .filter(location_id__in=location_ids)
+            .values('location_id', 'city', 'country', 'country_code')
+        )
+
+        # Get scores
+        scores, reference_start_location = get_scores(
+            start_date=self.request.GET.get('start_date'),
+            end_date=self.request.GET.get('end_date'),
+            start_location_lat=self.request.GET.get('start_location_lat'),
+            start_location_lon=self.request.GET.get('start_location_lon'),
+            location_id=location_ids,
+            retrieve_text=False
+        )
+
+        context = {
+            'locations': locations.to_dict('records'),
+            'scores': scores.to_dict('records'),
+        }
+
+        return context
 
 
 class AboutView(TemplateView):
@@ -521,6 +567,7 @@ class LocationsListView(View):
             'temperature_range_limits': self.request.session['temperature_range_limits'],
             'raw_values_format': self.request.session['raw_values_format'],
             'query_parameters': query_parameters,
+            'comparison_params': get_comparison_params(self.request.session),
             'grouped_locations': get_locations_for_select2(),
             'preselected_previous_locations': self.request.session['travellers_input_form_data']['previous_locations']
         }
@@ -699,6 +746,7 @@ class LocationDetailView(DetailView):
             'data': data,
             'weather_data': weather_data,
             'weather_data_years': weather_data_years,
+            'comparison_params': get_comparison_params(self.request.session),
         })
 
         return context
