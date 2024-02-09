@@ -1152,3 +1152,18 @@ body {
     fill: var(--darkgrey);
     font-weight: bold;
 }
+
+/* Comparison page ----------------------------------------------------------*/
+.remove-from-comparison-button {
+    height: 20px;
+    width: 20px;
+    color: white;
+    background-color: var(--accent1);
+    border-radius: 50%;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
