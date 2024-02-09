@@ -371,6 +371,33 @@ body {
     transform: translateX(-100%);
 }
 
+.add-to-comparison-icon-container {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+    width: 1.4em;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.add-to-comparison-icon {
+    position: relative;
+}
+
+.add-to-comparison-icon img {
+    vertical-align: top;
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+.add-to-comparison-icon-detailpage {
+    top: auto;
+    right: auto;
+    left: 15px;
+    bottom: 15px;
+}
+
 /* Location list ------------------------------------------------------------*/
 
 .list .main-container {
@@ -528,29 +555,6 @@ body {
     width: 100%;
     height: 100%;
   }
-
-.add-to-comparison-icon {
-    position: absolute;
-    top: 5%;
-    right: 5%;
-    width: 1.4em;
-    cursor: pointer;
-    z-index: 10;
-}
-
-.add-to-comparison-icon img {
-    vertical-align: top;
-    object-fit: contain;
-    width: 100%;
-    height: 100%;
-}
-
-.add-to-comparison-icon-detailpage {
-    top: auto;
-    right: auto;
-    left: 15px;
-    bottom: 15px;
-}
 
 .location-list-item-info-container {
     display: flex;

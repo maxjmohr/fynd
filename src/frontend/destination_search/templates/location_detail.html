@@ -20,7 +20,11 @@
                     <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
                 </div>
             </div>
-            <div class="add-to-comparison-icon add-to-comparison-icon-detailpage" data-location-id="{{ location.location_id }}"><img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison"></div> 
+            <div class="add-to-comparison-icon-container add-to-comparison-icon-detailpage">
+                <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
+                    <img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison">
+                </div>
+            </div>
         </div>
         <div class="tabs">
             {% for category in data %}

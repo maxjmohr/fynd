@@ -488,6 +488,15 @@
 
     <!-- Comparison -->
     <script>
+
+        function updateTooltipPosition(icon, tooltipText) {
+            let iconRect = icon.getBoundingClientRect();
+            let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            tooltipText.style.left = (iconRect.left + scrollLeft + iconRect.width / 2 - tooltipText.offsetWidth / 2) + 'px';
+            tooltipText.style.top = (iconRect.top + scrollTop + iconRect.height) + 'px';
+        }
+
         let selectedCompareLocations = JSON.parse(localStorage.getItem('selectedCompareLocations')) || [];
 
         // Update the counter
@@ -503,10 +512,23 @@
             let img = icon.querySelector('img');
             let locationId = icon.dataset.locationId;
 
+            // Create the tooltip element
+            let tooltipText = document.createElement('span');
+            tooltipText.classList.add('comparison-icon-tooltip-text');
+            tooltipText.classList.add('tooltip-text');
+            tooltipText.style.position = 'absolute';
+            tooltipText.style.visibility = 'hidden';
+
+            // Append the tooltip element to the body of the document
+            document.body.appendChild(tooltipText);
+
             // If the location is selected, update the icon and add the 'selected' class
             if (selectedCompareLocations.includes(locationId)) {
                 icon.classList.add('selected');
                 img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+                tooltipText.textContent = "Remove from comparison";
+            } else {
+                tooltipText.textContent = "Add to comparison";
             }
 
             icon.addEventListener('click', function() {
@@ -514,6 +536,7 @@
                     this.classList.remove('selected');
                     img.src = "{% static 'images/comparison_icon.svg' %}";
                     selectedCompareLocations = selectedCompareLocations.filter(id => id !== locationId);
+                    tooltipText.textContent = "Add to comparison";
                 } else {
                     if (selectedCompareLocations.length >= 5) {
                         alert('You can only select up to 5 destinations for comparison.');
@@ -523,6 +546,7 @@
                     this.classList.add('selected');
                     img.src = "{% static 'images/comparison_icon_selected.svg' %}";
                     selectedCompareLocations.push(locationId);
+                    tooltipText.textContent = "Remove from comparison";
                 }
 
                 localStorage.setItem('selectedCompareLocations', JSON.stringify(selectedCompareLocations));
@@ -539,6 +563,23 @@
                 let compareLink = document.querySelector('#compare-link');
                 let url = '/compare?locations=' + selectedCompareLocations.join('&locations=');
                 compareLink.href = url;
+
+                // Update the position of the tooltip
+                updateTooltipPosition(this, tooltipText);
+
+            });
+
+            icon.addEventListener('mouseover', function() {
+                // Update the position of the tooltip
+                updateTooltipPosition(this, tooltipText);
+                tooltipText.style.visibility = 'visible';
+                tooltipText.style.opacity = '1';
+            });
+
+            icon.addEventListener('mouseout', function() {
+                // Hide the tooltip
+                tooltipText.style.visibility = 'hidden';
+                tooltipText.style.opacity = '0';
             });
         });
 
