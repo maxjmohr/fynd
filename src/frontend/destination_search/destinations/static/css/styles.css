@@ -535,6 +535,7 @@ body {
     right: 5%;
     width: 1.4em;
     cursor: pointer;
+    z-index: 10;
 }
 
 .add-to-comparison-icon img {
@@ -542,6 +543,13 @@ body {
     object-fit: contain;
     width: 100%;
     height: 100%;
+}
+
+.add-to-comparison-icon-detailpage {
+    top: auto;
+    right: auto;
+    left: 15px;
+    bottom: 15px;
 }
 
 .location-list-item-info-container {
