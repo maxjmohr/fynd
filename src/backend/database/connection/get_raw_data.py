@@ -277,11 +277,12 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
         datetime.datetime: end datetime
     """
 
-    num_workers = 1
+    num_workers = 5
 
     # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
     db.connect()
     start_refs = db.fetch_data("core_ref_start_locations")
+    raw_reachability = db.fetch_data("raw_reachability_air")
     db.disconnect()
     
     # use only start reference locations with unique chosen iata
@@ -291,40 +292,32 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
     locations = locations.drop_duplicates(subset=['airport_1'])
     locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])] # Kayak shows no results for some countries due to poltical reasons
 
-    # remove locations for which data was already scraped
-    try:
-        db.connect()
-        raw_reachability = db.fetch_data("raw_reachability_air")
-        db.disconnect()
+    start_dates = [
+        "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
+        "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
+        "2024-12-12", "2025-01-17", 
+        #"2025-02-22", "2025-03-02" # dates cannot exceed the current date + 1 year
+    ]
 
-        start_dates = [
-            "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
-            "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
-            "2024-12-12", "2025-01-17", 
-            #"2025-02-22", "2025-03-02" # dates cannot exceed the current date + 1 year
-        ]
+    # use only start reference locations with unique chosen iata
+    start_refs = start_refs.drop_duplicates(subset=['mapped_start_airport'])
 
-        not_fully_processed = []
+    # drop duplicates of first airport to create unique orig -> dest combinations
+    locations = locations.drop_duplicates(subset=['airport_1'])
+    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])] # Kayak shows no results for some countries due to poltical reasons
 
-        # Iterate over all locations and starting airports
-        for ap in locations['airport_1'].values.tolist():
-            for start_ref in start_refs['mapped_start_airport'].values.tolist():
-                if raw_reachability[(raw_reachability['dest_iata'] == ap) & (raw_reachability['orig_iata'] == start_ref)].shape[0] < len(start_dates):
-                    not_fully_processed.append(ap)
-                    break
+    # keep only locations that have not been fully processed yet
+    not_fully_processed = []
+    for ap in locations['airport_1'].values.tolist():
+        for start_ref in start_refs['mapped_start_airport'].values.tolist():
+            if raw_reachability[(raw_reachability['dest_iata'] == ap) & (raw_reachability['orig_iata'] == start_ref)].shape[0] < len(start_dates):
+                not_fully_processed.append(ap)
+                break
 
-        # Convert the list of not fully processed locations to a pandas Series
-        not_fully_processed = pd.Series(not_fully_processed)
-
-        print
-
-        # Filter the locations DataFrame to only include not fully processed locations
-        locations = locations[locations['airport_1'].isin(not_fully_processed)]
-        #locations = locations.sort_values(by="county", ascending=False)
-
-    except:
-        raw_reachability = None
-
+    locations = locations[locations['airport_1'].isin(pd.Series(not_fully_processed))]
+    locations['missing'] = locations['airport_1'].apply(lambda x: x not in raw_reachability['dest_iata'].unique())
+    locations = locations.sort_values(by='missing', ascending=False)
+    
     # create a multiprocessing Pool with the specified number of workers
     with Pool(num_workers) as p:
         results = p.map(worker, [(loc, start_refs, raw_reachability) for _, loc in locations.iterrows()])
@@ -346,7 +339,7 @@ def fill_raw_accommodation_costs(locations: pd.DataFrame, table_name: str, db: D
         datetime.datetime: end datetime
     """
 
-    num_workers = 4
+    num_workers = 5
     today_2025 = str(datetime.datetime.now().date()).replace("2024", "2025")
     periods = generate_periods("2024-02-17", today_2025, 14)
 
@@ -376,8 +369,8 @@ if __name__ == '__main__':
         # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
         #"raw_weather_historical": [fill_raw_weather_historical, 6],
         #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
-        "raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
-        #"raw_reachability_air" : [fill_raw_reachability_air_par, 9],
+        #"raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
+        "raw_reachability_air" : [fill_raw_reachability_air_par, 9],
         #"raw_reachability_land" : [fill_raw_reachability_land, 10]
     }
 

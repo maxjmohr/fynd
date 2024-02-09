@@ -162,8 +162,12 @@ def getLocationJSON(loc_name, country_name, mode):
         "TE": "trailers"
     }
 
-    response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
+    try:
+        response = requests.request("POST", url, data=payload, headers=headers, params=querystring)
 
+    except:
+        return -1
+    
     if response.status_code != 200:
         print(f"{response.status_code} ({response.text})")
         return -1
@@ -237,11 +241,10 @@ def generate_periods(start_date, end_date, duration):
     start_dates = pd.date_range(start_date, end_date, freq=f'{duration}D')
 
     periods = []
-    for i, start in enumerate(start_dates):
+    for _, start in enumerate(start_dates):
         end = start + timedelta(days=duration-1)
-        if end > end_date:
-            end = end_date
-        periods.append((start, end))
+        if end <= end_date:
+            periods.append((start, end))
 
     return periods
 
@@ -584,8 +587,6 @@ def generate_periods(start_date, end_date, duration):
     periods = []
     for i, start in enumerate(start_dates):
         end = start + timedelta(days=duration-1)
-        if end > end_date:
-            end = end_date
         periods.append((start, end))
 
     return periods
@@ -666,9 +667,9 @@ def getAccommodationData(url, driver):
     except:
         pass
 
-    _ = driver.get_log('browser') # Clear the logs after each successful poll request
     browser_log = driver.get_log('performance') 
     events = [json.loads(entry['message'])['message'] for entry in browser_log]
+    _ = driver.get_log('browser') # Clear the logs after each successful poll request
 
     # Filter events
     events = [event for event in events if 'Network.response' in event['method']]
@@ -780,21 +781,20 @@ def process_period(period):
     # convert periods to string
     period = [period[0].strftime("%Y-%m-%d"), period[1].strftime("%Y-%m-%d")]
 
+    # configuration of parameters
     max_retries, sleep_timer = 80, 300
     cur_country, driver = None, None
     caps, options = configureChromeDriver()
 
     db = Database()
     db.connect()
-
     locations = db.fetch_data("core_locations")[['location_id', 'city', 'country']]
-    #accommodation_raw = db.fetch_data("raw_accommodation")
-
+    accommodation_raw = db.fetch_data("raw_accommodation_costs")
     db.disconnect()
 
     # select rows from database that have start_date and end_date equal to the current period
-    #accommodation_raw = accommodation_raw[(pd.to_datetime(accommodation_raw['start_date']) == pd.to_datetime(period[0])) 
-    #                                      & (pd.to_datetime(accommodation_raw['end_date']) == pd.to_datetime(period[1]))]
+    accommodation_raw = accommodation_raw[(pd.to_datetime(accommodation_raw['start_date']) == pd.to_datetime(period[0])) 
+                                          & (pd.to_datetime(accommodation_raw['end_date']) == pd.to_datetime(period[1]))]
 
     ### -------- LOCATION FILTERING AND PREPROCESSING -------- ###
 
@@ -813,14 +813,13 @@ def process_period(period):
     ]
 
     # also read in translations for locations with bad names
-    if os.path.exists("./res/master_data/location_rename.json"):
-        with open("./res/master_data/location_rename.json", "r", encoding="utf-8") as f:
-            location_rename = json.load(f)
+    with open("./res/master_data/location_rename.json", "r", encoding="utf-8") as f:
+        location_rename = json.load(f)
 
     # select only locations that have not been processed yet
-    #processed_locs = accommodation_raw['location_id'].values.tolist()
+    processed_locs = accommodation_raw['location_id'].values.tolist()
 
-    #locations = locations[~locations['location_id'].isin(processed_locs)]
+    locations = locations[~locations['location_id'].isin(processed_locs)]
 
     if len(locations) == 0:
         print(f"All locations have been processed for period {period}")
@@ -833,9 +832,11 @@ def process_period(period):
     locations['city'] = locations[['city', 'country']].apply(lambda x: location_rename[f"{x['city']}, {x['country']}"] if f"{x['city']}, {x['country']}" in location_rename.keys() else x['city'],  axis=1)
     locations = locations[~locations['city'].isin(b.split(", ")[0] for b in bad_links)]
 
-    # drop the first city for each country
+    # drop the first city for each country (already scraped in the first run of the script)
     first_cities = locations.drop_duplicates(subset='country', keep='first')['city']
     locations = locations[~locations['city'].isin(first_cities)]
+
+    print(f"{len(locations)} missing locations for period {period}...")
 
     locations = locations.sort_values(by='country', ascending=False) # from Z to A
 
@@ -847,84 +848,68 @@ def process_period(period):
         
     # loop through loc_id, city, country triplets
     for loc_id, city, country in tqdm(locations.values):
+        print(f"Processing {city}, {country} for period {period}...")
 
-        counter = 0
-        if driver:
-            _ = driver.get_log('browser') # clear the logs after each location
+        #if driver:
+        #    _ = driver.get_log('browser') # clear the logs after each location
 
+        # start a new driver for each country
         if cur_country != country:
             if driver:
                 driver.quit()
             cur_country = country
             driver = webdriver.Chrome(desired_capabilities=caps, options=options)
 
-        print(f"Processing {city}, {country} for period {period}...")
         url = createURLfromCityAndDate(city, country, period)
 
         if url is None:
             print(f"Could not get URL for {city}, {country}")
             continue
+ 
+        json_body = getAccommodationData(url, driver)
+        print(f"Invalid result: {json_body is None}")
 
-        try: 
-            json_body = getAccommodationData(url, driver)
-
-        except:
-            pass
-
-        if json_body == 429:
-            print("Too many requests, sleeping for 180 seconds")
-            counter += 1
-
-            if counter >= max_retries:
-                if driver:
-                    driver.quit()
-                time.sleep(sleep_timer)
-                break
-
-        elif json_body == 0:
-            continue
-
-        elif json_body == -1:
+        # if getAccommodationData() returns -1, there was a security check
+        if json_body == -1:
             print(f"Security check detected for {city}, {country}. Returning and sleeping for 180 seconds")
             if driver:
                 driver.quit()
             time.sleep(sleep_timer)
+            counter = 0
             continue
 
+        # if getAccommodationData() returns None, there was an error getting the response
         elif json_body is None:
             print(f"Could not get data for {city}, {country}")
             counter += 1
 
             if counter >= max_retries:
                 print("Maximum number of retries reached, skipping...")
+                counter = 0
+                if driver:
+                    driver.quit()
                 break
-            
-            continue
 
+            else:
+                continue    
+
+        # in all other cases (0 and actual data), parse the data and insert it into the database
         else:
-            try:
+            print("Data received, parsing and inserting into database...")
+            acc_data = parseAccommodationData(json_body)
+            total_booking_days = (getDaysBetweenDates(period[0], period[1]) + 1)
+            acc_data['location_id'] = loc_id
+            acc_data['kayak_city'], acc_data['kayak_country'] = city, country
+            acc_data['start_date'], acc_data['end_date'] = period[0], period[1]
+            acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
+            acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
 
-                acc_data = parseAccommodationData(json_body)
-                total_booking_days = (getDaysBetweenDates(period[0], period[1]) + 1)
+            db.connect()
+            db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
+            db.disconnect()    
 
-                acc_data['location_id'] = loc_id
-                acc_data['kayak_city'], acc_data['kayak_country'] = city, country
-                acc_data['start_date'], acc_data['end_date'] = period[0], period[1]
-                acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
-                acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
-                db.connect()
-                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
-                db.disconnect()
-
-            except:
-                print(f"Could not parse data for {city}, {country}")
-                counter += 1
-
-                if counter >= max_retries:
-                    print("Maximum number of retries reached, skipping...")
-                    break
-
-        driver.quit()        
+    if driver:
+        driver.quit()  
 
     return None
 
