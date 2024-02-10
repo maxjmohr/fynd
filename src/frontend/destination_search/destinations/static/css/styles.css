@@ -88,6 +88,25 @@ body {
     margin-left: -60px; /* Use half the width to center the tooltip */
 }
 
+#compare-link {
+    position: relative;
+}
+
+#compare-count {
+    position: absolute;
+    top: 3px;
+    right: -4px;
+    background-color: var(--accent1);
+    color: white;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.6em;
+}
+
 .footer-container {
     height: fit-content;
     background-color: var(--accent2);
@@ -164,8 +183,12 @@ body {
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+.submit-button:hover {
+    filter: brightness(90%);
+}
+
 .submit-button:active {
-    filter: brightness(85%);
+    filter: brightness(80%);
     box-shadow: none;
 }
 
@@ -228,16 +251,45 @@ body {
     border: 1px solid rgb(170, 170, 170);
 }
 
+
+.ui-autocomplete {
+    z-index: 100000;
+}
+
+.ui-menu-item-wrapper:hover {
+    background-color: var(--accent5);
+    border-color: var(--accent5);
+}
+
 .select2.select2-container.select2-container--default {
     width: 100% !important;
+}
+
+.select2-selection__placeholder {
+    font-weight: normal;
 }
 
 .select2-dropdown {
     z-index: 100000;
 }
 
-.ui-autocomplete {
-    z-index: 100000;
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--accent5);
+}
+
+.daterangepicker td.active, .daterangepicker td.active:hover {
+    background-color: var(--accent5);
+}
+
+.btn-primary {
+    background-color: var(--accent5);
+    border-color: var(--accent5);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent5);
+    border-color: var(--accent5);
+    filter: brightness(90%);
 }
 
 .form-input-label {
@@ -317,6 +369,33 @@ body {
 .switch-label.active .switch-slider {
     left: calc(100% - 4px);
     transform: translateX(-100%);
+}
+
+.add-to-comparison-icon-container {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+    width: 1.4em;
+    cursor: pointer;
+    z-index: 5;
+}
+
+.add-to-comparison-icon {
+    position: relative;
+}
+
+.add-to-comparison-icon img {
+    vertical-align: top;
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
+.add-to-comparison-icon-detailpage {
+    top: auto;
+    right: auto;
+    left: 15px;
+    bottom: 15px;
 }
 
 /* Location list ------------------------------------------------------------*/
@@ -459,6 +538,7 @@ body {
 .location-list-item-image-container {
     border-radius: 10px;
     overflow: hidden;
+    position: relative;
 }
 
 .same-height-as-width {
@@ -799,22 +879,27 @@ body {
     font-weight: bold;
 }
 
+.tablinks:hover {
+    filter: brightness(90%);
+}
+
+.tablinks.active {
+    background-color: var(--accent2);
+}
+
 .tabcontent {
     display: none;
     width: 100%;
     background-color: var(--accent2);
     padding: 20px;
     color: var(--darkgrey);
+    border-radius: 0 0 10px 10px;
 }
 
 .tabcontent.active {
     display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-.tablinks.active {
-    background-color: var(--accent2);
 }
 
 .category-description-tooltip-text {
@@ -836,7 +921,7 @@ body {
     flex-direction: column;
     justify-content: flex-start;
     background-color: var(--light);
-    border: 1px solid var(--normalgrey);
+    /*border: 1px solid var(--normalgrey);*/
     border-radius: 10px;
     padding: 20px;
     flex-grow: 1;
@@ -1066,4 +1151,19 @@ body {
     font-size: 16px;
     fill: var(--darkgrey);
     font-weight: bold;
+}
+
+/* Comparison page ----------------------------------------------------------*/
+.remove-from-comparison-button {
+    height: 20px;
+    width: 20px;
+    color: white;
+    background-color: var(--accent1);
+    border-radius: 50%;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

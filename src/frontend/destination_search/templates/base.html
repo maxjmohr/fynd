@@ -54,8 +54,9 @@
                                 </a>
                             </li>
                             <li class="nav-item {% if request.path == '/compare' %}active-link{% endif %}">
-                                <a class="nav-link has-tooltip" href="/compare">
+                                <a class="nav-link has-tooltip" id="compare-link" href="/compare">
                                     Compare
+                                    <div id="compare-count">0</div>
                                     <span class="tooltip-text nav-link-tooltip-text">Compare different destinations</span>
                                 </a>
                             </li>
@@ -414,12 +415,24 @@
     <script>
         function initializeSelect2(elementId, preselectedValues, placeholderText = "Select destination(s)...") {
             var grouped_locations = JSON.parse('{{ grouped_locations|escapejs }}');
-            var data = $.map(grouped_locations, function(locations, country) {
-                return {
-                    text: country,
-                    children: locations
-                };
+            var data = [];
+            $.each(grouped_locations, function(index, group) {
+                // Add the country as a normal option
+                data.push({
+                    id: group.id,
+                    text: group.text,
+                    isCountry: group.isCountry  // Add a flag to distinguish countries from locations
+                });
+                // Add the locations
+                $.each(group.children, function(index, location) {
+                    data.push({
+                        id: location.id,
+                        text: location.text,
+                        parent: group.text  // Add a reference to the parent country
+                    });
+                });
             });
+
 
             $(document).ready(function() {
                 var selectElement = $('#' + elementId);
@@ -428,10 +441,156 @@
                     placeholder: placeholderText,
                     allowClear: true,
                     minimumInputLength: 1,
+                    templateResult: function(data) {
+                        if (data.isCountry) {
+                            return $('<strong>').text(data.text);
+                        }
+                        return $('<span style="padding-left: 20px;">').text(data.text);
+                    },
+                    matcher: function(params, data) {
+                        // If there are no search terms, return all data
+                        if ($.trim(params.term) === '') {
+                            return data;
+                        }
+
+                        // If the data object is a country
+                        if (data.isCountry) {
+                            // Check if any of the country's locations match the search term
+                            var matchingLocation = grouped_locations.find(function(group) {
+                                return group.id === data.id && group.children.some(function(location) {
+                                    return location.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1;
+                                });
+                            });
+                            // If a location matches the search term, return the country data object
+                            if (matchingLocation) {
+                                return data;
+                            }
+                        }
+
+                        // If the text property of data object matches the search term
+                        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                            return data;
+                        }
+
+                        // If the parent property of data object matches the search term
+                        if (data.parent && data.parent.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                            return data;
+                        }
+
+                        // Return null if the data object does not match the search term
+                        return null;
+                    }
                 });
                 selectElement.val(preselectedValues).trigger('change');  // Preselect values
             });
         }
+    </script>
+
+    <!-- Comparison -->
+    <script>
+
+        function updateTooltipPosition(icon, tooltipText) {
+            let iconRect = icon.getBoundingClientRect();
+            let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            tooltipText.style.left = (iconRect.left + scrollLeft + iconRect.width / 2 - tooltipText.offsetWidth / 2) + 'px';
+            tooltipText.style.top = (iconRect.top + scrollTop + iconRect.height) + 'px';
+        }
+
+        let selectedCompareLocations = JSON.parse(localStorage.getItem('selectedCompareLocations')) || [];
+
+        // Update the counter
+        let compareCountElement = document.querySelector('#compare-count');
+        compareCountElement.textContent = selectedCompareLocations.length;
+        if (selectedCompareLocations.length === 0) {
+            compareCountElement.style.visibility = 'hidden';  // Hide the element
+        } else {
+            compareCountElement.style.visibility = 'visible';  // Show the element
+        }
+
+        document.querySelectorAll('.add-to-comparison-icon').forEach(icon => {
+            let img = icon.querySelector('img');
+            let locationId = icon.dataset.locationId;
+
+            // Create the tooltip element
+            let tooltipText = document.createElement('span');
+            tooltipText.classList.add('comparison-icon-tooltip-text');
+            tooltipText.classList.add('tooltip-text');
+            tooltipText.style.position = 'absolute';
+            tooltipText.style.visibility = 'hidden';
+
+            // Append the tooltip element to the body of the document
+            document.body.appendChild(tooltipText);
+
+            // If the location is selected, update the icon and add the 'selected' class
+            if (selectedCompareLocations.includes(locationId)) {
+                icon.classList.add('selected');
+                img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+                tooltipText.textContent = "Remove from comparison";
+            } else {
+                tooltipText.textContent = "Add to comparison";
+            }
+            
+            // Icon event listener
+            icon.addEventListener('click', function() {
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                    img.src = "{% static 'images/comparison_icon.svg' %}";
+                    selectedCompareLocations = selectedCompareLocations.filter(id => id !== locationId);
+                    tooltipText.textContent = "Add to comparison";
+                } else {
+                    if (selectedCompareLocations.length >= 5) {
+                        alert('You can only select up to 5 destinations for comparison.');
+                        return;
+                    }
+
+                    this.classList.add('selected');
+                    img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+                    selectedCompareLocations.push(locationId);
+                    tooltipText.textContent = "Remove from comparison";
+                }
+
+                localStorage.setItem('selectedCompareLocations', JSON.stringify(selectedCompareLocations));
+                compareCountElement.textContent = selectedCompareLocations.length;
+
+                // Hide or show the compare count element
+                if (selectedCompareLocations.length === 0) {
+                    compareCountElement.style.visibility = 'hidden';
+                } else {
+                    compareCountElement.style.visibility = 'visible';
+                }
+
+                // Update the href of the 'Compare' link
+                let compareLink = document.querySelector('#compare-link');
+                let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
+                compareLink.href = url;
+
+                // Update the position of the tooltip
+                updateTooltipPosition(this, tooltipText);
+
+            });
+
+            // Tooltip event listeners
+            icon.addEventListener('mouseover', function() {
+                // Update the position of the tooltip
+                updateTooltipPosition(this, tooltipText);
+                tooltipText.style.visibility = 'visible';
+                tooltipText.style.opacity = '1';
+            });
+
+            icon.addEventListener('mouseout', function() {
+                // Hide the tooltip
+                tooltipText.style.visibility = 'hidden';
+                tooltipText.style.opacity = '0';
+            });
+        });
+
+        document.querySelector('#compare-link').addEventListener('click', function(e) {
+            if (selectedCompareLocations.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one destination to compare.');
+            }
+        });
     </script>
 
     {% block javascripts %}{% endblock %}

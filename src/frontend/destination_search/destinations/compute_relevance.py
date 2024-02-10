@@ -4,7 +4,8 @@ from sklearn.metrics.pairwise import pairwise_distances
 
 
 def compute_relevance(
-        previous_locations: list[int], 
+        previous_locations: list[int],
+        previous_countries: dict,
         scores: pd.DataFrame,
         preferences: dict,
         factor: float = 100.
@@ -16,6 +17,9 @@ def compute_relevance(
     -----
     previous_locations: list[int] 
         List of location IDs.
+
+    previous_countries: dict
+        Dictionary with country names and respective locations (ids).
 
     scores: pandas.DataFrame 
         DataFrame with scores for each location, category and dimension.
@@ -40,8 +44,19 @@ def compute_relevance(
     # (i.e. mean of scores in the respective dimension)
     scores = scores.fillna(scores.mean())
 
+    # Compute average scores for previous countries
+    if len(previous_countries) > 0:
+        score_previous_countries = []
+        for location_ids in previous_countries.values():
+            score_previous_countries.append(
+                scores.loc[location_ids].mean(axis=0).to_frame().T
+            )
+        scores_previous_countries = pd.concat(score_previous_countries)
+
     # Split scores into previous and new locations
     scores_previous = scores.loc[previous_locations]
+    if len(previous_countries) > 0:
+        scores_previous = pd.concat([scores_previous, scores_previous_countries])
     scores_new = scores.drop(previous_locations)
 
     # Loop over categories and compute relevance

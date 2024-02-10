@@ -187,12 +187,20 @@ Results
 <!--- Results -->
 <div class="results-container">
 
+    <!-- Previous locations-->
     <div class="destination-type-title">Your previous destinations</div>
     <div class="previous-location-list-container">
         {% for location in previous_locations_list %}
             <div class="previous-location-list-item-container">
                 <div class="location-list-item-image-container same-width-as-height">
-                    <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                    <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                    </a>
+                    <div class="add-to-comparison-icon-container">
+                        <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
+                            <img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison">
+                        </div>
+                    </div>
                 </div>
                 <div class="location-list-item-info-general">
                     <div class="location-list-item-title">
@@ -236,6 +244,11 @@ Results
                     <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
                         <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
                     </a>
+                    <div class="add-to-comparison-icon-container">
+                        <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
+                            <img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison">
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="location-list-item-info-container">
