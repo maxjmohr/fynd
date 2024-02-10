@@ -195,10 +195,9 @@ Never generate a text containing the numeric values but rather use the distances
         return message
 
 
-    def create_message_anomaly_user(self, data:pd.DataFrame, text_general:str) -> dict:
+    def create_message_anomaly_user(self, data:pd.DataFrame) -> dict:
         ''' Create the message for the user
-        Input:  - data: the data along with category and dimension id
-                - text_general: generated general text for context
+        Input:  data: the data along with category and dimension id
         Output: message: message to be sent to the chatbot
         '''
 
@@ -309,7 +308,7 @@ Based on your selected start location, the reference start location is {data['st
             print(f"{datetime.now()} - Generating the anomaly text for '{data['location_city'].iloc[0]} ({data['location_country'].iloc[0]})', category '{data['category_name'].iloc[0]}', start location '{data['start_location_city'].iloc[0]} ({data['start_location_country'].iloc[0]})'.")
             messages = [
                 self.message_anomaly_system,
-                self.create_message_anomaly_user(data[data["distance_to_bound"].notnull()], df["text_general"])
+                self.create_message_anomaly_user(data[data["distance_to_bound"].notnull()])
             ]
             df["text_anomaly"]  = self.get_response(messages)
 
