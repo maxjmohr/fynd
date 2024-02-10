@@ -10,11 +10,9 @@ class TravellersInputForm(forms.Form):
         required=True,
         label='Previous destinations',
         help_text=(
-            "Search for destinations you have previously visited."
-            " You can select multiple destinations."
+            "Search for (multiple) destinations you have previously visited."
             " We'll use this information to compute the relevance of new destinations for you."
-            " If you cannot find your previous destination in the list, you may select the country."
-            " However, please note this might not be an good representation of destinations in the countryside."
+            " If you cannot find your previous destination, you may select the country."
         )
     )
 
