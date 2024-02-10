@@ -13,6 +13,8 @@ class TravellersInputForm(forms.Form):
             "Search for destinations you have previously visited."
             " You can select multiple destinations."
             " We'll use this information to compute the relevance of new destinations for you."
+            " If you cannot find your previous destination in the list, you may select the country."
+            " However, please note this might not be an good representation of destinations in the countryside."
         )
     )
 
