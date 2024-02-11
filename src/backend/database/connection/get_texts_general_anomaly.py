@@ -28,7 +28,7 @@ class PromptEngine:
         self.api_key = None
         if not self.api_key:
             current_script_directory = os.path.dirname(os.path.abspath(__file__))
-            path = "../../../../res/api_keys/openai_apikey_fk.txt"
+            path = "../../../../res/api_keys/openai_apikey_bh.txt"
             with open(os.path.join(current_script_directory, path), "r") as f:
                 self.api_key = f.read().strip()
         else:
@@ -110,7 +110,7 @@ The following table shows the distances to the {distance_metric}s for the corres
             formatted_content += dimension_distance_pairs
 
         # Add last sentence
-        formatted_content += f"Take into account the seasonal differences in the distances to the {distance_metric}s of the dimensions to phrase a key message for the destination in this category. Avoid generic phrases and rather focus on the specific destination.\n"
+        formatted_content += f"Take into account the seasonal differences in the distances to the {distance_metric}s of the dimensions to phrase a key message for the destination in this category. Also extract the dates to explicitely state the seasons/months you are describing. Avoid generic phrases and rather focus on the specific destination.\n"
 
         return formatted_content
 
