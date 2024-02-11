@@ -5,19 +5,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
-from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import numpy as np
 import time
 from tqdm import tqdm
 import pandas as pd
-import os
 import sys
 import requests
 import json
 from unidecode import unidecode
-import argparse
-import logging
 
 from multiprocessing import Pool
 
@@ -285,21 +281,45 @@ def parseAccommodationData(json_body):
             
             else:
 
+                assert json_body['priceMode'] == "total"
+
                 if 'price' in json_body['filterData']:
-                    acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
 
-                    for i, v in enumerate(json_body['filterData']['price']['values']):
-                        acc_data[f"bin_bound_{i+1}"] = v
+                    # for some locations only one price bin is returned
+                    if len(json_body['filterData']['price']['count']) > 1:
 
-                    for i, v in enumerate(json_body['filterData']['price']['count']):
-                        acc_data[f"bin_height_{i+1}"] = v
+                        acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
 
-                    # compute median and average from the scraped bins
-                    bin_heights = json_body['filterData']['price']['count']
-                    bin_bounds = json_body['filterData']['price']['values']
-                    acc_data['comp_median'], acc_data['comp_avg'] = calculate_median_average(bin_bounds, bin_heights)
+                        for i, v in enumerate(json_body['filterData']['price']['values']):
+                            acc_data[f"bin_bound_{i+1}"] = v
 
-                    return acc_data
+                        for i, v in enumerate(json_body['filterData']['price']['count']):
+                            acc_data[f"bin_height_{i+1}"] = v
+
+                        # compute median and average from the scraped bins
+                        bin_heights = json_body['filterData']['price']['count']
+                        bin_bounds = json_body['filterData']['price']['values']
+                        acc_data['comp_median'], acc_data['comp_avg'] = calculate_median_average(bin_bounds, bin_heights)
+
+                        return acc_data
+                    
+                    else:
+                        acc_data['avg_price'] = json_body['filterData']['price']['averagePrice']['price']
+
+                        # fill bin data with NaN
+                        for i in range(30):
+                            acc_data[f"bin_height_{i+1}"] = np.nan
+                            acc_data[f"bin_bound_{i+1}"] = np.nan
+
+                        acc_data['bin_bound_31'] = np.nan
+
+                        # replace first bin height with average price and replace bounds with returned bounds (2 total bounds)
+                        acc_data['bin_height_1'] = acc_data['avg_price']
+                        for i, bound in enumerate(json_body['filterData']['price']['values']): acc_data[f'bin_bound_{i+1}'] = bound
+
+                        # set computed median and computed average to returned average and return dict
+                        acc_data['comp_median'], acc_data['comp_avg'] = acc_data['avg_price'], acc_data['avg_price'] 
+                        return acc_data
                 
                 # for some locations none of the hotels have a price, but there are hotels
                 elif ('price' not in json_body['filterData']) and ('totalCount' in json_body):
@@ -319,35 +339,17 @@ def parseAccommodationData(json_body):
                 else:
                     print(json_body['filterData'].keys())
                     return None
-
-    # if getAccommodationData() does not returns 0, there are no properties to be found
-    elif json_body == 0:
-
-        # pass on the scraped price data
-        acc_data['avg_price'] = np.nan
-        acc_data['comp_avg'] = np.nan
-        acc_data['comp_median'] = np.nan
-        acc_data['n_hotels'] = 0
-
-        # fill bin data with zeros
-        for i in range(30):
-            acc_data[f"bin_height_{i+1}"] = np.nan
-            acc_data[f"bin_bound_{i+1}"] = np.nan
-
-        acc_data['bin_bound_31'] = np.nan
-
-        return acc_data
-
-    # if getAccommodationData() does not return dict, the response is invalid
+                
     else:
+        print("Unable to parse non-dict return value.")
         return None
     
+
 def configureChromeDriver(headless=False):
     caps = DesiredCapabilities.CHROME
     caps['goog:loggingPrefs'] = {'performance': 'ALL'}
     options = webdriver.ChromeOptions()
     options.add_argument("--no-sandbox")
-    #options.add_argument("--disable-dev-shm-usage")
     options.add_argument('--window-size=720,480')
     if headless: options.add_argument("--headless")
 
@@ -438,7 +440,6 @@ def process_period(period):
             continue
  
         json_body = getAccommodationData(url, driver)
-        print(f"Invalid result: {json_body is None}")
 
         # if getAccommodationData() returns -1, there was a security check
         if json_body == -1:
@@ -471,7 +472,7 @@ def process_period(period):
                 acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
                 acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
                 db.connect()
-                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
+                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs", )
                 db.disconnect()    
 
             else:
