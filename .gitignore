@@ -1,6 +1,7 @@
 .DS_Store
 .cache.sqlite
-.dsproject          
+.dsproject
+*apikey*
 *_apikey.txt
 *_apikeys.txt
 api_key_fsq.txt
