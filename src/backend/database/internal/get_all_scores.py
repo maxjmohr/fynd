@@ -12,7 +12,7 @@ from database.internal.health_scores import HealthScores
 from database.internal.safety_scores import SafetyScores
 from database.internal.weather_scores import WeatherScores
 from datetime import datetime
-from faker import Faker
+#from faker import Faker
 import numpy as np
 import pandas as pd
 
@@ -82,6 +82,16 @@ class FillScores:
         '''
         # Get the scores
         return CostScores(self.db).get(dimension="accommodation")
+    
+
+    def travel_cost_scores(self) -> pd.DataFrame:
+        ''' Fill in the travel cost scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the scores
+        return CostScores(self.db).get(dimension="travel_cost")
 
 
     def cost_of_living_scores(self) -> pd.DataFrame:
@@ -106,7 +116,7 @@ class FillScores:
 
         # Merge city scores
         city_data = self.locations.merge(
-            city_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
+            city_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]],
             on=["location_id"],
             how="left")
 
@@ -121,7 +131,7 @@ class FillScores:
 
         # Merge country scores
         country_data = no_scores.merge(
-            country_scores[["country", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
+            country_scores[["country", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]],
             on=["country"],
             how="left")
 
@@ -133,7 +143,7 @@ class FillScores:
         location_scores = pd.concat([city_data, country_data])
 
         # Reorder
-        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        location_scores = location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
         return location_scores
 
@@ -151,12 +161,12 @@ class FillScores:
 
         # Assign each location by country_code to score
         location_scores = self.locations.merge(
-            scores[["iso2", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
+            scores[["iso2", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]],
             left_on=["country_code"], right_on=["iso2"],
             how="inner")
 
         # Reorder
-        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
 
 ###----| Culture |----###
@@ -183,7 +193,6 @@ class FillScores:
 
 
 ###----| Geography |----###
-#--| Land coverage |---#
 
     def geography_coverage_scores(self) -> pd.DataFrame:
         ''' Fill in the geography coverage scores
@@ -193,8 +202,6 @@ class FillScores:
         '''
         # Get the coverage scores
         return GeographyScores(self.db).get_coverage_scores()
-
-#--| Landmarks |---#
 
 
 ###----| Health |----###
@@ -217,12 +224,68 @@ class FillScores:
 
         # Assign each location by country_code to score
         location_scores = self.locations.merge(
-            scores[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]],
+            scores[["country_name", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]],
             left_on=["country"], right_on=["country_name"],
             how="inner")
 
         # Reorder
-        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
+
+
+    @staticmethod
+    def compute_distances(scores:pd.DataFrame, retrospective_update:bool=False) -> pd.DataFrame:
+        ''' Compute the distance to the bottom 10 and top 10 quantile and to the median for each score
+        Input:  - scores: dataframe with scores
+                - retrospective_update: bool, whether to update the core_scores table or not
+        Output: dataframe with scores and distances
+        '''
+        if retrospective_update:
+            # Fetch scores table
+            db = Database()
+            db.connect()
+            scores = db.fetch_data("core_scores")
+            db.disconnect()
+
+        # Get all unique combinations of category, dimension, start and end dates to find all separate scores
+        category_dimension_date_combs = scores[['category_id', 'dimension_id', 'start_date', 'end_date']].\
+        value_counts(ascending=True).reset_index(name='count').drop('count', axis=1)
+
+        df_list = []
+
+        # Loop through all unique scores
+        for i in range(len(category_dimension_date_combs)):
+
+            # Create a filtered dataframe, consisting only of the location scores for one unique combination
+            cat_dim_df = scores[(scores["category_id"]==category_dimension_date_combs.loc[i, "category_id"]) &
+                                        (scores["dimension_id"]==category_dimension_date_combs.loc[i, "dimension_id"]) &
+                                        (scores["start_date"]==category_dimension_date_combs.loc[i, "start_date"]) &
+                                        (scores["end_date"]==category_dimension_date_combs.loc[i, "end_date"])].copy()
+
+            # Compute relevant metrics
+            median = cat_dim_df["score"].quantile(0.5)
+            bottom_10 = cat_dim_df["score"].quantile(0.1)
+            top_10 = cat_dim_df["score"].quantile(0.9)
+            std = cat_dim_df["score"].std()
+
+            # For each score in one dimension, check if it lays in the bottom 10 or top 10 quantile
+            for idx, row in cat_dim_df.iterrows():
+                if row["score"] < bottom_10:
+                    # Compute distance like this to make sure that distance in bottom 10 are negative and top 10 are positive to be identifiable
+                    cat_dim_df.loc[idx, "distance_to_bound"] = (row["score"] - bottom_10) / std
+                elif row["score"] > top_10:
+                    cat_dim_df.loc[idx, "distance_to_bound"] = (row["score"] - top_10) / std
+                else:
+                    # If score is inside the bounds, assign a "None" value to distance_to_bound
+                    cat_dim_df.loc[idx, "distance_to_bound"] = None
+
+                # Compute distance_to_median for all
+                cat_dim_df.loc[idx, "distance_to_median"] = (row["score"] - median) / std
+
+            # Add filtered dataframe with quantiles to list
+            df_list.append(cat_dim_df)
+
+        # Concat all combinations to reassemble the core_score table, now with computed distances
+        return pd.concat(df_list).reset_index(drop=True)
 
 
     def fill_scores(self, which_scores:dict, explicitely_update:bool = False):
@@ -234,13 +297,18 @@ class FillScores:
         Output: None
         '''
         # Get the scores
-        scores = pd.DataFrame(columns=["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"])
+        scores = pd.DataFrame(columns=["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value", "distance_to_median", "distance_to_bound"])
         for category, function in which_scores.items():
             # Execute the function
             print(f"Getting scores for category {category}...")
             results = function()
             if not results.empty:
                 scores = pd.concat([scores, results], axis=0)
+
+        print(scores.shape)
+
+        # Compute distances
+        scores = self.compute_distances(scores, retrospective_update=False)
 
         # Filter out rows where category_id or score is null
         scores = scores[scores["category_id"].notnull()]
@@ -268,7 +336,7 @@ class FillScores:
 
             # Insert the scores
             print("Inserting new scores...")
-            self.db.insert_data(data=scores, table="core_scores")
+            self.db.insert_data(data=scores, table="core_scores", updated_at=True)
 
         # Else: check for all location_ids if there is a score in the database. If true, replace. If not, add
         else:
@@ -278,8 +346,11 @@ class FillScores:
                 dimension_id = row["dimension_id"]
                 start_date = row["start_date"]
                 end_date = row["end_date"]
+                ref_start_location_id = row["ref_start_location_id"]
                 score = row["score"]
                 raw_value = row["raw_value"]
+                distance_to_bound = row["distance_to_bound"]
+                distance_to_median = row["distance_to_median"]
                 if raw_value is None:
                     raw_value = "NULL"
 
@@ -293,13 +364,14 @@ class FillScores:
                         AND dimension_id = '{dimension_id}'
                         AND start_date = '{start_date}'
                         AND end_date = '{end_date}'
+                        AND ref_start_location_id = '{ref_start_location_id}'
                     """
                 if self.db.fetch_data(sql=sql).empty:
                     # Add score
                     print(f"Adding category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
                     sql = sql = f"""
-                        INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, score, raw_value)
-                        VALUES ({location_id}, '{category_id}', '{dimension_id}', '{start_date}', '{end_date}', {score}, {raw_value})
+                        INSERT INTO core_scores (location_id, category_id, dimension_id, start_date, end_date, ref_start_location_id, score, raw_value, distance_to_bound, distance_to_median)
+                        VALUES ({location_id}, '{category_id}', '{dimension_id}', '{start_date}', '{ref_start_location_id}', '{end_date}', {score}, {raw_value}, {distance_to_bound}, {distance_to_median})
                         """
                     self.db.execute_sql(sql, commit=True)
                 else:
@@ -307,13 +379,14 @@ class FillScores:
                     print(f"Updating category_id {category_id} (dimension_id {dimension_id}) score for location_id {location_id}...")
                     sql = f"""
                         UPDATE core_scores
-                        SET score = {score}, raw_value = {raw_value}
+                        SET score = {score}, raw_value = {raw_value}, distance_to_bound = {distance_to_bound}, distance_to_median = {distance_to_median}
                         WHERE
                             location_id = {location_id}
                             AND category_id = '{category_id}'
                             AND dimension_id = '{dimension_id}'
                             AND start_date = '{start_date}'
                             AND end_date = '{end_date}'
+                            AND ref_start_location_id = '{ref_start_location_id}'
                         """
                     self.db.execute_sql(sql, commit=True)
 
@@ -322,12 +395,14 @@ db = Database()
 db.connect()
 which_scores = {
     #'accommodation_cost': FillScores(db).accommodation_cost_scores,
+    #'travel_cost': FillScores(db).travel_cost_scores,
     #'cost_of_living': FillScores(db).cost_of_living_scores
     #'safety': FillScores(db).safety_scores
     #'culture': FillScores(db).culture_scores,
-    #'weather': FillScores(db).weather_scores
-    #'geography_coverage': FillScores(db).geography_coverage_scores
-    #'health': FillScores(db).health_scores
+    #'weather': FillScores(db).weather_scores,
+    #'geography_coverage': FillScores(db).geography_coverage_scores,
+    #'health': FillScores(db).health_scores,
+    #'reachability': FillScores(db).get_reachability_scores,
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()
