@@ -76,7 +76,10 @@ class SafetyScores:
         # Add category_id
         data["category_id"] = self.db.fetch_data(sql="SELECT category_id FROM core_categories WHERE category_id = 1").iloc[0, 0]
 
-        return data[["iso2", "country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        # Add ref_start_location_id
+        data["ref_start_location_id"] = -1
+
+        return data[["iso2", "country_name", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
 
 
