@@ -5,7 +5,7 @@ import psycopg2
 from sqlalchemy import create_engine
 
 class Database:
-    def __init__(self, db:str = "dsp", host:str = "193.196.55.109", user:str = "postgres", password:str = "l0r10t", port:str = "5433"):
+    def __init__(self, db:str = "dsp", host:str = "193.196.55.109", user:str = "postgres", password:str = None, port:str = "5433"):
         ''' Initialize the database
         Input:  - db: str, name of the database
                 - host: str, host of the database
@@ -19,7 +19,13 @@ class Database:
         self.user = user
         # Ask for password in terminal if not provided
         if password is None:
-            self.password = getpass.getpass(prompt="Database user password: ", stream=None)
+            current_script_directory = os.path.dirname(os.path.abspath(__file__))
+            path = "../../../res/api_keys/db_key_postgres.txt"
+            if os.path.exists(os.path.join(current_script_directory, path)):
+                with open(os.path.join(current_script_directory, path), "r") as f:
+                    self.password = f.read().strip()
+            else:
+                self.password = getpass.getpass(prompt="Database user password: ", stream=None)
         else:
             self.password = password
         self.port = port
