@@ -99,8 +99,8 @@
             <!-- Texts -->
             <div class="category-content-container">
                 <div class="text-container">
-                    <p>{{ category.general_text }}</p>
-                    <p>{{ category.anomaly_text }}</p>
+                    <p>{% if category.text_general %}{{ category.text_general }}{% endif %}</p>
+                    <p>{% if category.text_anomaly %}{{ category.text_anomaly }}{% endif %}</p>
                 </div>
             </div>
 
