@@ -639,8 +639,8 @@ class LocationDetailView(DetailView):
                 'axis_title': category.axis_title,
                 'axis_label_low': category.axis_label_low,
                 'axis_label_high': category.axis_label_high,
-                'text_general': texts.loc[category.category_id, 'text_general'].item() if category.category_id in texts.index else None,
-                'text_anomaly': texts.loc[category.category_id, 'text_anomaly'].item() if category.category_id in texts.index else None,
+                'text_general': texts.loc[category.category_id, 'text_general'] if category.category_id in texts.index else None,
+                'text_anomaly': texts.loc[category.category_id, 'text_anomaly'] if category.category_id in texts.index else None,
                 'dimensions': [
                     {
                         'dimension_id': dimension.dimension_id,
