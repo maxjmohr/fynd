@@ -179,7 +179,9 @@ Use easy and understandable language and short sentences.
 Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
 Especially compare {data['location_city'].iloc[0]} to other destinations in the category '{data['category_name'].iloc[0]}'.
 Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
+The following dimensions are part of 'Cost of Living'.
 {self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_median")}
+The following dimensions are part of 'Travel Costs' and Accommodation Costs'.
 {self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_median")}
 """
 
@@ -233,8 +235,10 @@ Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'y
 Especially compare {data['location_city'].iloc[0]} to other destinations in the category '{data['category_name'].iloc[0]}'.
 Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
 Never describe the actual distance to a bound and never describe the bound but rather highlight that this dimension is a positive/negative anomoly.
-{self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_bound")}
-{self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_bound")}
+{"The following dimensions are part of 'Cost of Living'."if not data[~data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+{self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_bound") if not data[~data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+{"The following dimensions are part of 'Travel Costs' and Accommodation Costs'." if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+{self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_bound") if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
 Don't describe positive or negative anomalies but rather "increased/decreased" or "stronger/weaker" or others.
 Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as "Looking at .. in more depth,...", "Furthermore,...", "More specifically,..." and others).\n
@@ -390,22 +394,66 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
                 s.start_date,
                 s.end_date,
                 s.ref_start_location_id,
-                r.city AS start_location_city,
-                r.country AS start_location_country,
-                CAST(s.score AS DOUBLE PRECISION) AS score,
-                CAST(s.raw_value AS DOUBLE PRECISION) AS raw_value,
-                CAST(s.distance_to_median AS DOUBLE PRECISION) AS distance_to_median,
-                CAST(s.distance_to_bound AS DOUBLE PRECISION) AS distance_to_bound
+                r.city,
+                r.country,
+                CAST(s.score AS DOUBLE PRECISION)               AS score,
+                CAST(s.raw_value AS DOUBLE PRECISION)           AS raw_value,
+                CAST(s.distance_to_median AS DOUBLE PRECISION)  AS distance_to_median,
+                CAST(s.distance_to_bound AS DOUBLE PRECISION)   AS distance_to_bound
             FROM
                 core_scores s
-                INNER JOIN not_loaded_scores n ON s.location_id = n.location_id AND s.category_id = n.category_id AND s.ref_start_location_id = n.ref_start_location_id
-                INNER JOIN core_locations l ON l.location_id = s.location_id
-                INNER JOIN core_categories c ON c.category_id = s.category_id
-                INNER JOIN core_dimensions d ON d.dimension_id = s.dimension_id
-                LEFT JOIN core_ref_start_locations r ON s.ref_start_location_id = r.location_id
+                INNER JOIN not_loaded_scores n          ON s.location_id = n.location_id AND s.category_id = n.category_id AND s.ref_start_location_id = n.ref_start_location_id
+                INNER JOIN core_locations l             ON l.location_id = s.location_id
+                INNER JOIN core_categories c            ON c.category_id = s.category_id
+                INNER JOIN core_dimensions d            ON d.dimension_id = s.dimension_id
+                LEFT JOIN core_ref_start_locations r    ON s.ref_start_location_id = r.location_id
             WHERE
                 {"'True' = 'True'" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
                 AND (s.category_id != 2 OR (s.category_id = 2 AND EXTRACT(YEAR FROM s.start_date) = 2024))
+                AND s.category_id not in (3, 4)
+        ),
+
+        not_loaded_scores_cost AS (
+            SELECT
+                s.location_id,
+                l.city AS location_city,
+                l.country AS location_country,
+                s.category_id,
+                c.category_name,
+                s.dimension_id,
+                d.dimension_name,
+                s.start_date,
+                s.end_date,
+                CASE WHEN s.dimension_id = 41 THEN -1   ELSE s.ref_start_location_id    END AS ref_start_location_id,
+                CASE WHEN s.dimension_id = 41 THEN NULL ELSE r.city                     END AS start_location_city,
+                CASE WHEN s.dimension_id = 41 THEN NULL ELSE r.country                  END AS start_location_country,
+                AVG(CAST(s.score AS DOUBLE PRECISION))              AS score,
+                AVG(CAST(s.raw_value AS DOUBLE PRECISION))          AS raw_value,
+                AVG(CAST(s.distance_to_median AS DOUBLE PRECISION)) AS distance_to_median,
+                AVG(CAST(s.distance_to_bound AS DOUBLE PRECISION))  AS distance_to_bound
+            FROM
+                core_scores s
+                INNER JOIN not_loaded_scores n          ON s.location_id = n.location_id AND s.category_id = n.category_id AND s.ref_start_location_id = n.ref_start_location_id
+                INNER JOIN core_locations l             ON l.location_id = s.location_id
+                INNER JOIN core_categories c            ON c.category_id = s.category_id
+                INNER JOIN core_dimensions d            ON d.dimension_id = s.dimension_id
+                LEFT JOIN core_ref_start_locations r    ON s.ref_start_location_id = r.location_id
+            WHERE
+                {"'True' = 'True'" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
+                AND s.category_id = 4
+            GROUP BY
+                s.location_id,
+                l.city,
+                l.country,
+                s.category_id,
+                c.category_name,
+                s.dimension_id,
+                d.dimension_name,
+                s.start_date,
+                s.end_date,
+                CASE WHEN s.dimension_id = 41 THEN -1   ELSE s.ref_start_location_id    END,
+                start_location_city,
+                start_location_country
         ),
 
 
@@ -423,16 +471,16 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
                 s.ref_start_location_id,
                 r.city AS start_location_city,
                 r.country AS start_location_country,
-                CAST(s.score AS DOUBLE PRECISION) AS score,
-                CAST(s.raw_value AS DOUBLE PRECISION) AS raw_value,
-                CAST(s.distance_to_median AS DOUBLE PRECISION) AS distance_to_median,
-                CAST(s.distance_to_bound AS DOUBLE PRECISION) AS distance_to_bound
+                CAST(s.score AS DOUBLE PRECISION)               AS score,
+                CAST(s.raw_value AS DOUBLE PRECISION)           AS raw_value,
+                CAST(s.distance_to_median AS DOUBLE PRECISION)  AS distance_to_median,
+                CAST(s.distance_to_bound AS DOUBLE PRECISION)   AS distance_to_bound
             FROM
                 raw_subscores_culture s
-                INNER JOIN not_loaded_scores n ON s.location_id = n.location_id AND s.category_id = n.category_id AND s.ref_start_location_id = n.ref_start_location_id
-                INNER JOIN core_locations l ON l.location_id = s.location_id
-                INNER JOIN core_categories c ON c.category_id = s.category_id
-                LEFT JOIN core_ref_start_locations r ON s.ref_start_location_id = r.location_id
+                INNER JOIN not_loaded_scores n          ON s.location_id = n.location_id AND s.category_id = n.category_id AND s.ref_start_location_id = n.ref_start_location_id
+                INNER JOIN core_locations l             ON l.location_id = s.location_id
+                INNER JOIN core_categories c            ON c.category_id = s.category_id
+                LEFT JOIN core_ref_start_locations r    ON s.ref_start_location_id = r.location_id
             WHERE
                 {"'True' = 'True'" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
         )
@@ -442,8 +490,16 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
     FROM
         not_loaded_scores_with_info
     WHERE
-        category_id != 3
-        AND category_id IN ({", ".join([str(cat) for cat in filter_cats])})
+        category_id IN ({", ".join([str(cat) for cat in filter_cats])})
+
+    UNION ALL
+
+    SELECT
+        *
+    FROM
+        not_loaded_scores_cost
+    WHERE
+        category_id IN ({", ".join([str(cat) for cat in filter_cats])})
 
     UNION ALL
 
@@ -486,7 +542,7 @@ if __name__ == "__main__":
     # Iterate over groups
     for (loc, cat, ref_start_loc), group_df in grouped_data:
 
-            prompt_engine.prompt(group_df)
+        prompt_engine.prompt(group_df)
 
     # Disconnect from database
     db.disconnect()
