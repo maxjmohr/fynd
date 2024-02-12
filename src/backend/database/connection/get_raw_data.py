@@ -7,11 +7,13 @@ sys.path.append(parent_dir)
 from data.costs import numbeoScraper
 #from data.safety import create_country_safety_df
 #from data.safety import create_city_safety_df
-from data.geography import get_land_coverage
+#from data.geography import get_land_coverage
 #from data.places import get_places
-from data.weather import SingletonHistWeather, SingletonCurrFutWeather
+#from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from data.accomodations import generate_periods, process_period
-from data.reachability import process_location_land_reachability, process_location_air_reachability
+from data.reachability import (process_location_land_reachability, 
+                               process_location_air_reachability, 
+                               fill_reachibility_table)
 import datetime
 from database.db_helpers import Database
 from multiprocessing import Pool
@@ -183,6 +185,10 @@ def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Dat
     db.connect()
     start_refs = db.fetch_data("core_ref_start_locations")
     processed_locs = db.fetch_data("raw_reachability_land")
+
+    # create default values using imported function from reachability module, insert that into "table_name"
+    insert_data = fill_reachibility_table(locations, start_refs, processed_locs, table_name, db)
+    db.insert_data(insert_data, table_name, if_exists='append')
     db.disconnect()
 
     # remove locations for which data was already scraped (one row for each reference start location)
@@ -290,7 +296,6 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
         "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
         "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
         "2024-12-12", "2025-01-17", 
-        #"2025-02-22", "2025-03-02" # dates cannot exceed the current date + 1 year
     ]
 
     # use only start reference locations with unique chosen iata
@@ -310,7 +315,7 @@ def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: 
 
     locations = locations[locations['airport_1'].isin(pd.Series(not_fully_processed))]
     locations['missing'] = locations['airport_1'].apply(lambda x: x not in raw_reachability['dest_iata'].unique())
-    locations = locations.sort_values(by='missing', ascending=False)
+    locations = locations.sort_values(by=['missing', 'country'], ascending=False)
 
     # create a multiprocessing Pool with the specified number of workers
     with Pool(num_workers) as p:
@@ -333,19 +338,22 @@ def fill_raw_accommodation_costs(locations: pd.DataFrame, table_name: str, db: D
         datetime.datetime: end datetime
     """
 
-    num_workers = 1
+    num_workers = 2
     today_2025 = str(datetime.datetime.now().date()).replace("2024", "2025")
     periods = generate_periods("2024-02-17", today_2025, 14)
 
     # check which periods still need to be processed by checking the database
-    #db = Database()
-    #db.connect()
-    #raw_acc = db.fetch_data("raw_accommodation_costs")
-    #db.disconnect()
-    #rem_periods = [period for period in periods if raw_acc[raw_acc['start_date'] == period[0].date()].shape[0] < 688]
+    db = Database()
+    db.connect()
+    raw_acc = db.fetch_data("raw_accommodation_costs")
+    db.disconnect()
+
+    # remove fully processed periods, sort by start_date to get earlier start date first
+    rem_periods = [period for period in periods if raw_acc[raw_acc['start_date'] == period[0].date()].shape[0] < 722]
+    rem_periods = sorted(rem_periods, key=lambda x: x[0])
 
     with Pool(num_workers) as p:
-        p.map(process_period, periods)
+        p.map(process_period, rem_periods)
 
     end_datetime = datetime.datetime.now()
 
@@ -363,8 +371,8 @@ if __name__ == '__main__':
         # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
         #"raw_weather_historical": [fill_raw_weather_historical, 6],
         #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
-        #"raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
-        "raw_reachability_air" : [fill_raw_reachability_air_par, 9],
+        "raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
+        #"raw_reachability_air" : [fill_raw_reachability_air_par, 9],
         #"raw_reachability_land" : [fill_raw_reachability_land, 10]
     }
 

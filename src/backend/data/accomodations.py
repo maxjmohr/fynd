@@ -368,55 +368,51 @@ def process_period(period):
     db = Database()
     db.connect()
     locations = db.fetch_data("core_locations")[['location_id', 'city', 'country']]
-    accommodation_raw = db.fetch_data("raw_accommodation_costs")
+    raw_acc = db.fetch_data("raw_accommodation_costs")
     db.disconnect()
 
     # select rows from database that have start_date and end_date equal to the current period
-    accommodation_raw = accommodation_raw[(pd.to_datetime(accommodation_raw['start_date']) == pd.to_datetime(period[0])) 
-                                          & (pd.to_datetime(accommodation_raw['end_date']) == pd.to_datetime(period[1]))]
+    raw_acc = raw_acc[(pd.to_datetime(raw_acc['start_date']) == pd.to_datetime(period[0])) 
+                        & (pd.to_datetime(raw_acc['end_date']) == pd.to_datetime(period[1]))]
 
     ### -------- LOCATION FILTERING AND PREPROCESSING -------- ###
 
-    bad_links = [
-        "Chattogram, Bangladesh",
-        "Jashore, Bangladesh",
-        "Mymensingh, Bangladesh",
-        "San Francisco Gotera, El Salvador",
-        "Ar Rutbah, Iraq",
-        "Fallujah, Iraq",
-        "Al Salt, Jordan",
-        "Mubarak Al-Kabeer, Kuwait",
-        "Shahhat, Libya",
-        "Tubruq, Libya",
-        "Dukhan, Qatar"
+    # some locations not serviced by Kayak
+    bad_locations = [
+        ['Chattogram', 'Bangladesh'],
+        ['Jashore', 'Bangladesh'],
+        ['Mymensingh', 'Bangladesh'],
+        ['San Francisco Gotera', 'El Salvador'],
+        ['Ar Rutbah', 'Iraq'],
+        ['Fallujah', 'Iraq'],
+        ['Al Salt', 'Jordan'],
+        ['Mubarak Al-Kabeer', 'Kuwait'],
+        ['Shahhat', 'Libya'],
+        ['Tubruq', 'Libya'],
+        ['Dukhan', 'Qatar']
     ]
 
-    # also read in translations for locations with bad names
+    # extend bad locations by countries not serviced by Kayak due to government restrictions
+    for country in ["Belarus", "Russia", "Iran"]:
+        bad_locations.extend(locations[locations['country'] == country][['city', 'country']].values.tolist())
+
+    # read in translations for locations with bad names
     with open("./res/master_data/location_rename.json", "r", encoding="utf-8") as f:
         location_rename = json.load(f)
 
     # select only locations that have not been processed yet
-    processed_locs = accommodation_raw['location_id'].values.tolist()
+    processed_locs = raw_acc['location_id'].values.tolist()
     locations = locations[~locations['location_id'].isin(processed_locs)]
-
-    if len(locations) == 0:
-        print(f"All locations have been processed for period {period}")
-        return None
-
-    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])] # Kayak does not show results for some countries due to government restrictions
+    
+    # rename some country and location names to fit Kayaks names
     locations.loc[locations['country'] == "Czechia", 'country'] = "Czech Republic" # replace values of "Czechia" with "Czech Repulic"
     locations.loc[locations['location_id'] == 206579565, 'city'] = "Hong Kong"
     locations.loc[locations['location_id'] == 206579565, 'country'] = "Hong Kong"    
-    locations['city'] = locations[['city', 'country']].apply(lambda x: location_rename[f"{x['city']}, {x['country']}"] if f"{x['city']}, {x['country']}" in location_rename.keys() else x['city'],  axis=1)
-    locations = locations[~locations['city'].isin(b.split(", ")[0] for b in bad_links)]
-
-    # drop the first city for each country (already scraped in the first run of the script)
-    first_cities = locations.drop_duplicates(subset='country', keep='first')['city']
-    locations = locations[~locations['city'].isin(first_cities)]
+    #locations['city'] = locations[['city', 'country']].apply(lambda x: location_rename[f"{x['city']}, {x['country']}"] if f"{x['city']}, {x['country']}" in location_rename.keys() else x['city'],  axis=1)
 
     print(f"{len(locations)} missing locations for period {period}...")
 
-    locations = locations.sort_values(by='country', ascending=False) # from Z to A
+    #locations = locations.sort_values(by='country', ascending=False) # from Z to A
 
     ### -------------------------------------------------- ###
     
@@ -425,6 +421,31 @@ def process_period(period):
     # loop through loc_id, city, country triplets
     for loc_id, city, country in tqdm(locations.values):
         print(f"Processing {city}, {country} for period {period}...")
+
+        # rename city if it is in the location_rename dictionary
+        city = location_rename[f"{city}, {country}"] if f"{city}, {country}" in location_rename.keys() else city
+
+        # insert row containing no accommodation price data if location is in list of bad locations
+        if [city, country] in bad_locations:
+            acc_data = {}
+            acc_data['location_id'] = loc_id
+            acc_data['kayak_city'], acc_data['kayak_country'] = city, country
+            acc_data['start_date'], acc_data['end_date'] = period[0], period[1]
+            acc_data['n_hotels'] = np.nan
+            acc_data['avg_price'] = np.nan
+            acc_data['comp_avg'] = np.nan
+            acc_data['comp_median'] = np.nan
+
+            for i in range(30):
+                acc_data[f"bin_height_{i+1}"] = np.nan
+                acc_data[f"bin_bound_{i+1}"] = np.nan
+
+            acc_data['bin_bound_31'] = np.nan
+
+            db.connect()
+            db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
+            db.disconnect()
+            continue
 
         # start a new driver for each country
         if cur_country != country:
@@ -472,7 +493,7 @@ def process_period(period):
                 acc_data['avg_price'] = acc_data['avg_price'] / total_booking_days
                 acc_data['comp_avg'], acc_data['comp_median'] = acc_data['comp_avg']/total_booking_days, acc_data['comp_median']/total_booking_days
                 db.connect()
-                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs", )
+                db.insert_data(pd.DataFrame(acc_data, index=[0]), "raw_accommodation_costs")
                 db.disconnect()    
 
             else:
