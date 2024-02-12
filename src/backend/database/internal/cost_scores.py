@@ -107,7 +107,7 @@ class CostScores:
         # Get dimension_id for accommodation
         data["dimension_id"] = 41
         data['raw_value'] = data['avg_price'].replace(0, np.nan)
-        data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-data[["avg_price"]])
+        data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-np.log(data[["avg_price"]]))
 
         start_refs['mapped_start_airport'] = start_refs['mapped_start_airport'].str.strip()
         data = data.merge(start_refs[['location_id', "mapped_start_airport"]], left_on="orig_iata", right_on="mapped_start_airport")

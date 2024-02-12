@@ -11,6 +11,7 @@ from database.internal.geography_scores import GeographyScores
 from database.internal.health_scores import HealthScores
 from database.internal.safety_scores import SafetyScores
 from database.internal.weather_scores import WeatherScores
+from database.internal.reachability_scores import ReachabilityScores
 from datetime import datetime
 #from faker import Faker
 import numpy as np
@@ -230,7 +231,16 @@ class FillScores:
 
         # Reorder
         return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
+    
 
+###----| Reachability |----###
+    
+    def get_reachability_scores(self) -> pd.DataFrame:
+        """
+        Fill in the reachability scores
+        """
+        return ReachabilityScores(self.db).get()
+    
 
     @staticmethod
     def compute_distances(scores:pd.DataFrame, retrospective_update:bool=False) -> pd.DataFrame:
@@ -304,8 +314,6 @@ class FillScores:
             results = function()
             if not results.empty:
                 scores = pd.concat([scores, results], axis=0)
-
-        print(scores.shape)
 
         # Compute distances
         scores = self.compute_distances(scores, retrospective_update=False)
@@ -395,7 +403,7 @@ db = Database()
 db.connect()
 which_scores = {
     #'accommodation_cost': FillScores(db).accommodation_cost_scores,
-    #'travel_cost': FillScores(db).travel_cost_scores,
+    'travel_cost': FillScores(db).travel_cost_scores,
     #'cost_of_living': FillScores(db).cost_of_living_scores
     #'safety': FillScores(db).safety_scores
     #'culture': FillScores(db).culture_scores,

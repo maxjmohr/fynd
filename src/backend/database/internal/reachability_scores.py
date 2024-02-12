@@ -25,6 +25,41 @@ DIMENSION_IDS = {
 }
 
 
+# helper function to create non-overlapping start and end dates
+def map_dates(dates):
+
+    dates.sort()
+
+    # Convert dates to datetime
+    dates = pd.to_datetime(dates)
+    
+    # Calculate midpoints
+    midpoints = dates[:-1] + (dates[1:] - dates[:-1]) / 2
+    
+    # Initialize start date as today
+    start_date = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+    
+    # Initialize dictionary
+    date_dict = {}
+    
+    # Iterate over midpoints
+    for i in range(len(midpoints)):
+        # Calculate end date as day before next start date
+        end_date = midpoints[i] - pd.Timedelta(days=1)
+        
+        # Add to dictionary
+        date_dict[dates[i].strftime('%Y-%m-%d')] = [start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')]
+        
+        # Update start date
+        start_date = midpoints[i]
+    
+    # Add last date
+    end_date = dates[-1] + (dates[-1] - midpoints[-1])
+    date_dict[dates[-1].strftime('%Y-%m-%d')] = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+    
+    return date_dict
+
+
 class ReachabilityScores:
     "Class for calculating reachability scores"
     def __init__(self, db:Database) -> None:
@@ -41,10 +76,7 @@ class ReachabilityScores:
         """
 
         db = self.db
-
-        db.connect()
         land_reach = db.fetch_data("raw_reachability_land")
-        db.disconnect()
 
         score_data = []
 
@@ -52,14 +84,16 @@ class ReachabilityScores:
 
             land_reach['location_id'] = land_reach['loc_id']
             land_reach['raw_value'] = land_reach[k].replace(0, np.nan)
-            land_reach['score'] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-land_reach[[k]])
+            land_reach['raw_value'] = land_reach['raw_value'] / 3600 # convert seconds to hours
+            land_reach['dim_score'] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-land_reach[[k]])
             land_reach['dimension_id'], land_reach['category_id'] = v, CATEGORY_ID   
             land_reach["start_date"], land_reach["end_date"] = "2024-01-01", "2099-12-31"
+            land_reach.rename(columns={"ref_id": "ref_start_location_id"}, inplace=True)
 
-            score_data.append(land_reach[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value", "ref_id"]])
+            score_data.append(land_reach[["location_id", "category_id", "dimension_id", "start_date", "end_date", "dim_score", "raw_value", "ref_start_location_id"]])
 
         return pd.concat(score_data)
-    
+
 
     def get_air_reachability_scores(self):
         """
@@ -67,48 +101,49 @@ class ReachabilityScores:
         """
 
         db = self.db
-
-        db.connect()
         air_reach = db.fetch_data("raw_reachability_air")
         start_refs = db.fetch_data("core_ref_start_locations")
         core_locs = db.fetch_data("core_locations")
-        db.disconnect()
 
         score_data = []
 
+        # create start and end date columns using map_dates function
+        dates_map = map_dates(air_reach['dep_date'].unique())
+        start_end = air_reach['dep_date'].apply(lambda x: dates_map[x])
+
         for k, v in DIMENSION_IDS['air'].items():
 
-            air_reach['start_date'] = air_reach['dep_date']
-            air_reach['end_date'] = pd.to_datetime(air_reach['start_date']) + pd.Timedelta(days=7)
+            air_reach[['start_date', 'end_date']] = pd.DataFrame(start_end.tolist(), index=air_reach.index)
             air_reach['raw_value'] = air_reach[k].replace(0, np.nan)
-            air_reach['score'] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-air_reach[[k]])
+            air_reach['raw_value'] = air_reach['raw_value'] / 60 + 3 # convert minutes to hours and add 3 hours for airport time
+            air_reach['dim_score'] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-air_reach[[k]])
             air_reach['dimension_id'], air_reach['category_id'] = v, CATEGORY_ID
 
-            score_data.append(air_reach[["dest_iata", "category_id", "dimension_id", "start_date", 'end_date', "score", "raw_value", "orig_iata"]]) 
+            score_data.append(air_reach[["dest_iata", "category_id", "dimension_id", "start_date", 'end_date', "dim_score", "raw_value", "orig_iata"]]) 
 
         score_data = pd.concat(score_data)
 
         # merge on start_refs to create combinations of destination airport, period, and start location
         start_refs['mapped_start_airport'] = start_refs['mapped_start_airport'].str.strip()
         score_data = score_data.merge(start_refs[['location_id', "mapped_start_airport"]], left_on="orig_iata", right_on="mapped_start_airport")
-        score_data = score_data.rename(columns={"location_id": "ref_id"})
+        score_data = score_data.rename(columns={"location_id": "ref_start_location_id"})
 
         # merge on core_locs to create combinations of destination, period, and start location
         score_data = score_data.merge(core_locs[['location_id', 'airport_1']], left_on="dest_iata", right_on="airport_1")
 
-        return score_data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value", "ref_id"]]
+        return score_data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "dim_score", "raw_value", "ref_start_location_id"]]
 
         
-    def concat_land_air_scores(self):
-        ''' Get the reachability scores
-        Input:  None
-        Output: reachability scores
+    def get(self):
+        ''' 
+        Get both land and air reachability scores, create global scores for them and concatenate them
         '''
+        
         # Get the data for the current and next year
         land = self.get_land_reachability_scores()
         air = self.get_air_reachability_scores()
 
-        # Merge the data
-        return pd.concat([land, air], axis=0)
-    
-    
+        full_reach = pd.concat([land, air], axis=0)
+        full_reach['score'] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-np.log(full_reach[['raw_value']]))
+
+        return full_reach[['location_id', 'category_id', 'dimension_id', 'start_date', 'end_date', 'score', 'raw_value', 'ref_start_location_id']]
