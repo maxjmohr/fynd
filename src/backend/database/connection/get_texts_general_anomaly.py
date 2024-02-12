@@ -7,6 +7,7 @@ sys.path.append(parent_dir)
 from database.db_helpers import Database
 from datetime import datetime
 from openai import OpenAI
+import random
 import pandas as pd
 
 
@@ -206,6 +207,16 @@ Never generate a text containing the numeric values but rather use the distances
         # Assert that there is only one unique category_id
         assert data["category_id"].nunique() == 1, "The category_id is not unique."
 
+        # Randomly shuffle sample phrases to generate different beginnings
+        phrases = [
+            "Looking at ... in more detail/depth,...",
+            "Moreover,...",
+            "More specifically,...",
+            "Examining the details,..."
+        ]
+        random.shuffle(phrases)
+        phrases_str = ''.join([f'"{phrase}", ' for phrase in phrases])
+
         message = {"role": "user"}
 
         # For testing: Drop null values in column distance_to_bound
@@ -223,7 +234,7 @@ Never describe the actual distance to a bound and never describe the bound but r
 {self.content_seasonal_distances(data, "distance_to_bound")}
 All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
 Don't describe positive or negative anomalies but rather "increased/decreased" or "stronger/weaker" or others.
-Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as "Looking at .. in more depth,...", "Furthermore,...", "More specifically,..." and others).\n
+Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).\n
 """
 
         # For costs, especially for travel/accommodation costs
@@ -241,7 +252,7 @@ Never describe the actual distance to a bound and never describe the bound but r
 {self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_bound") if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
 Don't describe positive or negative anomalies but rather "increased/decreased" or "stronger/weaker" or others.
-Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as "Looking at .. in more depth,...", "Furthermore,...", "More specifically,..." and others).\n
+Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).\n
 """
 
         else:
@@ -255,7 +266,7 @@ Never describe the actual distance to a bound and never describe the bound but r
 {self.content_non_seasonal_distances(data, "distance_to_bound")}
 All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
 Don't describe positive or negative anomalies but rather "increased/decreased" or "stronger/weaker" or others.
-Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as "Looking at .. in more depth,...", "Furthermore,...", "More specifically,..." and others).\n
+Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).\n
 """
         return message
 
