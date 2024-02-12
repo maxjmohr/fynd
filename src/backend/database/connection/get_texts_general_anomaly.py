@@ -404,7 +404,7 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
                 INNER JOIN core_dimensions d ON d.dimension_id = s.dimension_id
                 LEFT JOIN core_ref_start_locations r ON s.ref_start_location_id = r.location_id
             WHERE
-                {"" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
+                {"'True' = 'True'" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
                 AND (s.category_id != 2 OR (s.category_id = 2 AND EXTRACT(YEAR FROM s.start_date) = 2024))
         ),
 
@@ -434,7 +434,7 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
                 INNER JOIN core_categories c ON c.category_id = s.category_id
                 LEFT JOIN core_ref_start_locations r ON s.ref_start_location_id = r.location_id
             WHERE
-                {"" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
+                {"'True' = 'True'" if not testing else "l.city = 'Munich' AND l.country = 'Germany'"}
         )
 
     SELECT
@@ -475,24 +475,18 @@ if __name__ == "__main__":
         #6, # Reachability
         7 # Health
     ]
-    data = prepare_text_generation(db, filter_cats, testing=True)
+    data = prepare_text_generation(db, filter_cats, testing=False)
+
+    # Group the data by location_id and category_id
+    grouped_data = data.groupby(["location_id", "category_id", "ref_start_location_id"])
 
     # Generate texts
     prompt_engine = PromptEngine(db)
 
-    # For each location
-    for loc in data["location_id"].unique():
+    # Iterate over groups
+    for (loc, cat, ref_start_loc), group_df in grouped_data:
 
-        # For each category
-        for cat in data["category_id"].unique():
-
-            # If reachability, generate texts for each reference start location
-            if cat == 6:
-                for ref_start_loc in data[data["category_id"] == cat]["ref_start_location_id"].unique():
-                    prompt_engine.prompt(data[(data["category_id"] == cat) & (data["ref_start_location_id"] == ref_start_loc)])
-
-            else:
-                prompt_engine.prompt(data[data["category_id"] == cat])
+            prompt_engine.prompt(group_df)
 
     # Disconnect from database
     db.disconnect()
