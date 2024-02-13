@@ -579,6 +579,14 @@ class LocationsListView(View):
             self.locations_list = self.locations_list[
                 self.locations_list['dim_21'] <= max_temperature
             ]
+
+        # Mode of transport
+        mode_of_transport = filters_form_data.get('mode_of_transport')
+        if len(mode_of_transport) > 0:
+            self.locations_list = self.locations_list[
+                # Reachable (i.e. notna) by at least one of the selected modes
+                self.locations_list[mode_of_transport].notna().any(axis=1)
+            ]
     
     def get_context_data(self, **kwargs):
         """Assemble context for template."""

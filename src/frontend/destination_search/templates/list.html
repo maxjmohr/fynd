@@ -181,6 +181,28 @@ Results
                     {{ filters_form.max_best_reachability.errors }}
                     {{ filters_form.max_best_reachability.as_widget }}
                 </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.mode_of_transport.id_for_label }}">
+                            {{ filters_form.mode_of_transport.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'mode_of_transport_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="mode_of_transport_help_text" class="form-help-text-infobox">
+                            {{ filters_form.mode_of_transport.help_text }}
+                        </div>
+                    </div>
+                    <div class="checkbox-multiselect-container">
+                        {% for mode_of_transport in filters_form.modes_of_transport_data %}
+                            <label for="checkbox-{{ id }}" class="checkbox-multiselect-option">
+                                <input type="checkbox" name="{{ filters_form.mode_of_transport.html_name }}" value="{{ mode_of_transport.dimension }}" {% if mode_of_transport.dimension in filters_form.mode_of_transport.value or filters_form.mode_of_transport.value|length == 0 %}checked{% endif %}>
+                                <span class="checkbox-label-icon"><img src="{{  mode_of_transport.icon_url }}"></span>
+                                <span>{{  mode_of_transport.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </details>
 

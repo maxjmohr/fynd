@@ -1,5 +1,5 @@
 from django import forms
-from .models import CoreCategories
+from .models import CoreCategories, CoreDimensions
 import ast
 
 
@@ -118,6 +118,37 @@ class FiltersForm(forms.Form):
         widget=forms.HiddenInput(),
         required=False,
     )
+
+    mode_of_transport = forms.MultipleChoiceField(
+        choices=[], # Populated in __init__
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label='Mode of transport',
+        help_text='The destination has to be reachable by at least one of the selected options.'
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(FiltersForm, self).__init__(*args, **kwargs)
+
+        modes_of_transport = (
+            CoreDimensions.objects
+            .filter(category_id=6)
+            .values('dimension_id', 'dimension_name', 'icon_url')
+        )
+        # Clean up and store to access from template
+        self.modes_of_transport_data = [
+            {
+                'dimension': f"dim_{mode['dimension_id']}",
+                'name': mode['dimension_name'],
+                'icon_url': mode['icon_url']
+            }
+            for mode in modes_of_transport
+        ]
+        # Set choices
+        self.fields['mode_of_transport'].choices = [
+            (mode['dimension'], mode['name'])
+            for mode in self.modes_of_transport_data
+        ]
 
 
 class PreferencesForm(forms.Form):

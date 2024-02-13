@@ -438,6 +438,35 @@ body {
     cursor: pointer;
 }
 
+.checkbox-multiselect-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0px;
+    margin-left: 10px;
+}
+
+.checkbox-multiselect-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-multiselect-option input[type='checkbox'] {
+    accent-color: var(--accent5);
+}
+
+.checkbox-label-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkbox-label-icon img {
+    height: 1em;
+}
+
 .preferences-intro-text {
     font-size: 0.8em;
 }
