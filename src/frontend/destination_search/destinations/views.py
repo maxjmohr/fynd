@@ -429,7 +429,7 @@ class LocationsListView(View):
             lat1=ti_form_data['start_location_lat'],
             lon2=locations['lon'].astype(float), #FIXME dtype
             lat2=locations['lat'].astype(float) #FIXME dtype
-        )
+        ).round(0)  # Round to km
         locations = locations.loc[locations['distance_to_start'] > 1] # Only locations further than 1 km
         self.request.session['distance_to_start_hist_data'] = create_hist_for_slider(locations['distance_to_start'])
 
@@ -538,58 +538,47 @@ class LocationsListView(View):
         # Get form data
         filters_form_data = self.request.session['filters_form_data']
 
-        # Distance to start location
-        min_distance = filters_form_data['min_distance']
-        max_distance = filters_form_data['max_distance']
-        if min_distance is not None and max_distance is not None:
-            self.locations_list = self.locations_list[
-                (self.locations_list['distance_to_start'] >= min_distance)
-                & (self.locations_list['distance_to_start'] <= max_distance)
-            ]
-
-        # Population
-        min_population = filters_form_data['min_population']
-        max_population = filters_form_data['max_population']
-        if min_population is not None and max_population is not None:
-            self.locations_list = self.locations_list[
-                (self.locations_list['population'] >= min_population)
-                & (self.locations_list['population'] <= max_population)
-            ]
-
-        # Temperature
-        min_temperature = filters_form_data['min_temperature']
-        max_temperature = filters_form_data['max_temperature']
-        if min_temperature is not None and max_temperature is not None:
-            self.locations_list = self.locations_list[
-                (self.locations_list['dim_22'] >= min_temperature)
-                & (self.locations_list['dim_21'] <= max_temperature)
-            ]
-
-        # Simple raw value filters
-        raw_value_filters = {
+        # Histogram value filters
+        hist_value_filters = {
             'min': {
+                'distance': 'distance_to_start',
+                'population': 'population',
                 'travel_cost': 'dim_41',
                 'accommodation_cost': 'dim_42',
                 'best_reachability': 'best_reachability'
             },
             'max': {
+                'distance': 'distance_to_start',
+                'population': 'population',
                 'travel_cost': 'dim_41',
                 'accommodation_cost': 'dim_42',
                 'best_reachability': 'best_reachability'
             }
         }
-        for filter_name, dimension in raw_value_filters['min'].items():
+        for filter_name, variable in hist_value_filters['min'].items():
             value = filters_form_data.get(f'min_{filter_name}')
             if value is not None:
                 self.locations_list = self.locations_list[
-                    self.locations_list[dimension] >= value
+                    self.locations_list[variable] >= value
                 ]
-        for filter_name, dimension in raw_value_filters['max'].items():
+        for filter_name, variable in hist_value_filters['max'].items():
             value = filters_form_data.get(f'max_{filter_name}')
             if value is not None:
                 self.locations_list = self.locations_list[
-                    self.locations_list[dimension] <= value
+                    self.locations_list[variable] <= value
                 ]
+
+        # Temperature
+        min_temperature = filters_form_data['min_temperature']
+        if min_temperature is not None:
+            self.locations_list = self.locations_list[
+                self.locations_list['dim_22'] >= min_temperature
+            ]
+        max_temperature = filters_form_data['max_temperature']
+        if max_temperature is not None:
+            self.locations_list = self.locations_list[
+                self.locations_list['dim_21'] <= max_temperature
+            ]
     
     def get_context_data(self, **kwargs):
         """Assemble context for template."""
