@@ -757,21 +757,17 @@ class LocationDetailView(DetailView):
             context['travel_warning'] = travel_warning
 
         # Get top attractions
-        top_attractions = (
-            RawCultureTexts
+        top_attractions = list(
+            RawCultureSights
             .objects
             .filter(location_id=location.location_id)
-            .values('text')
-            .first()
+            .order_by('sight_rank')
+            .values_list('sight', flat=True)
         )
-        if top_attractions['text']:
-            try:
-                top_attractions['text'] = ast.literal_eval(top_attractions['text'])
-            except:
-                top_attractions['text'] = []
+        if len(top_attractions) > 0:
+            context['top_attractions'] = top_attractions
 
         # Get reference start location airport
-        print(reference_start_location)
         reference_start_airport = (
             CoreAirports.objects
             .values('iata_code', 'airport_name', 'city')

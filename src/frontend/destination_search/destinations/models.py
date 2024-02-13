@@ -175,13 +175,13 @@ class RawTravelWarnings(models.Model):
         managed = False
         db_table = 'raw_travel_warnings'
 
-class RawCultureTexts(models.Model):
-    location = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True)
-    category_id = models.IntegerField()
-    text = models.TextField(blank=True, null=True)
+class RawCultureSights(models.Model):
+    location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
+    sight_rank = models.IntegerField()
+    sight = models.CharField(max_length=100, blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = 'raw_culture_texts'
-        unique_together = (('location', 'category_id'),)
+        db_table = 'raw_culture_sights'
+        unique_together = (('location_id', 'sight_rank'),)
