@@ -1,6 +1,21 @@
 from django.db import models
 
 
+class CoreAirports(models.Model):
+    iata_code = models.CharField(primary_key=True, max_length=3)
+    airport_name = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
+    lat = models.DecimalField(max_digits=10, decimal_places=7)
+    lon = models.DecimalField(max_digits=10, decimal_places=7)
+    passenger_count = models.CharField(max_length=15, blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'core_airports'
+
+
 class CoreCategories(models.Model):
     category_id = models.IntegerField(primary_key=True)
     category_name = models.CharField(max_length=255)
@@ -78,16 +93,31 @@ class CoreLocationsImages(models.Model):
         managed = False
         db_table = 'core_locations_images'
 
+class CoreRefStartLocations(models.Model):
+    location_id = models.BigIntegerField(primary_key=True)
+    city = models.TextField(blank=True, null=True)
+    country = models.TextField(blank=True, null=True)
+    country_code = models.TextField(blank=True, null=True)
+    lat = models.TextField(blank=True, null=True)
+    lon = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+    mapped_start_airport = models.CharField(max_length=5, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'core_ref_start_locations'
+
 
 class CoreScores(models.Model):
     location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
     category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
     dimension_id = models.ForeignKey(CoreDimensions, models.DO_NOTHING, db_column='dimension_id')
-    score = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
-    updated_at = models.DateTimeField(blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
+    ref_start_location_id = models.ForeignKey(CoreRefStartLocations, models.DO_NOTHING, db_column='ref_start_location_id')
+    score = models.DecimalField(max_digits=10, decimal_places=5, blank=True, null=True)
     raw_value = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -98,7 +128,9 @@ class CoreScores(models.Model):
 class CoreTexts(models.Model):
     location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
     category_id = models.ForeignKey(CoreCategories, models.DO_NOTHING, db_column='category_id')
-    ref_start_location_id = models.IntegerField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+    ref_start_location_id = models.ForeignKey(CoreRefStartLocations, models.DO_NOTHING, db_column='ref_start_location_id')
     text_general = models.TextField()
     text_anomaly = models.TextField()
     updated_at = models.DateTimeField(blank=True, null=True)

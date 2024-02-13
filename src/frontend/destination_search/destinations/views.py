@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
+from django.forms.models import model_to_dict
 from .models import *
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -85,10 +86,25 @@ def get_scores(
     # Get closest reference location for start location -----------------------
     if start_location_lat is not None and start_location_lon is not None:
         # Find closest reference location
-        reference_start_location = None #FIXME
+        reference_start_locations = read_frame(
+            CoreRefStartLocations
+            .objects
+            .values('location_id', 'city', 'country', 'lat', 'lon', 'mapped_start_airport')
+        )
+        reference_start_locations['distance'] = haversine(
+            lon1=float(start_location_lon),
+            lat1=float(start_location_lat),
+            lon2=reference_start_locations['lon'].astype(float),
+            lat2=reference_start_locations['lat'].astype(float)
+        )
+        reference_start_location = reference_start_locations.loc[
+            reference_start_locations['distance'].idxmin()
+        ].to_dict()
     else:
-        # Use all reference start locations
-        reference_start_location = None
+        # Use Frankfurt as reference start locations
+        reference_start_location = model_to_dict(
+            CoreRefStartLocations.objects.get(location_id=121553680)
+        )
 
     # Get filtered scores -----------------------------------------------------
 
@@ -96,9 +112,9 @@ def get_scores(
     query = CoreScores.objects.filter(
         Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
     )
-
-    if reference_start_location is not None:
-        query = query.filter(reference_start_location=reference_start_location)
+    query = query.filter(
+        ref_start_location_id__in=[-1, reference_start_location['location_id']]
+    )
 
     if location_id is not None:
         query = query.filter(
@@ -154,7 +170,7 @@ def get_scores(
             #FIXME how to handle start and end date, since we cant average texts?
             texts = CoreTexts.objects.filter(
                 Q(location_id=location_id)
-                #& Q(reference_start_location=reference_start_location)
+                & Q(ref_start_location_id__in=[-1, reference_start_location['location_id']])
             ).values('category_id', 'text_general', 'text_anomaly')
             texts = read_frame(texts)
 
@@ -724,6 +740,15 @@ class LocationDetailView(DetailView):
             except:
                 top_attractions['text'] = []
 
+        # Get reference start location airport
+        print(reference_start_location)
+        reference_start_airport = (
+            CoreAirports.objects
+            .values('iata_code', 'airport_name', 'city')
+            .filter(iata_code=reference_start_location['mapped_start_airport'].strip()) #FIXME no FK + strip needed
+            .first()
+        )
+
         # Get previous locations
         previous_locations, previous_countries = clean_previous_locations(
             self.request.GET.getlist('previous_locations', [])
@@ -740,7 +765,9 @@ class LocationDetailView(DetailView):
             
         # Add to context
         context.update({
+            'start_location': self.request.GET.get('start_location'),
             'reference_start_location': reference_start_location,
+            'reference_start_airport': reference_start_airport,
             'image': image,
             'location': location,
             'data': data,
