@@ -14,17 +14,20 @@ import pandas as pd
 class PromptEngine:
     "Class to generate prompts for the GPT chatbot and return the generated texts"
 
-    def __init__(self, db:Database, model:str="gpt-3.5-turbo", temperature:float=0.9, frequency_penalty:float=0.35) -> None:
+    def __init__(self, db:Database, model:str="gpt-3.5-turbo", temperature:float=0.9, frequency_penalty:float=0.35, max_tokens:int=325) -> None:
         ''' Initialize the class
         Input:  - db: the database connection
                 - model: the model to be used for the chatbot
                 - temperature: the temperature to be used for the chatbot
+                - frequency_penalty: the frequency penalty to be used for the chatbot
+                - max_tokens: the frequency penalty to be used for the chatbot
         Output: None
         '''
         self.db = db
         self.model = model
         self.temperature = temperature
         self.frequency_penalty = frequency_penalty
+        self.max_tokens = max_tokens
         # self.api_key = os.getenv("OPENAI_API_KEY")
         self.api_key = None
         if not self.api_key:
@@ -111,7 +114,7 @@ The following table shows the distances to the {distance_metric}s for the corres
             formatted_content += dimension_distance_pairs
 
         # Add last sentence
-        formatted_content += f"Take into account the seasonal differences in the distances to the {distance_metric}s of the dimensions to phrase a key message for the destination in this category. Also extract the dates to explicitely state the seasons/months you are describing. Avoid generic phrases and rather focus on the specific destination.\n"
+        formatted_content += f"Take into account the seasonal differences in the distances to the {distance_metric}s of the dimensions to phrase a key message for the destination in this category. MENTION THE SEASONS/MONTHS BUT NEVER THE EXACT DATES. Avoid generic phrases and rather focus on the specific destination.\n"
 
         return formatted_content
 
@@ -280,7 +283,8 @@ Generate the first sentence as a transition from the general paragraph regarding
             model=self.model,
             messages=messages,
             temperature=self.temperature,
-            frequency_penalty=self.frequency_penalty
+            frequency_penalty=self.frequency_penalty,
+            max_tokens=self.max_tokens
         )
         return response.choices[0].message.content.strip()
 
@@ -304,15 +308,6 @@ Generate the first sentence as a transition from the general paragraph regarding
             self.create_message_general_user(data)
         ]
         df["text_general"] = self.get_response(messages)
-
-        # Reachability extra sentence
-        if data["category_id"].iloc[0] == 6:
-            assert data["ref_start_location_id"].iloc[0] != -1, "There is no reference start location related to the reachability scores."
-
-            df["text_general"] = f"""To calculate the reachability, we use a fixed selection of reference start locations.
-Based on your selected start location, the reference start location is {data['start_location_city'].iloc[0]} ({data['start_location_country'].iloc[0]}).\n
-{df['text_general'].iloc[0]}
-"""
 
         # Get anomaly text (if there are anomalies detected)
         if data["distance_to_bound"].isnull().all():
