@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
+from django.forms.models import model_to_dict
 from .models import *
 from .forms import *
 from .compute_relevance import compute_relevance
@@ -85,10 +86,25 @@ def get_scores(
     # Get closest reference location for start location -----------------------
     if start_location_lat is not None and start_location_lon is not None:
         # Find closest reference location
-        reference_start_location = None #FIXME
+        reference_start_locations = read_frame(
+            CoreRefStartLocations
+            .objects
+            .values('location_id', 'city', 'country', 'lat', 'lon', 'mapped_start_airport')
+        )
+        reference_start_locations['distance'] = haversine(
+            lon1=float(start_location_lon),
+            lat1=float(start_location_lat),
+            lon2=reference_start_locations['lon'].astype(float),
+            lat2=reference_start_locations['lat'].astype(float)
+        )
+        reference_start_location = reference_start_locations.loc[
+            reference_start_locations['distance'].idxmin()
+        ].to_dict()
     else:
-        # Use all reference start locations
-        reference_start_location = None
+        # Use Frankfurt as reference start locations
+        reference_start_location = model_to_dict(
+            CoreRefStartLocations.objects.get(location_id=121553680)
+        )
 
     # Get filtered scores -----------------------------------------------------
 
@@ -96,9 +112,9 @@ def get_scores(
     query = CoreScores.objects.filter(
         Q(start_date__lte=end_date) & Q(end_date__gte=start_date)
     )
-
-    if reference_start_location is not None:
-        query = query.filter(reference_start_location=reference_start_location)
+    query = query.filter(
+        ref_start_location_id__in=[-1, reference_start_location['location_id']]
+    )
 
     if location_id is not None:
         query = query.filter(
@@ -151,10 +167,9 @@ def get_scores(
         if type(location_id) == list:
             raise ValueError('Text retrieval ony possible for one location_id.')
         else:
-            #FIXME how to handle start and end date, since we cant average texts?
             texts = CoreTexts.objects.filter(
                 Q(location_id=location_id)
-                #& Q(reference_start_location=reference_start_location)
+                & Q(ref_start_location_id__in=[-1, reference_start_location['location_id']])
             ).values('category_id', 'text_general', 'text_anomaly')
             texts = read_frame(texts)
 
@@ -198,12 +213,12 @@ class DiscoverView(FormView):
         return initial
 
     def form_valid(self, form):
-        self.request.session['travellers_input_form_data'] = form.cleaned_data
+        self.form_data = form.cleaned_data
         return super().form_valid(form)
 
     def get_success_url(self):
         url = reverse('locations_list')
-        query_string = encode_url_parameters(self.request.session['travellers_input_form_data'])
+        query_string = encode_url_parameters(self.form_data)
         url = f"{url}?{query_string}"
         return url
 
@@ -399,6 +414,12 @@ class LocationsListView(View):
         locations = read_frame(CoreLocations.objects.values(*cols))
         locations.set_index('location_id', inplace=True)
 
+        # Get previous locations
+        previous_locations = ti_form_data['previous_locations']
+        previous_locations, previous_countries = clean_previous_locations(
+            previous_locations, locations
+        )
+
         # Store population histogram data
         self.request.session['population_hist_data'] = create_hist_for_slider(locations['population'])
 
@@ -408,7 +429,8 @@ class LocationsListView(View):
             lat1=ti_form_data['start_location_lat'],
             lon2=locations['lon'].astype(float), #FIXME dtype
             lat2=locations['lat'].astype(float) #FIXME dtype
-        )
+        ).round(0)  # Round to km
+        locations = locations.loc[locations['distance_to_start'] > 1] # Only locations further than 1 km
         self.request.session['distance_to_start_hist_data'] = create_hist_for_slider(locations['distance_to_start'])
 
         # Get scores
@@ -419,7 +441,7 @@ class LocationsListView(View):
             start_location_lon=ti_form_data['start_location_lon']
         )
 
-        # Extract raw_values (for filters, only for a few dimensions)
+        # Extract raw_values (for filters, only for a few dimensions), to do so:
 
         # Store raw values format in session
         relevant_dimensions = [21, 22, 41, 42, 61, 62, 63]
@@ -432,7 +454,7 @@ class LocationsListView(View):
             21: 'temperature',
             41: 'travel',
             42: 'accommodation',
-            61: 'min_reachability'
+            61: 'best_reachability'
         }
         self.request.session['raw_values_format'] = (
             raw_values_format
@@ -449,6 +471,7 @@ class LocationsListView(View):
             .assign(dimension_id=clean_id(scores['dimension_id']))
             .query('dimension_id in @relevant_dimensions')
             .pivot(columns='dimension_id', index='location_id', values='raw_value')
+            .query('index not in @previous_locations')
         )
 
         # Add possibly missing columns + round raw values
@@ -462,8 +485,8 @@ class LocationsListView(View):
                 )
         raw_values.rename(columns=lambda x: 'dim_' + str(x), inplace=True)
         
-        # Add column for min reachability
-        raw_values['min_reachability'] = raw_values[['dim_61', 'dim_62', 'dim_63']].min(axis=1)
+        # Add column for best reachability
+        raw_values['best_reachability'] = raw_values[['dim_61', 'dim_62', 'dim_63']].min(axis=1)
 
         # Add to locations (joined by pandas index)
         locations = locations.join(raw_values.astype(float), how='left')
@@ -471,7 +494,7 @@ class LocationsListView(View):
         # Create histogram data for raw values
         self.request.session[f'travel_cost_hist_data'] = create_hist_for_slider(locations['dim_41'])
         self.request.session[f'accommodation_cost_hist_data'] = create_hist_for_slider(locations['dim_42'])
-        self.request.session[f'min_reachability_hist_data'] = create_hist_for_slider(locations['min_reachability'])
+        self.request.session[f'best_reachability_hist_data'] = create_hist_for_slider(locations['best_reachability'])
 
         # Store temperature range limits
         temperature = raw_values[['dim_21', 'dim_22']].values
@@ -491,10 +514,6 @@ class LocationsListView(View):
 
         # Compute relevance score and add to DataFrame
         # (correctly joined by pandas index)
-        previous_locations = ti_form_data['previous_locations']
-        previous_locations, previous_countries = clean_previous_locations(
-            previous_locations, locations
-        )
         locations['relevance'] = compute_relevance(
             previous_locations=previous_locations,
             previous_countries=previous_countries,
@@ -519,31 +538,54 @@ class LocationsListView(View):
         # Get form data
         filters_form_data = self.request.session['filters_form_data']
 
-        # Distance to start location
-        min_distance = filters_form_data['min_distance']
-        max_distance = filters_form_data['max_distance']
-        if min_distance is not None and max_distance is not None:
-            self.locations_list = self.locations_list[
-                (self.locations_list['distance_to_start'] >= min_distance)
-                & (self.locations_list['distance_to_start'] <= max_distance)
-            ]
-
-        # Population
-        min_population = filters_form_data['min_population']
-        max_population = filters_form_data['max_population']
-        if min_population is not None and max_population is not None:
-            self.locations_list = self.locations_list[
-                (self.locations_list['population'] >= min_population)
-                & (self.locations_list['population'] <= max_population)
-            ]
+        # Histogram value filters
+        hist_value_filters = {
+            'min': {
+                'distance': 'distance_to_start',
+                'population': 'population',
+                'travel_cost': 'dim_41',
+                'accommodation_cost': 'dim_42',
+                'best_reachability': 'best_reachability'
+            },
+            'max': {
+                'distance': 'distance_to_start',
+                'population': 'population',
+                'travel_cost': 'dim_41',
+                'accommodation_cost': 'dim_42',
+                'best_reachability': 'best_reachability'
+            }
+        }
+        for filter_name, variable in hist_value_filters['min'].items():
+            value = filters_form_data.get(f'min_{filter_name}')
+            if value is not None:
+                self.locations_list = self.locations_list[
+                    self.locations_list[variable] >= value
+                ]
+        for filter_name, variable in hist_value_filters['max'].items():
+            value = filters_form_data.get(f'max_{filter_name}')
+            if value is not None:
+                self.locations_list = self.locations_list[
+                    self.locations_list[variable] <= value
+                ]
 
         # Temperature
         min_temperature = filters_form_data['min_temperature']
-        max_temperature = filters_form_data['max_temperature']
-        if min_temperature is not None and max_temperature is not None:
+        if min_temperature is not None:
             self.locations_list = self.locations_list[
-                (self.locations_list['dim_22'] >= min_temperature)
-                & (self.locations_list['dim_21'] <= max_temperature)
+                self.locations_list['dim_22'] >= min_temperature
+            ]
+        max_temperature = filters_form_data['max_temperature']
+        if max_temperature is not None:
+            self.locations_list = self.locations_list[
+                self.locations_list['dim_21'] <= max_temperature
+            ]
+
+        # Mode of transport
+        mode_of_transport = filters_form_data.get('mode_of_transport')
+        if len(mode_of_transport) > 0:
+            self.locations_list = self.locations_list[
+                # Reachable (i.e. notna) by at least one of the selected modes
+                self.locations_list[mode_of_transport].notna().any(axis=1)
             ]
     
     def get_context_data(self, **kwargs):
@@ -563,7 +605,7 @@ class LocationsListView(View):
             'population_hist_data': self.request.session['population_hist_data'],
             'travel_cost_hist_data': self.request.session['travel_cost_hist_data'],
             'accommodation_cost_hist_data': self.request.session['accommodation_cost_hist_data'],
-            'min_reachability_hist_data': self.request.session['min_reachability_hist_data'],
+            'best_reachability_hist_data': self.request.session['best_reachability_hist_data'],
             'temperature_range_limits': self.request.session['temperature_range_limits'],
             'raw_values_format': self.request.session['raw_values_format'],
             'query_parameters': query_parameters,
@@ -710,19 +752,35 @@ class LocationDetailView(DetailView):
         if travel_warning:
             context['travel_warning'] = travel_warning
 
-        # Get top attractions
-        top_attractions = (
-            RawCultureTexts
+        # Get money text
+        money_text = (
+            RawCurrencyTexts
             .objects
             .filter(location_id=location.location_id)
             .values('text')
             .first()
         )
-        if top_attractions['text']:
-            try:
-                top_attractions['text'] = ast.literal_eval(top_attractions['text'])
-            except:
-                top_attractions['text'] = []
+        if money_text:
+            context['money_text'] = money_text['text']
+
+        # Get top attractions
+        top_attractions = list(
+            RawCultureSights
+            .objects
+            .filter(location_id=location.location_id)
+            .order_by('sight_rank')
+            .values_list('sight', flat=True)
+        )
+        if len(top_attractions) > 0:
+            context['top_attractions'] = top_attractions
+
+        # Get reference start location airport
+        reference_start_airport = (
+            CoreAirports.objects
+            .values('iata_code', 'airport_name', 'city')
+            .filter(iata_code=reference_start_location['mapped_start_airport'].strip()) #FIXME no FK + strip needed
+            .first()
+        )
 
         # Get previous locations
         previous_locations, previous_countries = clean_previous_locations(
@@ -740,7 +798,9 @@ class LocationDetailView(DetailView):
             
         # Add to context
         context.update({
+            'start_location': self.request.GET.get('start_location'),
             'reference_start_location': reference_start_location,
+            'reference_start_airport': reference_start_airport,
             'image': image,
             'location': location,
             'data': data,

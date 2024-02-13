@@ -50,7 +50,7 @@
         <div class="categeory-first-row">
 
             <!-- Scores -->
-            {% if category.category_name != "General" %}
+            {% if category.category_id != 0 %}
             <div class="category-content-container">
                 <div class="dimensions-figure-wrapper">
                     <div class="dimensions-figure">
@@ -99,8 +99,8 @@
             <!-- Texts -->
             <div class="category-content-container">
                 <div class="text-container">
-                    <p>{% if category.text_general %}{{ category.text_general }}{% endif %}</p>
-                    <p>{% if category.text_anomaly %}{{ category.text_anomaly }}{% endif %}</p>
+                   {% if category.text_general %}<p>{{ category.text_general }}</p>{% endif %}
+                   {% if category.text_anomaly %}<p>{{ category.text_anomaly }}</p>{% endif %}
                 </div>
             </div>
 
@@ -124,6 +124,26 @@
         <div class="category-content-container">
             <div class="category-content-title">Travel warning</div>
             <p>{{ travel_warning.warning_text }} <a href="{{ travel_warning.link }}">their website</a>.</p>
+        </div>
+
+        {% elif category.category_id == 4 and money_text %}
+        <div class="category-content-container">
+            <div class="category-content-title">Money</div>
+            <p>{{ money_text }}</p>
+        </div>
+
+        {% elif category.category_id == 6 %}
+        <div class="category-content-container">
+            <div class="category-content-title">Reference start location</div>
+            <p>
+                {% if start_location %}
+                    You inputted {{ start_location}} as your start location.
+                    We used our closest reference start location {{ reference_start_location.city }}, {{ reference_start_location.country }} to compute the reachability.
+                {% else %}
+                    We used {{ reference_start_location.city }}, {{ reference_start_location.country }} as start location to compute the reachability.
+                {% endif %}
+                For flights, we consider {{ reference_start_airport.airport_name }} ({{ reference_start_airport.iata_code }}) as origin airport.
+            </p>
         </div>
 
         {% elif category.category_id == 3 and top_attractions %}

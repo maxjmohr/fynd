@@ -127,6 +127,82 @@ Results
                     {{ filters_form.max_temperature.errors }}
                     {{ filters_form.max_temperature.as_widget }}
                 </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_travel_cost.id_for_label }}">
+                            {{ filters_form.min_travel_cost.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_travel_cost_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_travel_cost_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_travel_cost.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="travel_cost_range"></div>
+                    {{ filters_form.min_travel_cost.errors }}
+                    {{ filters_form.min_travel_cost.as_widget }}
+                    {{ filters_form.max_travel_cost.errors }}
+                    {{ filters_form.max_travel_cost.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_accommodation_cost.id_for_label }}">
+                            {{ filters_form.min_accommodation_cost.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_accommodation_cost_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_accommodation_cost_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_accommodation_cost.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="accommodation_cost_range"></div>
+                    {{ filters_form.min_accommodation_cost.errors }}
+                    {{ filters_form.min_accommodation_cost.as_widget }}
+                    {{ filters_form.max_accommodation_cost.errors }}
+                    {{ filters_form.max_accommodation_cost.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_best_reachability.id_for_label }}">
+                            {{ filters_form.min_best_reachability.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_best_reachability_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_best_reachability_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_best_reachability.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="best_reachability_range"></div>
+                    {{ filters_form.min_best_reachability.errors }}
+                    {{ filters_form.min_best_reachability.as_widget }}
+                    {{ filters_form.max_best_reachability.errors }}
+                    {{ filters_form.max_best_reachability.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.mode_of_transport.id_for_label }}">
+                            {{ filters_form.mode_of_transport.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'mode_of_transport_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="mode_of_transport_help_text" class="form-help-text-infobox">
+                            {{ filters_form.mode_of_transport.help_text }}
+                        </div>
+                    </div>
+                    <div class="checkbox-multiselect-container">
+                        {% for mode_of_transport in filters_form.modes_of_transport_data %}
+                            <label for="checkbox-{{ id }}" class="checkbox-multiselect-option">
+                                <input type="checkbox" name="{{ filters_form.mode_of_transport.html_name }}" value="{{ mode_of_transport.dimension }}" {% if mode_of_transport.dimension in filters_form.mode_of_transport.value or filters_form.mode_of_transport.value|length == 0 %}checked{% endif %}>
+                                <span class="checkbox-label-icon"><img src="{{  mode_of_transport.icon_url }}"></span>
+                                <span>{{  mode_of_transport.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
         </details>
 
@@ -265,8 +341,9 @@ Results
                         </div>
                         <span class="location-list-item-distance-to-start">{{ location.distance_to_start|floatformat:"0"|intcomma }} km away</span>
                     </div>
-                    <div class="location-list-item-relevance-container">
-                        <div class="location-list-item-relevance">{{ location.relevance|floatformat:1    }}</div>
+                    <div class="location-list-item-relevance-container has-tooltip">
+                        <div class="location-list-item-relevance">{{ location.relevance|floatformat:1 }}</div>
+                        <span class="tooltip-text relevance-tooltip-text">Relevance</span>
                     </div>
                 </div>
 
@@ -448,6 +525,27 @@ Results
         var format = {{ raw_values_format.temperature|safe }};
         var formatString = ",." + format.raw_value_decimals + "f";
         rangeSlider("temperature_range", "id_min_temperature", "id_max_temperature", data.min, data.max , d3.format(formatString), format.raw_value_unit);
+    });
+
+    $(function() {
+        var data = {{ travel_cost_hist_data|safe }};
+        var format = {{ raw_values_format.travel|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        histRangeSlider("travel_cost_range", "id_min_travel_cost", "id_max_travel_cost", data, d3.format(formatString), format.raw_value_unit);
+    });
+
+    $(function() {
+        var data = {{ accommodation_cost_hist_data|safe }};
+        var format = {{ raw_values_format.accommodation|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        histRangeSlider("accommodation_cost_range", "id_min_accommodation_cost", "id_max_accommodation_cost", data, d3.format(formatString), format.raw_value_unit);
+    });
+
+    $(function() {
+        var data = {{ best_reachability_hist_data|safe }};
+        var format = {{ raw_values_format.best_reachability|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        histRangeSlider("best_reachability_range", "id_min_best_reachability", "id_max_best_reachability", data, d3.format(formatString), format.raw_value_unit);
     });
 
 </script>

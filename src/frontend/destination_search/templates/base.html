@@ -266,10 +266,6 @@
             $("#" + minLabelId).text(formatWithSuffix(sliderMinValue));
             $("#" + maxLabelId).text(formatWithSuffix(sliderMaxValue));
 
-            // Set initial values for min and max distance form fields
-            $("#" + minFieldId).val(sliderMinValue);
-            $("#" + maxFieldId).val(sliderMaxValue);
-
             // Create the slider
             $("#" + sliderId).slider({
                 range: true,
@@ -277,8 +273,8 @@
                 max: maxValue,
                 values: [sliderMinValue, sliderMaxValue],
                 slide: function(event, ui) {
-                    $("#" + minFieldId).val(ui.values[0]);
-                    $("#" + maxFieldId).val(ui.values[1]);
+                    $("#" + minFieldId).val(ui.values[0] != minValue ? ui.values[0] : '');
+                    $("#" + maxFieldId).val(ui.values[1] != maxValue ? ui.values[1] : '');
                     $("#" + minLabelId).text(formatWithSuffix(ui.values[0]));
                     $("#" + maxLabelId).text(formatWithSuffix(ui.values[1]));
 
@@ -356,10 +352,6 @@
             $("#" + minLabelId).text(formatWithSuffix(sliderMinValue));
             $("#" + maxLabelId).text(formatWithSuffix(sliderMaxValue));
 
-            // Set initial values for min and max distance form fields
-            $("#" + minFieldId).val(sliderMinValue);
-            $("#" + maxFieldId).val(sliderMaxValue);
-
             // Create the slider
             $("#" + sliderId).slider({
                 range: true,
@@ -367,8 +359,8 @@
                 max: maxValue,
                 values: [sliderMinValue, sliderMaxValue],
                 slide: function(event, ui) {
-                    $("#" + minFieldId).val(ui.values[0]);
-                    $("#" + maxFieldId).val(ui.values[1]);
+                    $("#" + minFieldId).val(ui.values[0] != minValue ? ui.values[0] : '');
+                    $("#" + maxFieldId).val(ui.values[1] != maxValue ? ui.values[1] : '');
                     $("#" + minLabelId).text(formatWithSuffix(ui.values[0]));
                     $("#" + maxLabelId).text(formatWithSuffix(ui.values[1]));
                 }
