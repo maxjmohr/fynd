@@ -55,7 +55,7 @@ def create_prompt_texts_comparison(data:pd.DataFrame, start_date:str, end_date:s
             .drop(columns="location") \
             .groupby(["location_type", "category_name", "dimension_name"]).mean().reset_index()
 
-        previous_locs_avg["location"] = "Average of your previous locations"
+        previous_locs_avg["location"] = "Average of the previous locations"
 
         # Add the target location to the average dataframe
         target_loc = data[data["location_type"] == "Target Location"]
