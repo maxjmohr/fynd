@@ -662,9 +662,9 @@ class LocationDetailView(DetailView):
             .set_index('category_id')
         )
 
-        # Get categories with related dimensions
-        categories_with_dimensions = CoreCategories.objects.prefetch_related(
-            Prefetch('coredimensions_set')
+        # Get categories with related dimensions (in correct order)
+        categories_with_dimensions = CoreCategories.objects.order_by('display_order').prefetch_related(
+            Prefetch('coredimensions_set', queryset=CoreDimensions.objects.order_by('dimension_id'))
         )
 
         def format_raw_value(dimension: int) -> str:
@@ -702,9 +702,6 @@ class LocationDetailView(DetailView):
             }
             for category in categories_with_dimensions
         ]
-
-        # Order by display_order
-        data = sorted(data, key=lambda x: x['display_order'])
 
         # Get weather data
         weather_fields = ['year', 'month', 'temperature_max', 'temperature_min', 'precipitation_sum']
@@ -835,8 +832,6 @@ def openai_proxy(request):
         #frequency_penalty=,
         #max_tokens=
     )
-
-    print(completion.choices[0].message.content)
 
     return JsonResponse({'text': completion.choices[0].message.content})
 
