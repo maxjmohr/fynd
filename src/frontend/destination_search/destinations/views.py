@@ -214,12 +214,12 @@ class DiscoverView(FormView):
         return initial
 
     def form_valid(self, form):
-        self.request.session['travellers_input_form_data'] = form.cleaned_data
+        self.form_data = form.cleaned_data
         return super().form_valid(form)
 
     def get_success_url(self):
         url = reverse('locations_list')
-        query_string = encode_url_parameters(self.request.session['travellers_input_form_data'])
+        query_string = encode_url_parameters(self.form_data)
         url = f"{url}?{query_string}"
         return url
 
