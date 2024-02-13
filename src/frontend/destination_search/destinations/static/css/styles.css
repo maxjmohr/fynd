@@ -596,6 +596,7 @@ body {
 }
 
 .location-list-item-relevance-container {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -605,6 +606,11 @@ body {
     font-size: 1.2em;
     font-weight: bold;
     color: var(--darkgrey);
+}
+
+.relevance-tooltip-text {
+    top: 100%;
+    left: -50%;
 }
 
 .pagination-container {

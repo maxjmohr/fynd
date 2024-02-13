@@ -319,8 +319,9 @@ Results
                         </div>
                         <span class="location-list-item-distance-to-start">{{ location.distance_to_start|floatformat:"0"|intcomma }} km away</span>
                     </div>
-                    <div class="location-list-item-relevance-container">
-                        <div class="location-list-item-relevance">{{ location.relevance|floatformat:1    }}</div>
+                    <div class="location-list-item-relevance-container has-tooltip">
+                        <div class="location-list-item-relevance">{{ location.relevance|floatformat:1 }}</div>
+                        <span class="tooltip-text relevance-tooltip-text">Relevance</span>
                     </div>
                 </div>
 
