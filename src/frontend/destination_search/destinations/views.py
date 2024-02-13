@@ -756,6 +756,17 @@ class LocationDetailView(DetailView):
         if travel_warning:
             context['travel_warning'] = travel_warning
 
+        # Get money text
+        money_text = (
+            RawCurrencyTexts
+            .objects
+            .filter(location_id=location.location_id)
+            .values('text')
+            .first()
+        )
+        if money_text:
+            context['money_text'] = money_text['text']
+
         # Get top attractions
         top_attractions = list(
             RawCultureSights

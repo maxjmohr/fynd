@@ -185,3 +185,15 @@ class RawCultureSights(models.Model):
         managed = False
         db_table = 'raw_culture_sights'
         unique_together = (('location_id', 'sight_rank'),)
+
+
+class RawCurrencyTexts(models.Model):
+    location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='location_id')
+    country_code = models.TextField(blank=True, null=True)
+    category_id = models.BigIntegerField(blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_currency_texts'

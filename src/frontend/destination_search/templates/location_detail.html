@@ -126,6 +126,12 @@
             <p>{{ travel_warning.warning_text }} <a href="{{ travel_warning.link }}">their website</a>.</p>
         </div>
 
+        {% elif category.category_id == 4 and money_text %}
+        <div class="category-content-container">
+            <div class="category-content-title">Money</div>
+            <p>{{ money_text }}</p>
+        </div>
+
         {% elif category.category_id == 6 %}
         <div class="category-content-container">
             <div class="category-content-title">Reference start location</div>
