@@ -167,7 +167,6 @@ def get_scores(
         if type(location_id) == list:
             raise ValueError('Text retrieval ony possible for one location_id.')
         else:
-            #FIXME how to handle start and end date, since we cant average texts?
             texts = CoreTexts.objects.filter(
                 Q(location_id=location_id)
                 & Q(ref_start_location_id__in=[-1, reference_start_location['location_id']])
