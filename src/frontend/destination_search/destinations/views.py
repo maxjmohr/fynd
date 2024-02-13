@@ -431,6 +431,7 @@ class LocationsListView(View):
             lon2=locations['lon'].astype(float), #FIXME dtype
             lat2=locations['lat'].astype(float) #FIXME dtype
         )
+        locations = locations.loc[locations['distance_to_start'] > 1] # Only locations further than 1 km
         self.request.session['distance_to_start_hist_data'] = create_hist_for_slider(locations['distance_to_start'])
 
         # Get scores
