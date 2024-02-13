@@ -4,7 +4,7 @@ from django.views.generic.detail import DetailView
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.paginator import Paginator
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
 from django.forms.models import model_to_dict
@@ -17,7 +17,12 @@ import pandas as pd
 from urllib.parse import urlencode
 from django_pandas.io import read_frame
 import json
-import ast
+from django.views.decorators.csrf import csrf_exempt
+from openai import OpenAI
+from dotenv import load_dotenv, find_dotenv
+
+# Load environment variables
+load_dotenv(find_dotenv())
 
 
 def get_locations_for_select2():
@@ -782,21 +787,18 @@ class LocationDetailView(DetailView):
             .first()
         )
 
-        # Get previous locations
-        previous_locations, previous_countries = clean_previous_locations(
-            self.request.GET.getlist('previous_locations', [])
-        )
+        # Location ids for similarity tab (current+previous)
+        previous_locations = self.request.GET.getlist('previous_locations', [])
         if len(previous_locations) > 0:
-            previous_locations = (
-                CoreLocations
-                .objects
-                .filter(location_id__in=previous_locations)
-                .values('location_id', 'city', 'country')
-            )
-            context['previous_locations'] = previous_locations
-            context['previous_countries'] = previous_countries
+            context['similarity_locations'] = json.dumps({   
+                'location_id': location.location_id,
+                'previous_locations': self.request.GET.getlist('previous_locations', [])
+            })
+            context['include_similarity'] = True
+        else:
+            context['include_similarity'] = False
             
-        # Add to context
+        # Update context
         context.update({
             'start_location': self.request.GET.get('start_location'),
             'reference_start_location': reference_start_location,
@@ -810,4 +812,31 @@ class LocationDetailView(DetailView):
         })
 
         return context
+
+@csrf_exempt
+def openai_proxy(request):
+
+    # Set up client
+    client = OpenAI()
+
+    # Get location and previous locations from request
+    data = json.loads(request.body)
+    location_ids = 'Istanbul' #data.get('location_id', [])
+
+    messages = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": f"Tell me about locations {location_ids}. Use multiple paragraphs."}
+    ]
+
+    completion = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=messages,
+        #temperature=,
+        #frequency_penalty=,
+        #max_tokens=
+    )
+
+    print(completion.choices[0].message.content)
+
+    return JsonResponse({'text': completion.choices[0].message.content})
 
