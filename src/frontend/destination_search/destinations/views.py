@@ -415,6 +415,12 @@ class LocationsListView(View):
         locations = read_frame(CoreLocations.objects.values(*cols))
         locations.set_index('location_id', inplace=True)
 
+        # Get previous locations
+        previous_locations = ti_form_data['previous_locations']
+        previous_locations, previous_countries = clean_previous_locations(
+            previous_locations, locations
+        )
+
         # Store population histogram data
         self.request.session['population_hist_data'] = create_hist_for_slider(locations['population'])
 
@@ -435,7 +441,7 @@ class LocationsListView(View):
             start_location_lon=ti_form_data['start_location_lon']
         )
 
-        # Extract raw_values (for filters, only for a few dimensions)
+        # Extract raw_values (for filters, only for a few dimensions), to do so:
 
         # Store raw values format in session
         relevant_dimensions = [21, 22, 41, 42, 61, 62, 63]
@@ -448,7 +454,7 @@ class LocationsListView(View):
             21: 'temperature',
             41: 'travel',
             42: 'accommodation',
-            61: 'min_reachability'
+            61: 'best_reachability'
         }
         self.request.session['raw_values_format'] = (
             raw_values_format
@@ -465,6 +471,7 @@ class LocationsListView(View):
             .assign(dimension_id=clean_id(scores['dimension_id']))
             .query('dimension_id in @relevant_dimensions')
             .pivot(columns='dimension_id', index='location_id', values='raw_value')
+            .query('index not in @previous_locations')
         )
 
         # Add possibly missing columns + round raw values
@@ -478,8 +485,8 @@ class LocationsListView(View):
                 )
         raw_values.rename(columns=lambda x: 'dim_' + str(x), inplace=True)
         
-        # Add column for min reachability
-        raw_values['min_reachability'] = raw_values[['dim_61', 'dim_62', 'dim_63']].min(axis=1)
+        # Add column for best reachability
+        raw_values['best_reachability'] = raw_values[['dim_61', 'dim_62', 'dim_63']].min(axis=1)
 
         # Add to locations (joined by pandas index)
         locations = locations.join(raw_values.astype(float), how='left')
@@ -487,7 +494,7 @@ class LocationsListView(View):
         # Create histogram data for raw values
         self.request.session[f'travel_cost_hist_data'] = create_hist_for_slider(locations['dim_41'])
         self.request.session[f'accommodation_cost_hist_data'] = create_hist_for_slider(locations['dim_42'])
-        self.request.session[f'min_reachability_hist_data'] = create_hist_for_slider(locations['min_reachability'])
+        self.request.session[f'best_reachability_hist_data'] = create_hist_for_slider(locations['best_reachability'])
 
         # Store temperature range limits
         temperature = raw_values[['dim_21', 'dim_22']].values
@@ -507,10 +514,6 @@ class LocationsListView(View):
 
         # Compute relevance score and add to DataFrame
         # (correctly joined by pandas index)
-        previous_locations = ti_form_data['previous_locations']
-        previous_locations, previous_countries = clean_previous_locations(
-            previous_locations, locations
-        )
         locations['relevance'] = compute_relevance(
             previous_locations=previous_locations,
             previous_countries=previous_countries,
@@ -561,6 +564,32 @@ class LocationsListView(View):
                 (self.locations_list['dim_22'] >= min_temperature)
                 & (self.locations_list['dim_21'] <= max_temperature)
             ]
+
+        # Simple raw value filters
+        raw_value_filters = {
+            'min': {
+                'travel_cost': 'dim_41',
+                'accommodation_cost': 'dim_42',
+                'best_reachability': 'best_reachability'
+            },
+            'max': {
+                'travel_cost': 'dim_41',
+                'accommodation_cost': 'dim_42',
+                'best_reachability': 'best_reachability'
+            }
+        }
+        for filter_name, dimension in raw_value_filters['min'].items():
+            value = filters_form_data.get(f'min_{filter_name}')
+            if value is not None:
+                self.locations_list = self.locations_list[
+                    self.locations_list[dimension] >= value
+                ]
+        for filter_name, dimension in raw_value_filters['max'].items():
+            value = filters_form_data.get(f'max_{filter_name}')
+            if value is not None:
+                self.locations_list = self.locations_list[
+                    self.locations_list[dimension] <= value
+                ]
     
     def get_context_data(self, **kwargs):
         """Assemble context for template."""
@@ -579,7 +608,7 @@ class LocationsListView(View):
             'population_hist_data': self.request.session['population_hist_data'],
             'travel_cost_hist_data': self.request.session['travel_cost_hist_data'],
             'accommodation_cost_hist_data': self.request.session['accommodation_cost_hist_data'],
-            'min_reachability_hist_data': self.request.session['min_reachability_hist_data'],
+            'best_reachability_hist_data': self.request.session['best_reachability_hist_data'],
             'temperature_range_limits': self.request.session['temperature_range_limits'],
             'raw_values_format': self.request.session['raw_values_format'],
             'query_parameters': query_parameters,

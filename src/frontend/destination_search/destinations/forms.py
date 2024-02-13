@@ -86,6 +86,39 @@ class FiltersForm(forms.Form):
         required=False,
     )
 
+    min_travel_cost = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Travel cost',
+        help_text='Flight cost from start location (reference) to destination.'
+    )
+    max_travel_cost = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
+    min_accommodation_cost = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Accommodation cost',
+        help_text='Hote prices at the destination for one night.'
+    )
+    max_accommodation_cost = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
+    min_best_reachability = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+        label='Reachability',
+        help_text='Best reachability (using the fastest mean of transport).'
+    )
+    max_best_reachability = forms.FloatField(
+        widget=forms.HiddenInput(),
+        required=False,
+    )
+
 
 class PreferencesForm(forms.Form):
     def __init__(self, *args, **kwargs):
