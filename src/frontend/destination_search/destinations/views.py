@@ -912,10 +912,13 @@ def openai_proxy(request):
     completion = client.chat.completions.create(
         model='gpt-3.5-turbo',
         messages=messages,
-        #temperature=,
-        #frequency_penalty=,
-        #max_tokens=
+        temperature=0.8,
+        frequency_penalty=0.4,
+        max_tokens=400
     )
 
-    return JsonResponse({'text': completion.choices[0].message.content})
+    return JsonResponse({
+        'text': completion.choices[0].message.content,
+        'warning': warning
+    })
 

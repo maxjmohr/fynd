@@ -62,7 +62,7 @@ def create_similarity_text_prompt(
         data = pd.concat([previous_locs_avg, target_loc], ignore_index=True)
 
     else:
-        warning = ""
+        warning = None
 
     # Convert the dataframe to a dictionary
     data = df_to_dict(data)

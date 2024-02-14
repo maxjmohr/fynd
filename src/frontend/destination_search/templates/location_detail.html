@@ -162,9 +162,12 @@
 
     {% if include_similarity %}
         <div id="Similarity" class="tabcontent">
-            <div id="similarity-text-output" class="category-content-container">
+            <div class="category-content-container">
                 <div class="category-content-title">Comparison of {{ location.city }} with your previous destinations</div>
                 <form method="post">{% csrf_token %}</form>
+                <div id="similarity-tab-loading-spinner" class="loading-spinner"><img src="{% static 'images/loading.gif' %}" alt="Loading..."></div>
+                <div id="similarity-warning-output"></div>
+                <div id="similarity-text-output"></div>
             </div>
         </div>
     {% endif %}
@@ -460,12 +463,16 @@
     // Get the CSRF token
     var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Only make the API call if neccessary
+    // Only make the API call if necessary
     var includeSimilarity = {{ include_similarity|yesno:"true,false" }};
     if (includeSimilarity) {
 
         // Get the data from the Django context
         var similarityData = JSON.parse('{{ similarity_data|safe }}');
+
+        // Get the loading spinner and show
+        var loadingSpinner = document.getElementById('similarity-tab-loading-spinner');
+        loadingSpinner.style.display = 'flex';
 
         // Make the API call
         fetch('/api/openai', {
@@ -478,18 +485,28 @@
         })
         .then(response => response.json())
         .then(data => {
-            // Convert line breaks into HTML paragraphs
+            // Hide the loading spinner
+            loadingSpinner.style.display = 'none';
+
+            // Convert line breaks into HTML paragraphs and append to output div
             var paragraphs = data.text.split('\n\n').map(function(line) {
                 return '<p>' + line + '</p>';
             }).join('');
-
-            // Get the output div
             const outputDiv = document.getElementById('similarity-text-output');
-
-            // Append the new content to the existing content of the div
             outputDiv.innerHTML += paragraphs;
+
+            // Show warning if not None
+            if (data.warning) {
+                const warningDiv = document.getElementById('similarity-warning-output');
+                warningDiv.innerHTML = '<p class="similarity-warning-text">' + data.warning + '</p>';
+            }
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+
+            // Hide the loading spinner
+            loadingSpinner.style.display = 'none';
+        });
     }
 </script>
 
