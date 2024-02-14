@@ -336,7 +336,6 @@ class CompareView(View):
         def format_raw_value(location, dimension) -> str:
             """Format raw value."""
             raw_value = get_value(location['location_id'], dimension.dimension_id, 'raw_value')
-            print(raw_value)
             if pd.isna(raw_value):
                 return ''
             return f' ({raw_value:.{dimension.raw_value_decimals}f}{dimension.raw_value_unit})'
