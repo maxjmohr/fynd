@@ -21,10 +21,16 @@ Compare destinations
     // Parse the JSON data
     var data = JSON.parse('{{ data|safe }}');
 
-    // Function to generate a color
+    // Function to generate a color (not used, just for reference)
     function getColor(index, total) {
         var hue = index / total * 360;
         return 'hsl(' + hue + ', 100%, 50%)';
+    }
+
+    // Function to get a color from the palette (used)
+    var colorPalette = ['#023EFF', '#FF7C00', '#1AC938', '#E8000B', '#D70DAD', '#9F4800'];
+    function getColor(index, total) {
+        return colorPalette[index % colorPalette.length];
     }
 
     // Create the layout
@@ -58,7 +64,7 @@ Compare destinations
     var traces = [];
 
     // Calculate the total number of dimensions
-    gap = 2;
+    gap = 3;
     var totalDimensions = 0;
     data.forEach(function(category) {
         category.locations.forEach(function(location) {
