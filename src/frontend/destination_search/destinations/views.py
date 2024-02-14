@@ -322,8 +322,8 @@ class CompareView(View):
         categories_with_dimensions = (
             CoreCategories.objects
             .filter(~Q(category_id=0))
-            .order_by('display_order')
-            .prefetch_related(Prefetch('coredimensions_set', queryset=CoreDimensions.objects.order_by('dimension_id')))
+            .order_by('-display_order')
+            .prefetch_related(Prefetch('coredimensions_set', queryset=CoreDimensions.objects.order_by('-dimension_id')))
         )
 
         def format_raw_value(location: int, dimension: int) -> str:

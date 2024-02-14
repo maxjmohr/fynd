@@ -54,19 +54,53 @@ Compare destinations
     // Create the layout
     var layout = {
         autosize: true,
-        height: 2000,
+        height: 1800,
         width: 800,
-        grid: {rows: data.length, columns: 1, pattern: 'independent'},
+        margin: {
+            l: 200, // Increase the left margin to make room for the y-labels
+            r: 10,
+            b: 50,
+            t: 0,
+            pad: 4
+        },
+        grid: {
+            rows: data.length,
+            columns: 1,
+            pattern: 'independent'
+        },
+        annotations: [], // Will be filled in later
+        legend: {
+            x: 0.5,
+            y: 1.06,
+            xanchor: 'center',
+            yanchor: 'top',
+            orientation: 'h',
+        } 
     };
 
     var traces = [];
 
+    // Calculate the total number of dimensions
+    gap = 2;
+    var totalDimensions = 0;
+    data.forEach(function(category) {
+        category.locations.forEach(function(location) {
+            totalDimensions += location.dimensions.length;
+        });
+    });
+
+    var currentDimension = 0;
+
     // Iterate over the categories
     data.forEach(function(category, i) {
+        var categoryDimensions = 0;
+        // Iterate over the locations
+        category.locations.forEach(function(location) {
+            categoryDimensions += location.dimensions.length;
+        });
 
-        // Iterate over the locations to create the traces
+        // Iterate over the locations again to create the traces
         category.locations.forEach(function(location, j) {
-
             // Create arrays to hold the scores and dimension names
             var scores = [];
             var dimensionNames = [];
@@ -95,20 +129,39 @@ Compare destinations
             traces.push(trace);
         });
 
-        // Define the axes
+        // Add an annotation for the category name
+        layout.annotations.push({
+            text: '<b>' + category.category_name + '</b>',
+            xref: 'paper',
+            yref: 'paper',
+            x: 0.5,
+            y: (currentDimension + categoryDimensions - (i === data.length-1 ? 0 : gap) + 0.5) / totalDimensions, // Position the annotation in the middle of the subplot
+            xanchor: 'center',
+            yanchor: 'bottom',
+            showarrow: false,
+            font: {
+                size: 16
+            }
+        });
+
+        // Define the y-axis for this category
         layout['yaxis' + (i + 1)] = {
             type: 'category',
+            domain: [(currentDimension + (i === 0 ? 0 : gap)) / totalDimensions, (currentDimension + categoryDimensions - (i === data.length-1 ? 0 : gap)) / totalDimensions] // Set the domain based on the number of dimensions
         };
         layout['xaxis' + (i + 1)] = {
-            range: [0, 1]
+            range: [0, 1],
+            title: i === 0 ? 'Score' : undefined,
+            showticklabels: i === 0
         };
 
+        currentDimension += categoryDimensions;
     });
 
     console.log(layout)
 
     // Create the plot
-    Plotly.newPlot('comparison-chart', traces, layout);
+    Plotly.newPlot('comparison-chart', traces, layout, {displayModeBar: false});
 
 </script>
 {% endblock %}
