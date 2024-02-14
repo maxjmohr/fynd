@@ -6,33 +6,9 @@ Compare destinations
 
 {% block main %}
 <div class="comparison-page-container">
-    <table>
-        <thead>
-            <tr>
-                <th>Color</th>
-                <th>City</th>
-                <th>Country</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for location in locations %}
-            <tr>
-                <td><div id="{{ location.location_id}}" class="comparison-location-color"></div></td>
-                <td>{{ location.city }}</td>
-                <td>
-                    <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
-                    {{ location.country }}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="myDiv" id="myDiv"></div>
-
-    <div id="comparison-chart"></div>
-
     <div class="comparison-chart-container">
+        <div class="segment-title">Destination comparison</div>
+        <div id="comparison-chart"></div>
     </div>
 
 </div>
@@ -162,8 +138,6 @@ Compare destinations
 
         currentDimension += categoryDimensions;
     });
-
-    console.log(layout)
 
     // Create the plot
     Plotly.newPlot('comparison-chart', traces, layout, {displayModeBar: false});
