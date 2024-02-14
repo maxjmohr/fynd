@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import random
 import time
+from tqdm import tqdm
 import flexpolyline as fp
 from geopy.distance import geodesic
 from dateutil import parser
@@ -12,6 +13,8 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 from database.db_helpers import Database
 from urllib3.exceptions import MaxRetryError
+import numpy as np
+import json
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -168,19 +171,32 @@ class Route:
         if r.status_code!= 200:
             return {}
         
-        res = r.json()   
+        res = r.json()
+
         routes = polyline.decode(res['routes'][0]['geometry'])
         start_point = (res['waypoints'][0]['location'][1], res['waypoints'][0]['location'][0])
         end_point = (res['waypoints'][1]['location'][1], res['waypoints'][1]['location'][0])
         distance = res['routes'][0]['distance']
         duration = res['routes'][0]['duration']
+
+        # Reverse the coordinates for GeoJSON (lon, lat instead of lat, lon)
+        geojson_coords = [(lon, lat) for lat, lon in routes]
+        geojson_dict = {
+            "type": "Feature",
+            "properties": {},
+            "geometry": {
+                "type": "LineString",
+                "coordinates": geojson_coords
+            }
+        }
         
         out = {
             'route': routes,
             'start_point': {'lat': start_point[0], 'lon': start_point[1]},
             'end_point': {'lat': end_point[0], 'lon': end_point[1]},
             'distance': distance,
-            'duration': duration,
+            'duration': duration / 60, # convert to minutes
+            'geojson': json.dumps(geojson_dict),
             'polyline': res['routes'][0]['geometry']
             }
 
@@ -197,8 +213,8 @@ class Route:
 
         else:
             car_route = self.get_car_route()
-            return ((self.dest['lon'] - car_route['end_point']['lon'] <= 0.1) and 
-                    (self.dest['lat'] - car_route['end_point']['lat'] <= 0.1))
+            return ((np.abs(self.dest['lon'] - car_route['end_point']['lon']) <= 0.1) and 
+                    (np.abs(self.dest['lat'] - car_route['end_point']['lat']) <= 0.1))
         
 
     def get_public_transport_route(self, key: str, max_distance: str ="2000") -> dict:
@@ -227,6 +243,7 @@ class Route:
                     "start_point": None,
                     "end_point": None,
                     "duration": None,
+                    "geojson": None,
                     "polyline": None,
                     "route": 0,
                     "distance": 0,
@@ -237,20 +254,32 @@ class Route:
                 poly_line = poly_coord_dict['polyline']
                 route_coords = poly_coord_dict['coords']
 
+                # Reverse the coordinates for GeoJSON (lon, lat instead of lat, lon)
+                geojson_coords = [(lon, lat) for lat, lon in route_coords]
+                geojson_dict = {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": geojson_coords
+                    }
+                }
+
                 departure = parse(json_r['routes'][0]['sections'][0]['departure']['time'])
                 arrival = parse(json_r['routes'][0]['sections'][-1]['arrival']['time'])
 
-                # compute time difference between departure and arrival
-                total_seconds = (arrival - departure).total_seconds()
+                # compute time difference between departure and arrival, convert to minutes
+                total_minutes = (arrival - departure).total_seconds() / 60
 
                 return {
                     "start_point": route_coords[0],
                     "end_point": route_coords[-1],
-                    "duration": total_seconds,
-                    "polyline": poly_line,
+                    "duration": total_minutes,
+                    "geojson": json.dumps(geojson_dict),
                     "route": route_coords,
                     "distance": calculate_total_distance(route_coords),
-                    'total_transfers': countNonPedestrianRoutes(json_r)
+                    'total_transfers': countNonPedestrianRoutes(json_r),
+                    'polyline': poly_line
                 }
 
         else:
@@ -300,39 +329,42 @@ class Route:
             soup = BeautifulSoup(driver.page_source, "html.parser")
             return soup
         
-        except TimeoutException:
-            print("Empty connection detection timed out")
+        except TimeoutException as e:
+            print("Getting flight results page timed out.")
             pass
         
         # check for captcha
         try:
             element_text = "Please confirm that you are a real KAYAK user."
-            error_element = WebDriverWait(driver, CAPTCHA_WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{element_text}')]")))
+            error_element = driver.find_element(By.XPATH, f"//*[contains(text(), '{element_text}')]")
+            #error_element = WebDriverWait(driver, CAPTCHA_WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{element_text}')]")))
             print("Captcha detected.")
             return CAPTCHA_DETECTED
 
-        except TimeoutException as e:
+        except NoSuchElementException as e:
             print("Captcha detection timed out")
             pass
 
         # Kayak restricts access to certain countries (Russia, Belarus, Iran)
         try:
             element_text = "Due to government restrictions, we are unable to show results for this search."
-            error_element = WebDriverWait(driver, CAPTCHA_WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{element_text}')]")))
+            error_element = driver.find_element(By.XPATH, f"//*[contains(text(), '{element_text}')]")
+            #error_element = WebDriverWait(driver, CAPTCHA_WAIT_TIME).until(EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{element_text}')]")))
             return NO_RESULTS_FOUND
         
-        except TimeoutException:
+        except NoSuchElementException as e:
             print("Government restriction detection timed out")
             pass
 
         # if "No flight founds" element pops up, return -1
         try:
-            driver.find_element(By.CSS_SELECTOR, '.IVAL-title')
+            element_text = f"No matching flights found between {orig_iata} and {dest_iata} for these dates."
+            driver.find_element(By.XPATH, f"//*[contains(text(), '{element_text}')]")
             print(f"No flights available for {orig_iata} to {dest_iata} on {date_leave}.")
             return NO_RESULTS_FOUND
 
-        except Exception as e:
-            print(f"Getting Flight data from {orig_iata} to {dest_iata} on {date_leave} timed out.")
+        except NoSuchElementException as e:
+            print(f"Looking for empty connection element for {dest_iata} to {orig_iata} timed out.")
             return None
         
 
@@ -360,7 +392,7 @@ class Route:
         elif soup == -1:
             return -1
         
-        else:
+        elif soup is not None:
             flight_data = {
                 'origin': orig_iata,
                 'destination': dest_iata,
@@ -392,7 +424,76 @@ class Route:
                 "min_duration": min(flight_data['duration']), "max_duration": max(flight_data['duration']),
                 "avg_stops": sum(flight_data['stops']) / len(flight_data['stops'])
                 }
+        
+        else:
+            return None
     
+
+def fill_reachibility_table(locations: pd.DataFrame, 
+                            start_refs: pd.DataFrame, 
+                            processed_locs: pd.DataFrame,
+                            periods: list,
+                            mode: str = "land"):
+    """
+    Fills the reachability tables with default data on which the scores are computed.
+    Args:
+        locs (pd.DataFrame): The (core) locations for which the reachability is computed.
+        start_refs (pd.DataFrame): The reference locations for the reachability computation.
+        processed_locs (pd.DataFrame): The processed rows for which no further computation is necessary.
+        periods (list): The periods for which the reachability is computed.
+        mode (str): The mode of reachability computation.
+    Returns:
+        None
+    """
+
+    insert_data = []
+
+    if mode == "land":
+
+        # inititalize empty dictionary with default values
+        dummy_dict = {
+                "loc_id": None, "ref_id": None, "arr_city": None, "dep_city": None,
+                "car_distance": None, "car_duration": None, "car_polyline": None,
+                "pt_distance": None, "pt_duration": None, "pt_polyline": None, 
+                "pt_total_transfers": None
+            }
+
+        # loop over all locations and reference locations and look for unprocessed combinations
+        for loc in tqdm(locations, "Creating dummies for missing land reachability data..."):
+            for start_ref in start_refs:
+                if processed_locs[(processed_locs['loc_id'] == loc['location_id']) & (processed_locs['ref_id'] == start_ref['location_id'])].shape[0] == 0:
+                    insert_data.append(
+                        dummy_dict.update({
+                            "loc_id": loc['location_id'],
+                            "ref_id": start_ref['location_id'],
+                            "arr_city": loc['city'],
+                            "dep_city": start_ref['city']
+                        })
+                    )
+
+    elif mode == "air":
+
+        dummy_dict = {
+                "orig_iata": None, "dest_iata": None, "dep_date": None, "total_flights": None, 
+                "avg_price": None, "min_price": None, "max_price": None,
+                "avg_duration": None, "min_duration": None, "max_duration": None,
+                "avg_stops": None
+            }
+        
+        for loc in tqdm(locations, "Creating dummies for missing air reachability data..."):
+            for start_ref in start_refs:
+                for period in periods:
+                    if processed_locs[(processed_locs['orig_iata'] == start_ref['mapped_start_airport']) & (processed_locs['dest_iata'] == loc['airport_1']) & (processed_locs['dep_date'] == period[0])].shape[0] == 0:
+                        insert_data.append(
+                            dummy_dict.update({
+                                "orig_iata": start_ref['mapped_start_airport'],
+                                "dest_iata": loc['airport_1'],
+                                "dep_date": period[0]
+                            })
+                        )
+
+    return pd.DataFrame(insert_data)
+
 
 def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFrame) -> pd.DataFrame:
     """
@@ -404,7 +505,7 @@ def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFra
         pd.DataFrame: The land reachability data.
     """
 
-    res, counter = [], 0
+    res = []
 
     key = os.environ.get("HERE_API_KEY")
 
@@ -433,25 +534,20 @@ def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFra
         # car route
         if route.car_route_available():
             car_route = route.get_car_route()
-            #print("car route available")
             tmp_dict['car_distance'] = car_route['distance']
             tmp_dict['car_duration'] = car_route['duration']
             tmp_dict['car_polyline'] = car_route['polyline']
+            tmp_dict['car_geojson'] = car_route['geojson']
 
             # public transport route
             if car_route['duration'] < 3600*20:
-                print("public transport route available")
+                #print("public transport route available")
                 pt_route = route.get_public_transport_route(key)
                 tmp_dict['pt_distance'] = pt_route['distance']
                 tmp_dict['pt_duration'] = pt_route['duration']
                 tmp_dict['pt_polyline'] = pt_route['polyline']
                 tmp_dict['pt_total_transfers'] = pt_route['total_transfers']
-
-                counter +=1
-
-                if counter >= 1000:
-                    print("Reached maximum number of requests.")
-                    break
+                tmp_dict['pt_geojson'] = pt_route['geojson']
 
             else:
                 print("public transport route not available")
@@ -459,6 +555,7 @@ def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFra
                 tmp_dict['pt_duration'] = 0
                 tmp_dict['pt_polyline'] = None
                 tmp_dict['pt_total_transfers'] = 0
+                tmp_dict['pt_geojson'] = None
 
         else:
             tmp_dict['car_distance'] = 0
@@ -468,11 +565,16 @@ def process_location_land_reachability(loc: pd.DataFrame, start_refs: pd.DataFra
             tmp_dict['pt_duration'] = 0
             tmp_dict['pt_polyline'] = None
             tmp_dict['pt_total_transfers'] = 0
+            tmp_dict['pt_geojson'] = None
         
         # return dataframe of results to be inserted into database
         res.append(pd.DataFrame(tmp_dict, index=[0]))
 
-    return pd.concat(res)
+    db = Database()
+    db.connect()
+    db.insert_data(pd.concat(res), "raw_reachability_land")
+    db.disconnect()
+    return None
     
 
 def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFrame, processed_locs) -> pd.DataFrame:
@@ -516,7 +618,7 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
                 dest_iata = "AKX"
 
             # all airports in Russia, Iran, and Belarus get no results
-            restricted = ['SVO', 'DME', 'VKO', 'THR', 'LED', 'MHD', 'IKA', 'AER', 'SVX',
+            blacklist = ['SVO', 'DME', 'VKO', 'THR', 'LED', 'MHD', 'IKA', 'AER', 'SVX',
                 'OVB', 'MSQ', 'SYZ', 'KRR', 'AWZ', 'KIH', 'UFA', 'IFN', 'ROV',
                 'KUF', 'KZN', 'KJA', 'MRV', 'VVO', 'KHV', 'IKT', 'TBZ', 'TJM',
                 'KGD', 'SGC', 'CEK', 'AAQ', 'PEE', 'BND', 'MCX', 'VOG', 'UUS',
@@ -528,7 +630,8 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
                 'NOJ', 'ABA', 'NOZ', 'NYM', 'KVX', 'USK', 'PEZ', 'MQF', 'BTK',
                 'KGP']
             
-            if dest_iata in restricted:
+            # also exclude routes from and to the same airport
+            if (dest_iata in blacklist) | (orig_iata == dest_iata):
                 db.connect()
                 db.insert_data(pd.DataFrame({
                     "orig_iata": orig_iata, "dest_iata": dest_iata,
@@ -580,16 +683,6 @@ def process_location_air_reachability(loc: pd.DataFrame, start_refs: pd.DataFram
 
                 elif flight_data is None:
                     print(f"\033[1;31mWARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}\033[0m")
-
-                else:
-                    print(f"\033[1;31mWARNING: No flight data found for {orig_iata} to {loc['city']} on {dep_date}\033[0m")
-                
-                #except MaxRetryError as e:
-                #    print(f"Max retries exceeded for {orig_iata} to {loc['city']} on {dep_date}")
-                #    if driver:
-                #        driver.quit()
-                #    driver = webdriver.Chrome(options=configureChromeDriver())
-                #    continue
 
         if driver:
             driver.quit()

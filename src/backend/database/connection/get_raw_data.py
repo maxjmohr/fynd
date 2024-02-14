@@ -210,6 +210,38 @@ def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Dat
     return end_datetime 
 
 
+def process_location_land_reachability_wrapper(args):
+    return process_location_land_reachability(*args)
+
+def fill_raw_reachability_land_par(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    processed_locs = db.fetch_data("raw_reachability_land")
+
+    # create default values using imported function from reachability module, insert that into "table_name"
+    #insert_data = fill_reachibility_table(locations, start_refs, processed_locs, table_name, db)
+    #db.insert_data(insert_data, table_name, if_exists='append')
+    #db.disconnect()
+
+    # remove locations for which data was already scraped (one row for each reference start location)
+    rem_loc_ids = [loc for loc in locations['location_id'].values if processed_locs[processed_locs['loc_id'] == loc].shape[0] < start_refs.shape[0]]
+    locations = locations[locations['location_id'].isin(rem_loc_ids)]
+
+    num_workers = 5
+
+    # create a pool of processes
+    with Pool(num_workers) as pool:
+        # prepare the arguments for process_location_land_reachability()
+        args = [(loc, start_refs) for _, loc in locations.iterrows()]
+        # use pool.map() to run process_location_land_reachability() in parallel for all locations
+        results = pool.map(process_location_land_reachability_wrapper, args)
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+
+
 def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     """
     Fill function for raw reachability air table
@@ -371,9 +403,9 @@ if __name__ == '__main__':
         # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
         #"raw_weather_historical": [fill_raw_weather_historical, 6],
         #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
-        "raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
+        #"raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
         #"raw_reachability_air" : [fill_raw_reachability_air_par, 9],
-        #"raw_reachability_land" : [fill_raw_reachability_land, 10]
+        "raw_reachability_land" : [fill_raw_reachability_land_par, 10]
     }
 
     # List that consists of names of log tables that need to be created 
@@ -401,9 +433,9 @@ if __name__ == '__main__':
     start_refs = db.fetch_data("core_ref_start_locations")
 
     # Create tables
-    #create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
-    # Fill tables
+    #create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=True)
 
+    # Fill tables
     fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
 
     # Create logging
