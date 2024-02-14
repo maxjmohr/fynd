@@ -64,7 +64,7 @@ class numbeoScraper:
         for column in feature_columns:
             # Train the model for the current feature if it has not been trained yet
             current_script_directory = os.path.dirname(os.path.abspath(__file__))
-            path = os.path.join(current_script_directory, f"../../../../res/models/costs_numbeo_{column}.model")
+            path = os.path.join(current_script_directory, f"../../../res/models/costs_numbeo_{column}.model")
             if os.path.exists(path):
                 model = xgb.XGBRegressor()
                 model.load_model(path)

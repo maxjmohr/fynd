@@ -1,4 +1,4 @@
-CREATE TABLE core_locations (
+CREATE TABLE core_ref_start_locations (
     location_id         INTEGER NOT NULL,
     city                VARCHAR(255) NOT NULL,
     county              VARCHAR(255),
@@ -22,7 +22,7 @@ CREATE TABLE core_locations (
     PRIMARY KEY (location_id)
 );
 
-COMMENT ON TABLE core_locations IS 'Table stores geographical master data of all locations.';
+COMMENT ON TABLE core_locations IS 'Table stores geographical master data of all reference start locations.';
 
 COMMENT ON COLUMN core_locations.location_id IS 'Unique identifier for the location';
 COMMENT ON COLUMN core_locations.city IS 'City name';

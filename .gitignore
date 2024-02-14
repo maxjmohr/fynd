@@ -1,7 +1,10 @@
 .DS_Store
 .cache.sqlite
-.dsproject          
+.dsproject
+*db_key*
+*apikey*
 *_apikey.txt
+*_apikeys.txt
 api_key_fsq.txt
 __pycache__/
 *.pyc

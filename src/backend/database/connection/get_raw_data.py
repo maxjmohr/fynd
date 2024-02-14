@@ -5,16 +5,20 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
-#from data.safety_pipeline import create_country_safety_df
-#from data.safety_pipeline import create_city_safety_df
-#from data.culture import cultural_profile
-from data import geography
+#from data.safety import create_country_safety_df
+#from data.safety import create_city_safety_df
+from data.geography import get_land_coverage
+from data.places import get_places
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from database.db_helpers import Database
 import datetime
 from dateutil.relativedelta import relativedelta
+import ee
+import json
 import numpy as np
 import pandas as pd
+import random
+import time
 
 ###----| STEPS |----###
 ## Step 1: Functions to create and fill tables in database
@@ -170,7 +174,7 @@ def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, 
 ####----| STEP 3: FILL TABLES |----####
 
 ####----| COSTS |----####
-def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the costs by city or country from numbeo.com
     Input:  - location data
             - table_name: name of the table to insert the data into
@@ -179,8 +183,8 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     '''
     # Connect to database
     db.delete_data(total_object=table_name, commit=True)
-
     ns = numbeoScraper()
+
     ###-- City costs --###
     costs_city = ns.get_costs(by="city")
     
@@ -196,9 +200,6 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
         # Update the costs_city DataFrame with the extracted city and country
         costs_city["city"] = split_columns[0]
         costs_city["country"] = split_columns[2]
-    
-    # Known issue: Czech Republic (change country value to Czechia)
-    costs_city["country"] = costs_city["country"].replace("Czech Republic", "Czechia")
 
     # Get location_id for each city
     costs_city["location_id"] = costs_city.apply(lambda row: locations[(locations["city"] == row["city"]) & (locations["country"] == row["country"])]["location_id"].values[0] if not locations[(locations["city"] == row["city"]) & (locations["country"] == row["country"])].empty else np.nan, axis=1)
@@ -220,6 +221,7 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
         ]
     costs_city = costs_city.reindex(columns=column_order)
 
+
     ###-- Country costs --###
     costs_country = ns.get_costs(by="country")
     
@@ -227,14 +229,20 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     costs_country["location_id"] = None
     costs_country["city"] = None
 
-    # Known issue: Czech Republic (change country value to Czechia)
-    costs_city["country"] = costs_city["country"].replace("Czech Republic", "Czechia")
-
     # Reorder columns
     costs_country = costs_country.reindex(columns=column_order)
 
-    ###-- Merge costs --###
+    ###-- Merge costs and slight adaption--###
     costs = pd.concat([costs_city, costs_country], ignore_index=True)
+
+    # Known issues: Change some country names
+    costs["country"] = costs["country"].replace("Czech Republic", "Czechia")
+    costs["country"] = costs["country"].replace("Bosnia And Herzegovina", "Bosnia and Herzegovina")
+
+    # Known issue: Hong Kong (change country and city values where country = "Hong Kong (China)")
+    costs.loc[costs["country"] == "Hong Kong (China)", "country"] = "China"
+    costs.loc[costs["country"] == "Hong Kong (China)", "city"] = "Hong Kong"
+
 
     ###-- Append to database table --###
     if len(costs) > 0:
@@ -246,10 +254,15 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     return end_datetime
 
 
-####----| SAFETY |----####
-# creates dataframe ready to be inserted into the raw_safety_city table
-def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database):
 
+####----| SAFETY |----####
+def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the safety information for a city
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     # For each location call create_city_safety_df to get safety information for this location
     for _, row in locations.iterrows():
         safety_city_df = create_city_safety_df(row["city"])
@@ -263,9 +276,14 @@ def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database)
 
     return end_datetime
 
-# creates dataframe ready to be inserted into the raw_safety_country table
-def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database):
 
+def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the safety information for a country
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     # Get safety information for all countries
     safety_country_df = create_country_safety_df()
 
@@ -279,15 +297,70 @@ def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Databa
     return end_datetime
 
 
-####----| CULTURE |----####
-# creates dataframe ready to be inserted into the raw_culture table
-def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
-    for _, row in locations.iterrows():
-        culture_df = cultural_profile(row["lat"]+","+row["lon"])
-        culture_df = culture_df.convert_dtypes()
 
-        if len(culture_df) > 0:
-            db.insert_data(culture_df, table_name, if_exists="append")
+####----| CULTURE |----####
+def fill_raw_places(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the landmarks for a location
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
+    # Get the directory of the current script and store api keys in list
+    apikeys = []
+    current_script_directory = os.path.dirname(os.path.abspath(__file__))
+    path = "../../../../res/api_keys/geoapify_apikeys.txt"
+    with open(os.path.join(current_script_directory, path), "r") as f:
+        for line in f:
+            apikeys.append(line.strip())
+    i = 0  # Initialize API key index
+    # Read categories
+    path = "../../../../res/master_data/geoapify_rel_categories.csv"
+    categories = pd.read_csv(os.path.join(current_script_directory, path))
+    current_state = db.fetch_data(total_object="raw_places")
+
+    locations = db.fetch_data(total_object="core_locations")
+
+    MAX_RETRIES = 3  # Max number of retries
+    WAIT_BASE = 1  # Base wait time in seconds
+    WAIT_MULTIPLIER = 2  # Multiplier for exponential backoff
+    call_count = 0
+    MAX_CALLS = 25000  # Max number of calls per day
+
+    for category in categories["place_category"]:
+        # Create a set of for each location that has not been processed yet for the category
+        missing_locations = locations[~locations["location_id"]
+                                    .isin(current_state[current_state["place_category"] == category]
+                                            ["location_id"])].reset_index(drop=True)
+        if len(missing_locations) == 0:
+            print(f"All locations have been processed for category {category}.")
+            continue
+
+        if call_count >= MAX_CALLS-1:
+            print(f"\033[1m\033[91mLimits reached at category {category}. Trying with different API key or again tomorrow.\033[0m")
+            break
+
+        for location in missing_locations.iterrows():
+            # Get places
+            for retry in range(MAX_RETRIES):
+                try:
+                    places, call_count = get_places(
+                        location=location[1],
+                        category=category,
+                        shape="circle",
+                        apikey=apikeys[i],
+                        call_count=call_count
+                    )
+                    db.insert_data(data=places, table="raw_places", updated_at=True)
+                    break  # Break out of the loop if no exception occurred  
+
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+                    print(f"\033[1m\033[91mLimits reached at category {category}. Trying a different API key after some time...\033[0m")
+                    wait_time = WAIT_BASE * (WAIT_MULTIPLIER ** retry)  # Exponential backoff
+                    time.sleep(wait_time + random.uniform(-0.5, 0.5))  # Add some randomness
+                    i = (i + 1) % len(apikeys)  # Switch to the next API key
+                    continue  # Continue with the next iteration using the next API key
 
     # Get current time for logging and return it
     end_datetime = datetime.datetime.now()
@@ -295,8 +368,9 @@ def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
     return end_datetime
 
 
+
 ####----| WEATHER |----####
-def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the current and future weather data for a location
     Input: 	- location data
             - table_name: name of the table to insert the data into
@@ -351,7 +425,7 @@ def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db
     return end_datetime
 
 
-def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the historical weather data for a location (aggregated by month and year)
     Input: 	- location data
             - table_name: name of the table to insert the data into
@@ -367,18 +441,50 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         # Get the current state from the database
         current_state = db.fetch_data(table_name)
 
-        # For each location get the oldest year and month for which we have data and append it to the dataframe
-        current_state = current_state.groupby(["location_id"]).agg({"year": "min", "month": "min"}).reset_index()
+        # If any previous data is missing (e.g. data on 2022 but not on 2023), use the date of the first "gap"
+        # Build list that contains all possible years and months from the maximum to the minimum
+        possible_years_months = [(year, month) for year in range(2023, 2022-1, -1) for month in range(12, 0, -1)]
 
-        # If locations are missing in current_state, add them with the year 2023 and month 01
+        # Check for each location if we have data on all possible years and months
+        for location in current_state["location_id"].unique():
+            existing_years_months = set(zip(
+                current_state[current_state["location_id"] == location]["year"],
+                current_state[current_state["location_id"] == location]["month"]
+                ))
+            missing_years_months = set(possible_years_months) - existing_years_months
+
+            # Get maximum year and month for which we don't have data yet
+            if missing_years_months:
+                max_year_month = max(missing_years_months, key=lambda x: (x[0], x[1]))
+                max_year = max_year_month[0] if max_year_month[1] != 12 else max_year_month[0] + 1
+                max_month = max_year_month[1]+1 if max_year_month[1] != 12 else 1
+            else:
+                max_year = None
+                max_month = None
+
+            if max_year is not None:
+                # Delete all other rows of this location except for the one with the maximum year and month
+                current_state = current_state[(current_state["location_id"] != location) |
+                                              ((current_state["location_id"] == location) & (current_state["year"] == max_year) & (current_state["month"] == max_month))]
+            else:
+                # Else leave the last period to be deleted later
+                current_state = current_state[(current_state["location_id"] != location) |
+                                              ((current_state["location_id"] == location) & (current_state["year"] == 2022) & (current_state["month"] == 1))]
+
+        # If locations are totally missing in current_state, add them
         for _, row in locations.iterrows():
-            if not row["location_id"] in current_state["location_id"].values:
-                current_state = pd.concat([current_state, pd.DataFrame({"location_id": row["location_id"], "year": 2023, "month": 1}, index=[0])], ignore_index=True)
-        
+            if row["location_id"] not in current_state["location_id"].unique():
+                current_state = pd.concat([
+                    current_state,
+                    pd.DataFrame({"location_id": row["location_id"], "year": 2024, "month": 1}, index=[0])
+                    ],
+                    ignore_index=True
+                )
+
         # Order by latest year and month
         current_state = current_state.sort_values(by=["year", "month"], ascending=False)
-        # Filter out all locations where we have data until January 2018
-        current_state = current_state[(current_state["year"] != 2018) | (current_state["month"] != 1)]
+        # Filter out all locations where we have data until January 2022
+        current_state = current_state[~((current_state["year"] == 2022) & (current_state["month"] == 1))]
 
         for _, row in current_state.iterrows():
 
@@ -431,10 +537,41 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         return end_datetime
 
 
+
 ####----| GEOGRAPHY |----####
-# creates dataframe ready to be inserted into the raw_geography table
-def fill_raw_geography(location):
-    return None
+def fill_raw_geography_coverage(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the land coverage for a location
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
+    # Initialize Earth Engine
+    ee.Initialize()
+
+    # Get current location_ids with land coverage data
+    current_state = db.fetch_data(table_name)
+
+    # Get list of locations that are missing in the current state
+    missing_locations = locations[~locations["location_id"].isin(current_state["location_id"])]
+
+    # Get land coverage for each location
+    for _, row in missing_locations.iterrows():
+
+        print(f"Getting land coverage for {row['city']}, {row['country']}...")
+        location_id = row["location_id"]
+        geojson = json.loads(row["geojson"])
+
+        land_coverage = get_land_coverage(location_id, geojson, "ESA")
+
+        # If information could be found for this location, insert it into the database
+        if len(land_coverage) > 0:
+            db.insert_data(land_coverage, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 
@@ -445,10 +582,10 @@ table_fill_function_dict = {
     #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
     #"raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
-    #"raw_culture": [fill_raw_culture, 4],
+    "raw_places": [fill_raw_places, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
-    "raw_weather_historical": [fill_raw_weather_historical, 6],
-    #"raw_geography": [fill_raw_geography 7]
+    #"raw_weather_historical": [fill_raw_weather_historical, 6],
+    #"raw_geography_coverage": [fill_raw_geography_coverage, 7]
     }
 
 # List that consists of names of log tables that need to be created 
@@ -459,7 +596,7 @@ table_process_id_dict = {
     1: ["raw_costs_numbeo", "Inserts numbeo cost data for given cities and countries.", 30],
     2: ["fill_raw_safety_city", "Inserts safety data for given cities.", 30],
     3: ["fill_raw_safety_country", "Inserts safety data for given countries.", 30],
-    4: ["fill_raw_culture", "Inserts culture data for given locations.", 30],
+    4: ["fill_raw_places", "Inserts culture data for given locations.", 30],
     5: ["raw_weather_current_future", "Inserts current and future weather data for given locations.", 30],
     6: ["raw_weather_historical", "Inserts historical weather data for given locations.", 30],
     7: ["fill_raw_geography", "Inserts geography data for given locations.", 30],
