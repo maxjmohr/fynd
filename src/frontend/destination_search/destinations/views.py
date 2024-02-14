@@ -326,9 +326,17 @@ class CompareView(View):
             .prefetch_related(Prefetch('coredimensions_set', queryset=CoreDimensions.objects.order_by('-dimension_id')))
         )
 
-        def format_raw_value(location: int, dimension: int) -> str:
+        def get_value(location_id: int, dimension_id: int, col: str):
+            """Get row from scores."""
+            try:
+                return scores.loc[(location_id, dimension_id), col].item()
+            except:
+                return None
+
+        def format_raw_value(location, dimension) -> str:
             """Format raw value."""
-            raw_value = scores.loc[(location['location_id'], dimension.dimension_id), 'raw_value']
+            raw_value = get_value(location['location_id'], dimension.dimension_id, 'raw_value')
+            print(raw_value)
             if pd.isna(raw_value):
                 return ''
             return f' ({raw_value:.{dimension.raw_value_decimals}f}{dimension.raw_value_unit})'
@@ -353,7 +361,7 @@ class CompareView(View):
                                 'dimension_name': dimension.dimension_name,
                                 'dimension_description': dimension.description,
                                 'dimension_icon_url': dimension.icon_url,
-                                'score': scores.loc[(location['location_id'], dimension.dimension_id), 'score'].item(),
+                                'score': get_value(location.get('location_id'), dimension.dimension_id, 'score'),
                                 'raw_value_formatted': format_raw_value(location, dimension),
                             }
                             for dimension in category.coredimensions_set.all()
