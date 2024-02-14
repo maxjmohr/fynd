@@ -1,11 +1,14 @@
 CREATE TABLE core_locations (
-    location_id         INTEGER PRIMARY KEY NOT NULL,
+    location_id         INTEGER NOT NULL,
     city                VARCHAR(255) NOT NULL,
     county              VARCHAR(255),
     state               VARCHAR(255),
     country             VARCHAR(255) NOT NULL,
     country_code        VARCHAR(2),
     address_type        VARCHAR(255),
+    airport_1           VARCHAR(3),
+    airport_2           VARCHAR(3),
+    airport_3           VARCHAR(3),
     population          INTEGER,
     lat                 NUMERIC(10,7) NOT NULL,
     lon                 NUMERIC(10,7) NOT NULL,
@@ -15,7 +18,8 @@ CREATE TABLE core_locations (
     box_top_right_lat   NUMERIC(10,7),
     box_top_right_lon   NUMERIC(10,7),
     geojson             JSONB,
-    updated_at          TIMESTAMP
+    updated_at          TIMESTAMP,
+    PRIMARY KEY (location_id)
 );
 
 COMMENT ON TABLE core_locations IS 'Table stores geographical master data of all locations.';
@@ -27,6 +31,9 @@ COMMENT ON COLUMN core_locations.state IS 'State name';
 COMMENT ON COLUMN core_locations.country IS 'Country name';
 COMMENT ON COLUMN core_locations.country_code IS 'Country code';
 COMMENT ON COLUMN core_locations.address_type IS 'Type of address';
+COMMENT ON COLUMN core_locations.airport_1 IS 'IATA code of the nearest airport';
+COMMENT ON COLUMN core_locations.airport_2 IS 'IATA code of the second nearest airport';
+COMMENT ON COLUMN core_locations.airport_3 IS 'IATA code of the third nearest airport';
 COMMENT ON COLUMN core_locations.population IS 'Population of the location (might not be up-to-date)';
 COMMENT ON COLUMN core_locations.lat IS 'Latitude of the location';
 COMMENT ON COLUMN core_locations.lon IS 'Longitude of the location';

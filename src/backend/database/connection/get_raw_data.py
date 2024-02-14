@@ -7,15 +7,26 @@ sys.path.append(parent_dir)
 from data.costs import numbeoScraper
 from data.safety_pipeline import create_country_safety_df
 from data.safety_pipeline import create_city_safety_df
-from data.culture import cultural_profile
 from data.health import get_health_info
-from data import geography
+from data.geography import get_land_coverage
+from data.places import get_places
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
+from data.accomodations import generate_periods, process_period
+from data.reachability import (process_location_land_reachability, 
+                               process_location_air_reachability, 
+                               fill_reachibility_table)
 from database.db_helpers import Database
 import datetime
+from geopy.distance import geodesic
+from multiprocessing import Pool
 from dateutil.relativedelta import relativedelta
+import ee
+import json
 import numpy as np
 import pandas as pd
+import random
+import time
+from tqdm import tqdm
 
 ###----| STEPS |----###
 ## Step 1: Functions to create and fill tables in database
@@ -171,7 +182,41 @@ def fill_log_history_db_table(process_id, start_datetime, status, end_datetime, 
 ####----| STEP 3: FILL TABLES |----####
 
 ####----| COSTS |----####
-def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_accommodation_costs(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    """
+    Fill function for raw accommodation costs table
+    Args:
+        locations: DataFrame with locations
+        table_name: name of the table in the database
+        db: Database object
+
+    Returns:
+        datetime.datetime: end datetime
+    """
+
+    num_workers = 2
+    today_2025 = str(datetime.datetime.now().date()).replace("2024", "2025")
+    periods = generate_periods("2024-02-17", today_2025, 14)
+
+    # check which periods still need to be processed by checking the database
+    db = Database()
+    db.connect()
+    raw_acc = db.fetch_data("raw_accommodation_costs")
+    db.disconnect()
+
+    # remove fully processed periods, sort by start_date to get earlier start date first
+    rem_periods = [period for period in periods if raw_acc[raw_acc['start_date'] == period[0].date()].shape[0] < 722]
+    rem_periods = sorted(rem_periods, key=lambda x: x[0])
+
+    with Pool(num_workers) as p:
+        p.map(process_period, rem_periods)
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+
+
+def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the costs by city or country from numbeo.com
     Input:  - location data
             - table_name: name of the table to insert the data into
@@ -180,8 +225,8 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     '''
     # Connect to database
     db.delete_data(total_object=table_name, commit=True)
-
     ns = numbeoScraper()
+
     ###-- City costs --###
     costs_city = ns.get_costs(by="city")
     
@@ -197,9 +242,6 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
         # Update the costs_city DataFrame with the extracted city and country
         costs_city["city"] = split_columns[0]
         costs_city["country"] = split_columns[2]
-    
-    # Known issue: Czech Republic (change country value to Czechia)
-    costs_city["country"] = costs_city["country"].replace("Czech Republic", "Czechia")
 
     # Get location_id for each city
     costs_city["location_id"] = costs_city.apply(lambda row: locations[(locations["city"] == row["city"]) & (locations["country"] == row["country"])]["location_id"].values[0] if not locations[(locations["city"] == row["city"]) & (locations["country"] == row["country"])].empty else np.nan, axis=1)
@@ -221,6 +263,7 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
         ]
     costs_city = costs_city.reindex(columns=column_order)
 
+
     ###-- Country costs --###
     costs_country = ns.get_costs(by="country")
     
@@ -228,14 +271,20 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     costs_country["location_id"] = None
     costs_country["city"] = None
 
-    # Known issue: Czech Republic (change country value to Czechia)
-    costs_city["country"] = costs_city["country"].replace("Czech Republic", "Czechia")
-
     # Reorder columns
     costs_country = costs_country.reindex(columns=column_order)
 
-    ###-- Merge costs --###
+    ###-- Merge costs and slight adaption--###
     costs = pd.concat([costs_city, costs_country], ignore_index=True)
+
+    # Known issues: Change some country names
+    costs["country"] = costs["country"].replace("Czech Republic", "Czechia")
+    costs["country"] = costs["country"].replace("Bosnia And Herzegovina", "Bosnia and Herzegovina")
+
+    # Known issue: Hong Kong (change country and city values where country = "Hong Kong (China)")
+    costs.loc[costs["country"] == "Hong Kong (China)", "country"] = "China"
+    costs.loc[costs["country"] == "Hong Kong (China)", "city"] = "Hong Kong"
+
 
     ###-- Append to database table --###
     if len(costs) > 0:
@@ -247,10 +296,15 @@ def fill_raw_costs_numbeo(locations: pd.DataFrame, table_name: str, db: Database
     return end_datetime
 
 
-####----| SAFETY |----####
-# creates dataframe ready to be inserted into the raw_safety_city table
-def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database):
 
+####----| SAFETY |----####
+def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the safety information for a city
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     # For each location call create_city_safety_df to get safety information for this location
     for _, row in locations.iterrows():
         safety_city_df = create_city_safety_df(row["city"])
@@ -264,9 +318,13 @@ def fill_raw_safety_city(locations: pd.DataFrame, table_name: str, db: Database)
 
     return end_datetime
 
-# creates dataframe ready to be inserted into the raw_safety_country table
-def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database):
-
+def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the safety information for a country
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
     # Get safety information for all countries
     safety_country_df = create_country_safety_df()
 
@@ -279,16 +337,248 @@ def fill_raw_safety_country(locations: pd.DataFrame, table_name: str, db: Databa
 
     return end_datetime
 
+  
+  
+####----| REACHABILITY |----####
+def fill_raw_reachability_land(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    processed_locs = db.fetch_data("raw_reachability_land")
+
+    # create default values using imported function from reachability module, insert that into "table_name"
+    insert_data = fill_reachibility_table(locations, start_refs, processed_locs, table_name, db)
+    db.insert_data(insert_data, table_name, if_exists='append')
+    db.disconnect()
+
+    # remove locations for which data was already scraped (one row for each reference start location)
+    rem_loc_ids = [loc for loc in locations['location_id'].values if processed_locs[processed_locs['loc_id'] == loc].shape[0] < start_refs.shape[0]]
+    locations = locations[locations['location_id'].isin(rem_loc_ids)]
+
+    # iterate over locations
+    for _, loc in locations.iterrows():
+
+        # module function returns a dataframe with combinations for all start locations and the current location
+        loc_land_reachability_df = process_location_land_reachability(loc, start_refs)
+
+        # insert that into "table_name" if it is not empty
+        if len(loc_land_reachability_df) > 0:
+            db.insert_data(loc_land_reachability_df, table_name, if_exists='append')
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime 
+
+
+def process_location_land_reachability_wrapper(args):
+    return process_location_land_reachability(*args)
+
+def fill_raw_reachability_land_par(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    processed_locs = db.fetch_data("raw_reachability_land")
+
+    # create default values using imported function from reachability module, insert that into "table_name"
+    #insert_data = fill_reachibility_table(locations, start_refs, processed_locs, table_name, db)
+    #db.insert_data(insert_data, table_name, if_exists='append')
+    #db.disconnect()
+
+    # remove locations for which data was already scraped (one row for each reference start location)
+    rem_loc_ids = [loc for loc in locations['location_id'].values if processed_locs[processed_locs['loc_id'] == loc].shape[0] < start_refs.shape[0]]
+    locations = locations[locations['location_id'].isin(rem_loc_ids)]
+
+    num_workers = 5
+
+    # create a pool of processes
+    with Pool(num_workers) as pool:
+        # prepare the arguments for process_location_land_reachability()
+        args = [(loc, start_refs) for _, loc in locations.iterrows()]
+        # use pool.map() to run process_location_land_reachability() in parallel for all locations
+        results = pool.map(process_location_land_reachability_wrapper, args)
+
+        
+def fill_raw_reachability_air(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    """
+    Fill function for raw reachability air table
+    Args:
+        locations: DataFrame with locations
+        table_name: name of the table in the database
+        db: Database object
+
+    Returns:
+        datetime.datetime: end datetime
+    """
+
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    db.disconnect()
+    
+    # use only start reference locations with unique chosen iata
+    start_refs = start_refs.drop_duplicates(subset=['mapped_start_airport'])
+
+    # drop duplicates of first airport to create unique orig -> dest combinations
+    locations = locations.drop_duplicates(subset=['airport_1'])
+
+    # remove locations for which data was already scraped
+    try:
+        db.connect()
+        raw_reachability = db.fetch_data("raw_reachability_air")
+        db.disconnect()
+
+    except:
+        raw_reachability = None
+
+    # iterate over locations
+    for _, loc in locations.iterrows():
+
+        # module function returns a dataframe with combinations for all start locations and the current location
+        loc_air_reachability_df = process_location_air_reachability(loc, start_refs, raw_reachability)
+
+        # insert that into "table_name" if it is not empty
+        if len(loc_air_reachability_df) > 0:
+            db.insert_data(loc_air_reachability_df, table_name, if_exists='append')
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+
+
+def worker(args: list):
+    """
+    Worker function for multiprocessing execution of fill_raw_reachability_air_par function
+    """
+    loc, start_refs, raw_reachability = args
+    return process_location_air_reachability(loc, start_refs, raw_reachability)
+
+
+def fill_raw_reachability_air_par(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    """
+    Fill function for raw reachability air table in parallel
+    Args:
+        locations: DataFrame with locations
+        table_name: name of the table in the database
+        db: Database object
+
+    Returns:
+        datetime.datetime: end datetime
+    """
+
+    num_workers = 5
+
+    # create the unique chosen airport column (binary for each reference start location by closer distance to FRA or MUC)
+    db.connect()
+    start_refs = db.fetch_data("core_ref_start_locations")
+    raw_reachability = db.fetch_data("raw_reachability_air")
+    db.disconnect()
+    
+    # use only start reference locations with unique chosen iata
+    start_refs = start_refs.drop_duplicates(subset=['mapped_start_airport'])
+
+    # drop duplicates of first airport to create unique orig -> dest combinations
+    locations = locations.drop_duplicates(subset=['airport_1'])
+    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])] # Kayak shows no results for some countries due to poltical reasons
+
+    start_dates = [
+        "2024-02-26", "2024-03-05", "2024-04-17", "2024-05-23", "2024-06-28",
+        "2024-07-06", "2024-08-11", "2024-09-16", "2024-10-29", "2024-11-06", 
+        "2024-12-12", "2025-01-17", 
+    ]
+
+    # use only start reference locations with unique chosen iata
+    start_refs = start_refs.drop_duplicates(subset=['mapped_start_airport'])
+
+    # drop duplicates of first airport to create unique orig -> dest combinations
+    locations = locations.drop_duplicates(subset=['airport_1'])
+    locations = locations[~locations['country'].isin(["Belarus", "Russia", "Iran"])] # Kayak shows no results for some countries due to poltical reasons
+
+    # keep only locations that have not been fully processed yet
+    not_fully_processed = []
+    for ap in locations['airport_1'].values.tolist():
+        for start_ref in start_refs['mapped_start_airport'].values.tolist():
+            if raw_reachability[(raw_reachability['dest_iata'] == ap) & (raw_reachability['orig_iata'] == start_ref)].shape[0] < len(start_dates):
+                not_fully_processed.append(ap)
+                break
+
+    locations = locations[locations['airport_1'].isin(pd.Series(not_fully_processed))]
+    locations['missing'] = locations['airport_1'].apply(lambda x: x not in raw_reachability['dest_iata'].unique())
+    locations = locations.sort_values(by=['missing', 'country'], ascending=False)
+
+    # create a multiprocessing Pool with the specified number of workers
+    with Pool(num_workers) as p:
+        results = p.map(worker, [(loc, start_refs, raw_reachability) for _, loc in locations.iterrows()])
+
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
+  
+
 
 ####----| CULTURE |----####
-# creates dataframe ready to be inserted into the raw_culture table
-def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
-    for _, row in locations.iterrows():
-        culture_df = cultural_profile(row["lat"]+","+row["lon"])
-        culture_df = culture_df.convert_dtypes()
+def fill_raw_places(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the landmarks for a location
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
+    # Get the directory of the current script and store api keys in list
+    apikeys = []
+    current_script_directory = os.path.dirname(os.path.abspath(__file__))
+    path = "../../../../res/api_keys/geoapify_apikeys.txt"
+    with open(os.path.join(current_script_directory, path), "r") as f:
+        for line in f:
+            apikeys.append(line.strip())
+    i = 0  # Initialize API key index
+    # Read categories
+    path = "../../../../res/master_data/geoapify_rel_categories.csv"
+    categories = pd.read_csv(os.path.join(current_script_directory, path))
+    current_state = db.fetch_data(total_object="raw_places")
 
-        if len(culture_df) > 0:
-            db.insert_data(culture_df, table_name, if_exists="append")
+    locations = db.fetch_data(total_object="core_locations")
+
+    MAX_RETRIES = 3  # Max number of retries
+    WAIT_BASE = 1  # Base wait time in seconds
+    WAIT_MULTIPLIER = 2  # Multiplier for exponential backoff
+    call_count = 0
+    MAX_CALLS = 25000  # Max number of calls per day
+
+    for category in categories["place_category"]:
+        # Create a set of for each location that has not been processed yet for the category
+        missing_locations = locations[~locations["location_id"]
+                                    .isin(current_state[current_state["place_category"] == category]
+                                            ["location_id"])].reset_index(drop=True)
+        if len(missing_locations) == 0:
+            print(f"All locations have been processed for category {category}.")
+            continue
+
+        if call_count >= MAX_CALLS-1:
+            print(f"\033[1m\033[91mLimits reached at category {category}. Trying with different API key or again tomorrow.\033[0m")
+            break
+
+        for location in missing_locations.iterrows():
+            # Get places
+            for retry in range(MAX_RETRIES):
+                try:
+                    places, call_count = get_places(
+                        location=location[1],
+                        category=category,
+                        shape="circle",
+                        apikey=apikeys[i],
+                        call_count=call_count
+                    )
+                    db.insert_data(data=places, table="raw_places", updated_at=True)
+                    break  # Break out of the loop if no exception occurred  
+
+                except Exception as e:
+                    print(f"An error occurred: {e}")
+                    print(f"\033[1m\033[91mLimits reached at category {category}. Trying a different API key after some time...\033[0m")
+                    wait_time = WAIT_BASE * (WAIT_MULTIPLIER ** retry)  # Exponential backoff
+                    time.sleep(wait_time + random.uniform(-0.5, 0.5))  # Add some randomness
+                    i = (i + 1) % len(apikeys)  # Switch to the next API key
+                    continue  # Continue with the next iteration using the next API key
 
     # Get current time for logging and return it
     end_datetime = datetime.datetime.now()
@@ -296,8 +586,9 @@ def fill_raw_culture(locations: pd.DataFrame, table_name: str, db: Database):
     return end_datetime
 
 
+
 ####----| WEATHER |----####
-def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the current and future weather data for a location
     Input: 	- location data
             - table_name: name of the table to insert the data into
@@ -352,7 +643,7 @@ def fill_raw_weather_current_future(locations: pd.DataFrame, table_name: str, db
     return end_datetime
 
 
-def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database):
+def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
     ''' Get the historical weather data for a location (aggregated by month and year)
     Input: 	- location data
             - table_name: name of the table to insert the data into
@@ -368,18 +659,50 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         # Get the current state from the database
         current_state = db.fetch_data(table_name)
 
-        # For each location get the oldest year and month for which we have data and append it to the dataframe
-        current_state = current_state.groupby(["location_id"]).agg({"year": "min", "month": "min"}).reset_index()
+        # If any previous data is missing (e.g. data on 2022 but not on 2023), use the date of the first "gap"
+        # Build list that contains all possible years and months from the maximum to the minimum
+        possible_years_months = [(year, month) for year in range(2023, 2022-1, -1) for month in range(12, 0, -1)]
 
-        # If locations are missing in current_state, add them with the year 2023 and month 01
+        # Check for each location if we have data on all possible years and months
+        for location in current_state["location_id"].unique():
+            existing_years_months = set(zip(
+                current_state[current_state["location_id"] == location]["year"],
+                current_state[current_state["location_id"] == location]["month"]
+                ))
+            missing_years_months = set(possible_years_months) - existing_years_months
+
+            # Get maximum year and month for which we don't have data yet
+            if missing_years_months:
+                max_year_month = max(missing_years_months, key=lambda x: (x[0], x[1]))
+                max_year = max_year_month[0] if max_year_month[1] != 12 else max_year_month[0] + 1
+                max_month = max_year_month[1]+1 if max_year_month[1] != 12 else 1
+            else:
+                max_year = None
+                max_month = None
+
+            if max_year is not None:
+                # Delete all other rows of this location except for the one with the maximum year and month
+                current_state = current_state[(current_state["location_id"] != location) |
+                                              ((current_state["location_id"] == location) & (current_state["year"] == max_year) & (current_state["month"] == max_month))]
+            else:
+                # Else leave the last period to be deleted later
+                current_state = current_state[(current_state["location_id"] != location) |
+                                              ((current_state["location_id"] == location) & (current_state["year"] == 2022) & (current_state["month"] == 1))]
+
+        # If locations are totally missing in current_state, add them
         for _, row in locations.iterrows():
-            if not row["location_id"] in current_state["location_id"].values:
-                current_state = pd.concat([current_state, pd.DataFrame({"location_id": row["location_id"], "year": 2023, "month": 1}, index=[0])], ignore_index=True)
-        
+            if row["location_id"] not in current_state["location_id"].unique():
+                current_state = pd.concat([
+                    current_state,
+                    pd.DataFrame({"location_id": row["location_id"], "year": 2024, "month": 1}, index=[0])
+                    ],
+                    ignore_index=True
+                )
+
         # Order by latest year and month
         current_state = current_state.sort_values(by=["year", "month"], ascending=False)
-        # Filter out all locations where we have data until January 2018
-        current_state = current_state[(current_state["year"] != 2018) | (current_state["month"] != 1)]
+        # Filter out all locations where we have data until January 2022
+        current_state = current_state[~((current_state["year"] == 2022) & (current_state["month"] == 1))]
 
         for _, row in current_state.iterrows():
 
@@ -432,11 +755,41 @@ def fill_raw_weather_historical(locations: pd.DataFrame, table_name: str, db: Da
         return end_datetime
 
 
-####----| GEOGRAPHY |----####
-# creates dataframe ready to be inserted into the raw_geography table
-def fill_raw_geography(location):
-    return None
 
+####----| GEOGRAPHY |----####
+def fill_raw_geography_coverage(locations: pd.DataFrame, table_name: str, db: Database) -> datetime.datetime:
+    ''' Get the land coverage for a location
+    Input: 	- location data
+            - table_name: name of the table to insert the data into
+            - db: Database objects
+    Output: None
+    '''
+    # Initialize Earth Engine
+    ee.Initialize()
+
+    # Get current location_ids with land coverage data
+    current_state = db.fetch_data(table_name)
+
+    # Get list of locations that are missing in the current state
+    missing_locations = locations[~locations["location_id"].isin(current_state["location_id"])]
+
+    # Get land coverage for each location
+    for _, row in missing_locations.iterrows():
+
+        print(f"Getting land coverage for {row['city']}, {row['country']}...")
+        location_id = row["location_id"]
+        geojson = json.loads(row["geojson"])
+
+        land_coverage = get_land_coverage(location_id, geojson, "ESA")
+
+        # If information could be found for this location, insert it into the database
+        if len(land_coverage) > 0:
+            db.insert_data(land_coverage, table_name, if_exists="append")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 ####----| HEALTH |----####
 # creates dataframe ready to be inserted into the raw_health_country table
@@ -457,18 +810,22 @@ def fill_raw_health(locations: pd.DataFrame, table_name: str, db: Database):
 
     return end_datetime
 
-####----| STEP 4: EXECUTE STEPS 1, 2 AND 3 |----####    
 
+####----| STEP 4: EXECUTE STEPS 1, 2 AND 3 |----####     
+   
 # Dictonary that maps names of database tables to functions which fill these tables with data
 table_fill_function_dict = {
     #"raw_costs_numbeo": [fill_raw_costs_numbeo, 1],
     #"raw_safety_city": [fill_raw_safety_city, 2],
     #"raw_safety_country": [fill_raw_safety_country, 3],
-    #"raw_culture": [fill_raw_culture, 4],
+    #"raw_places": [fill_raw_places, 4],
     # "raw_weather_current_future": [fill_raw_weather_current_future, 5],
     #"raw_weather_historical": [fill_raw_weather_historical, 6],
-    #"raw_geography": [fill_raw_geography 7]
-    "raw_health" : [fill_raw_health, 8]
+    #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
+    #"raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
+    #"raw_reachability_air" : [fill_raw_reachability_air_par, 9],
+    #"raw_reachability_land" : [fill_raw_reachability_land_par, 10],
+    #"raw_health" : [fill_raw_health, 11]
     }
 
 # List that consists of names of log tables that need to be created 
@@ -479,11 +836,14 @@ table_process_id_dict = {
     1: ["raw_costs_numbeo", "Inserts numbeo cost data for given cities and countries.", 30],
     2: ["fill_raw_safety_city", "Inserts safety data for given cities.", 30],
     3: ["fill_raw_safety_country", "Inserts safety data for given countries.", 30],
-    4: ["fill_raw_culture", "Inserts culture data for given locations.", 30],
+    4: ["fill_raw_places", "Inserts culture data for given locations.", 30],
     5: ["raw_weather_current_future", "Inserts current and future weather data for given locations.", 30],
     6: ["raw_weather_historical", "Inserts historical weather data for given locations.", 30],
     7: ["fill_raw_geography", "Inserts geography data for given locations.", 30],
-    8: ["fill_raw_health", "Inserts health data and travel information for all countries", 30]
+    8: ["fill_raw_accommodation", "Inserts accommodation data for given locations.", 30],
+    9: ["fill_raw_reachability_air", "Inserts reachability data for given locations.", 30],
+    10: ["fill_raw_reachability_land", "Inserts reachability data for given locations.", 30],
+    11: ["fill_raw_health", "Inserts health data and travel information for all countries", 30]
 }
 
 # Connect to database

@@ -1,0 +1,625 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %} <!-- for intcomma -->
+
+{% block title %}
+Results
+{% endblock %}
+
+{% block main %}
+
+<!--- Forms -->
+<div class="form-container" id="formContainer">
+    <form method="get" id="listForm" onsubmit="submitForm(event);">
+
+        <!-- Travel characteristics -->
+        <details class="form-group-box">
+            <summary class="form-group-summary">Travel characteristics</summary>
+            <div class="form-group-content">
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ travellers_input_form.start_location.id_for_label }}">
+                            {{ travellers_input_form.start_location.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'start_location_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="start_location_help_text" class="form-help-text-infobox">
+                            {{ travellers_input_form.start_location.help_text }}
+                        </div>
+                    </div>
+                    {{ travellers_input_form.start_location.errors }}
+                    {{ travellers_input_form.start_location.as_widget }}
+                    {{ travellers_input_form.start_location_lat.as_widget }}
+                    {{ travellers_input_form.start_location_lon.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ travellers_input_form.start_date.id_for_label }}">
+                            {{ travellers_input_form.start_date.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'start_date_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="start_date_help_text" class="form-help-text-infobox">
+                            {{ travellers_input_form.start_date.help_text }}
+                        </div>
+                    </div>
+                    <input type="text" class="input-box" id="date_range" placeholder="Select start and end date...">
+                    {{ travellers_input_form.start_date.errors }}
+                    {{ travellers_input_form.start_date.as_widget }}
+                    {{ travellers_input_form.end_date.errors }}
+                    {{ travellers_input_form.end_date.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ travellers_input_form.previous_locations.id_for_label }}">
+                            {{ travellers_input_form.previous_locations.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'previous_locations_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="previous_locations_help_text" class="form-help-text-infobox">
+                            {{ travellers_input_form.previous_locations.help_text }}
+                        </div>
+                    </div>
+                    {{ travellers_input_form.previous_locations.errors }}
+                    {{ travellers_input_form.previous_locations.as_widget }}
+                </div>
+            </div>
+        </details>
+
+        <!-- Filters -->
+        <details class="form-group-box"  open>
+            <summary class="form-group-summary">Filters</summary>
+            <div class="form-group-content">
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_distance.id_for_label }}">
+                            {{ filters_form.min_distance.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_distance_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_distance_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_distance.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider range-slider-with-histogram" id="distance_to_start_range"></div>
+                    {{ filters_form.min_distance.errors }}
+                    {{ filters_form.min_distance.as_widget }}
+                    {{ filters_form.max_distance.errors }}
+                    {{ filters_form.max_distance.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_population.id_for_label }}">
+                            {{ filters_form.min_population.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_population_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_population_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_population.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider range-slider-with-histogram" id="population_range"></div>
+                    {{ filters_form.min_population.errors }}
+                    {{ filters_form.min_population.as_widget }}
+                    {{ filters_form.max_population.errors }}
+                    {{ filters_form.max_population.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_temperature.id_for_label }}">
+                            {{ filters_form.min_temperature.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_temperature_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_temperature_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_temperature.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="temperature_range"></div>
+                    {{ filters_form.min_temperature.errors }}
+                    {{ filters_form.min_temperature.as_widget }}
+                    {{ filters_form.max_temperature.errors }}
+                    {{ filters_form.max_temperature.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_travel_cost.id_for_label }}">
+                            {{ filters_form.min_travel_cost.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_travel_cost_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_travel_cost_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_travel_cost.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="travel_cost_range"></div>
+                    {{ filters_form.min_travel_cost.errors }}
+                    {{ filters_form.min_travel_cost.as_widget }}
+                    {{ filters_form.max_travel_cost.errors }}
+                    {{ filters_form.max_travel_cost.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_accommodation_cost.id_for_label }}">
+                            {{ filters_form.min_accommodation_cost.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_accommodation_cost_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_accommodation_cost_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_accommodation_cost.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="accommodation_cost_range"></div>
+                    {{ filters_form.min_accommodation_cost.errors }}
+                    {{ filters_form.min_accommodation_cost.as_widget }}
+                    {{ filters_form.max_accommodation_cost.errors }}
+                    {{ filters_form.max_accommodation_cost.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.min_best_reachability.id_for_label }}">
+                            {{ filters_form.min_best_reachability.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'min_best_reachability_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="min_best_reachability_help_text" class="form-help-text-infobox">
+                            {{ filters_form.min_best_reachability.help_text }}
+                        </div>
+                    </div>
+                    <div class="range-slider" id="best_reachability_range"></div>
+                    {{ filters_form.min_best_reachability.errors }}
+                    {{ filters_form.min_best_reachability.as_widget }}
+                    {{ filters_form.max_best_reachability.errors }}
+                    {{ filters_form.max_best_reachability.as_widget }}
+                </div>
+                <div class="form-item">
+                    <div class="tooltip-container">
+                        <label class="form-label" for="{{ filters_form.mode_of_transport.id_for_label }}">
+                            {{ filters_form.mode_of_transport.label }}
+                        </label>
+                        <span class="info-icon" onclick="showHelpText(event, 'mode_of_transport_help_text')">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <div id="mode_of_transport_help_text" class="form-help-text-infobox">
+                            {{ filters_form.mode_of_transport.help_text }}
+                        </div>
+                    </div>
+                    <div class="checkbox-multiselect-container">
+                        {% for mode_of_transport in filters_form.modes_of_transport_data %}
+                            <label for="checkbox-{{ id }}" class="checkbox-multiselect-option">
+                                <input type="checkbox" name="{{ filters_form.mode_of_transport.html_name }}" value="{{ mode_of_transport.dimension }}" {% if mode_of_transport.dimension in filters_form.mode_of_transport.value or filters_form.mode_of_transport.value|length == 0 %}checked{% endif %}>
+                                <span class="checkbox-label-icon"><img src="{{  mode_of_transport.icon_url }}"></span>
+                                <span>{{  mode_of_transport.name }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- Preferences -->
+        <details class="form-group-box">
+            <summary class="form-group-summary">Preferences</summary>
+            <div class="form-group-content">
+                <div class="form-item preferences-intro-text">
+                        Set your preferences for the different categories.
+                        The importance slider allows you to set the importance of each category.
+                        The direction toggle switch allows you to indicate whether you want destinations that are similar or different to your previous destinations with regards to the respective category.
+                </div>
+                {% for category in preferences_form.get_categories %}
+                    <div class="form-item">
+
+                        <div class="tooltip-container">
+                            <label class="form-label">
+                                {{ category.category_name }}
+                            </label>
+                            <span class="info-icon" onclick="showHelpText(event, '{{ category.category_id }}_description')">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                            <div id="{{ category.category_id }}_description" class="form-help-text-infobox">
+                                {{ category.category_description }}
+                            </div>
+                        </div>
+
+                        <div class="category-preferences">
+                            <label class="preferences-label" for="{{ category.fields.importance.id_for_label }}">Importance:</label>
+                            <div class="preferences-input">
+                                {{ category.fields.importance.errors }}
+                                <div class="form-input-label">none</div>
+                                {{ category.fields.importance.as_widget }}
+                                <div class="slider importance-slider" id="{{ category.category_id }}_importance"></div>
+                                <div class="form-input-label">high</div>
+                            </div>
+                            <label class="preferences-label" for="{{ category.fields.direction.id_for_label }}">Direction:</label>
+                            {{ category.fields.direction.errors }}
+                            <div class="preferences-input">
+                                <div class="form-input-label">similar</div>
+                                {{ category.fields.direction.as_widget }}
+                                <label for="{{ category.fields.direction.id_for_label }}" class="switch-label">
+                                    <div class="switch-slider"></div>
+                                </label>
+                                <div class="form-input-label">different</div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </details>
+
+        <input type="submit" value="Apply" class="submit-button">
+    </form>
+</div>
+
+<!--- Results -->
+<div class="results-container">
+
+    <!-- Previous locations-->
+    <div class="destination-type-title">Your previous destinations</div>
+    <div class="previous-location-list-container">
+        {% for location in previous_locations_list %}
+            <div class="previous-location-list-item-container">
+                <div class="location-list-item-image-container same-width-as-height">
+                    <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                    </a>
+                    <div class="add-to-comparison-icon-container">
+                        <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
+                            <img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison">
+                        </div>
+                    </div>
+                </div>
+                <div class="location-list-item-info-general">
+                    <div class="location-list-item-title">
+                        <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
+                            <span class="location-list-item-city-name">{{ location.city }}</span>
+                        </a>
+                    </div>
+                    <div class="location-list-item-country">
+                        <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                        <div class="location-list-item-country-name">{{ location.country }}</div>
+                    </div>
+                    <span class="location-list-item-distance-to-start">{{ location.distance_to_start|floatformat:"0"|intcomma }} km away</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="destination-type-title">New destinations</div>
+
+    <!--- Sort-by dropdown -->
+    <div class="sort-container">
+        <div class="sort-label">Sort by:</div>
+        <form action="" method="get" id="sortForm" style="display: flex; align-items: center;">
+            <select class="form-control" id="sort" name="sort" onchange="setParam('sort', this.value);">
+                <option value="relevance_desc" {% if current_sort_order == 'relevance_desc' %}selected{% endif %}>Relevance (descending)</option>
+                <option value="distance_asc" {% if current_sort_order == 'distance_asc' %}selected{% endif %}>Distance to start (ascending)</option>
+                <option value="distance_desc" {% if current_sort_order == 'distance_desc' %}selected{% endif %}>Distance to start (descending)</option>
+                <option value="name_asc" {% if current_sort_order == 'name_asc' %}selected{% endif %}>Name (ascending)</option>
+                <option value="name_desc" {% if current_sort_order == 'name_desc' %}selected{% endif %}>Name (descending)</option>
+            </select>
+        </form>
+    </div>
+
+    <!--- List of locations -->
+    <div class="location-list-container">
+        {% for location in locations_list %}
+
+            <div class="location-list-item-container">
+
+                <div class="location-list-item-image-container same-height-as-width">
+                    <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                    </a>
+                    <div class="add-to-comparison-icon-container">
+                        <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
+                            <img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="location-list-item-info-container">
+                    <div class="location-list-item-info-general">
+                        <div class="location-list-item-title">
+                            <span class="location-list-item-rank">{{ location.rank }}.</span>
+                            <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
+                                <span class="location-list-item-city-name">{{ location.city }}</span>
+                            </a>
+                        </div>
+                        <div class="location-list-item-country">
+                            <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                            <div class="location-list-item-country-name">{{ location.country }}</div>
+                        </div>
+                        <span class="location-list-item-distance-to-start">{{ location.distance_to_start|floatformat:"0"|intcomma }} km away</span>
+                    </div>
+                    <div class="location-list-item-relevance-container has-tooltip">
+                        <div class="location-list-item-relevance">{{ location.relevance|floatformat:1 }}</div>
+                        <span class="tooltip-text relevance-tooltip-text">Relevance</span>
+                    </div>
+                </div>
+
+            </div>
+
+        {% endfor %}
+    </div>
+
+    <!-- Pagination controls -->
+    <div class="pagination-container">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if locations_list.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="setParam('page', {{ locations_list.previous_page_number }}); return false;" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if locations_list.number > 2 %}
+                    <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', 1); return false;">1</a></li>
+                {% endif %}
+
+                {% if locations_list.number > 3 %}
+                    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                {% endif %}
+
+                {% for i in locations_list.paginator.page_range %}
+                    {% if i >= locations_list.number|add:"-1" and i <= locations_list.number|add:"1" %}
+                        <li class="page-item {% if locations_list.number == i %}active{% endif %}"><a class="page-link" href="#" onclick="setParam('page', {{ i }}); return false;">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if locations_list.number < locations_list.paginator.num_pages|add:"-2" %}
+                    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                {% endif %}         
+
+                {% if locations_list.number < locations_list.paginator.num_pages|add:"-1" %}
+                    <li class="page-item"><a class="page-link" href="#" onclick="setParam('page', {{ locations_list.paginator.num_pages }}); return false;">{{ locations_list.paginator.num_pages }}</a></li>
+                {% endif %}
+
+                {% if locations_list.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="setParam('page', {{ locations_list.next_page_number }}); return false;" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+
+<!-- Preserve form values from all forms on the page -->
+<script>
+    function submitForm(e) {
+        e.preventDefault();
+
+        var url = new URL(window.location.href);
+        var formData = new FormData(e.target);
+        var formHasChanged = false;
+
+        for (var pair of formData.entries()) {
+            if (url.searchParams.has(pair[0])) {
+                if (url.searchParams.get(pair[0]) !== pair[1]) {
+                    formHasChanged = true;
+                }
+                url.searchParams.delete(pair[0]);
+            }
+        }
+
+        for (var pair of formData.entries()) {
+            url.searchParams.append(pair[0], pair[1]);
+        }
+
+        for (var pair of new URLSearchParams(window.location.search).entries()) {
+            if (!url.searchParams.has(pair[0])) {
+                url.searchParams.append(pair[0], pair[1]);
+            }
+        }
+
+        if (formHasChanged) {
+            url.searchParams.set('page', '1');
+        }
+
+        window.location.href = url.href;
+    }
+</script>
+
+<!-- Change single parameter value (sort dropdown, pagnav)-->
+<script>
+    function setParam(key, value) {
+        var url = new URL(window.location.href);
+        if (key !== 'page' && url.searchParams.get(key) !== value) {
+            url.searchParams.set('page', '1');
+        }
+        url.searchParams.set(key, value);
+        window.location.href = url.href;
+    }
+</script>
+
+<!-- Form container scrolling -->
+<script>
+    function adjustFormContainer() {
+        var formContainer = document.getElementById('formContainer');
+        var parentDiv = document.getElementById('mainContent');
+        var headerContainer = document.getElementById('headerContainer');
+        var rect = formContainer.getBoundingClientRect();
+        var parentRect = parentDiv.getBoundingClientRect();
+        var headerRect = headerContainer.getBoundingClientRect();
+        var windowHeight = window.innerHeight || document.documentElement.clientHeight;
+
+        // Artifically adjust window height to add some space below the form container
+        windowHeight = windowHeight - 20;
+
+        if (rect.bottom > windowHeight) {
+            formContainer.style.position = 'relative';
+            formContainer.style.top = 'auto';
+        }
+        else {
+            if (rect.top < headerRect.bottom) {
+                formContainer.style.position = 'sticky';
+                formContainer.style.top = (windowHeight - rect.height) + 'px';
+            } 
+            else {
+                formContainer.style.position = 'sticky';
+                formContainer.style.top = headerRect.bottom + 'px';
+            }
+        }
+    };
+
+    // Run the function when the page is loaded
+    adjustFormContainer();
+
+    // Run the function when a scroll event is detected
+    window.addEventListener('scroll', adjustFormContainer);
+</script>
+
+<!-- Previous location select -->
+<script>
+    var preselectedValues = {{ preselected_previous_locations|safe }};
+    initializeSelect2('id_previous_locations', preselectedValues);
+</script>
+
+<!-- Range sliders -->
+<script>
+
+    $(function() {
+        var data = {{ distance_to_start_hist_data|safe }};
+        histRangeSlider("distance_to_start_range", "id_min_distance", "id_max_distance", data, d3.format(",.0f"), " km");
+    });
+
+    $(function() {
+        var data = {{ population_hist_data|safe }};
+        histRangeSlider("population_range", "id_min_population", "id_max_population", data, d3.format(",.0f"), "");
+    });
+
+    $(function() {
+        var data = {{ temperature_range_limits|safe }};
+        var format = {{ raw_values_format.temperature|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        rangeSlider("temperature_range", "id_min_temperature", "id_max_temperature", data.min, data.max , d3.format(formatString), format.raw_value_unit);
+    });
+
+    $(function() {
+        var data = {{ travel_cost_hist_data|safe }};
+        var format = {{ raw_values_format.travel|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        histRangeSlider("travel_cost_range", "id_min_travel_cost", "id_max_travel_cost", data, d3.format(formatString), format.raw_value_unit);
+    });
+
+    $(function() {
+        var data = {{ accommodation_cost_hist_data|safe }};
+        var format = {{ raw_values_format.accommodation|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        histRangeSlider("accommodation_cost_range", "id_min_accommodation_cost", "id_max_accommodation_cost", data, d3.format(formatString), format.raw_value_unit);
+    });
+
+    $(function() {
+        var data = {{ best_reachability_hist_data|safe }};
+        var format = {{ raw_values_format.best_reachability|safe }};
+        var formatString = ",." + format.raw_value_decimals + "f";
+        histRangeSlider("best_reachability_range", "id_min_best_reachability", "id_max_best_reachability", data, d3.format(formatString), format.raw_value_unit);
+    });
+
+</script>
+
+<!-- Preferences form -->
+<script>
+
+    // IMPORTANCE SLIDER
+    $(function() {
+        {% for category in preferences_form.get_categories %}
+            importanceSlider("{{ category.category_id }}_importance", "{{ category.fields.importance.id_for_label }}");
+        {% endfor %}
+    });
+
+    // DIRECTION TOGGLE SWITCHES
+
+    // Get all the hidden inputs and the toggle-switches
+    var hiddenInputs = document.querySelectorAll('.preferences-checkbox');
+    var toggleSwitches = document.querySelectorAll('.switch-label');
+
+    // Initialize each hidden input with a default value and set the corresponding toggle switch
+    for (let i = 0; i < hiddenInputs.length; i++) {
+        // If the hidden input doesn't have a value, assign a default value
+        if (!hiddenInputs[i].value) {
+            hiddenInputs[i].value = 'false';
+        }
+
+        // Set the state of the toggle switch based on the value of the hidden input
+        toggleSwitches[i].classList.toggle('active', hiddenInputs[i].value === 'true');
+
+        // Add an event listener to the toggle-switch
+        toggleSwitches[i].addEventListener('click', function() {
+            // Get the corresponding hidden input
+            var hiddenInput = hiddenInputs[i];
+
+            // Toggle the value of the hidden input
+            hiddenInput.value = hiddenInput.value === 'true' ? 'false' : 'true';
+
+            // Change the background of the toggle-switch to indicate whether it's active or not
+            this.classList.toggle('active', hiddenInput.value === 'true');
+        });
+    }
+
+</script>
+
+<!-- Form container toggling -->
+<script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+        // Get all the details elements
+        const detailsElements = document.querySelectorAll('details');
+
+        // Get the current page's parameters
+        let params = new URLSearchParams(window.location.search);
+
+        // Remove the parameters you want to exclude
+        params.delete('sort');
+        params.delete('page');
+
+        // Loop through each details element
+        detailsElements.forEach((details, index) => {
+            // Get the saved open state from localStorage
+            const isOpen = localStorage.getItem('detailsOpenState' + params.toString() + index);
+
+            // If there's a saved open state, apply it
+            if (isOpen !== null) {
+                details.open = isOpen === 'true';
+            }
+
+            // Add an onToggle event handler to save the open state when it's toggled
+            details.addEventListener('toggle', () => {
+                localStorage.setItem('detailsOpenState' + params.toString() + index, details.open);
+            });
+        });
+    });
+</script>
+
+{% endblock %}
