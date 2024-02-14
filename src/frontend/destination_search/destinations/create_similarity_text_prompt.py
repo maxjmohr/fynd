@@ -92,12 +92,12 @@ The scores are scaled between 0 and 1, where 0 is the worst and 1 is the best sc
                "content": f"""Use a maximum of three paragraphs and maximum of 15 sentences to generally describe the differences in the characteristics of the target travel destination '{list(data['Target Location']['Weather']['Daylight duration'].keys())[0]} for all dimensions to the users' previous destinations {previous_locs}.
 Use easy and understandable language and short sentences.
 Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
-Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
 Never use the word 'score' but rather try to describe what exists more or less than in the other destinations.
 The scores of all locations are for the selected time period of {time_period} and the reachability and travel costs calculated from {ref_start_loc}.
 The dictionary is structured as follows: {{location type: {{category {{dimension {{location {{score}}}}}}}}}}.
 {data}
-Never list all dimension. Only highlight the most noteable categories and dimension standouts. Do not write an overall ending.
+Never list all dimensions. Only highlight the most noteable categories and dimension standouts. Do not write an overall ending.
+Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
 """
     }
 
