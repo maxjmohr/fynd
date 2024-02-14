@@ -90,7 +90,7 @@ class FiltersForm(forms.Form):
         widget=forms.HiddenInput(),
         required=False,
         label='Travel cost',
-        help_text='Flight cost from start location (reference) to destination.'
+        help_text='Flight cost for a round trip between start location (reference) and destination.'
     )
     max_travel_cost = forms.FloatField(
         widget=forms.HiddenInput(),
