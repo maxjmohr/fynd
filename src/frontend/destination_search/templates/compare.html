@@ -5,75 +5,111 @@ Compare destinations
 {% endblock %}
 
 {% block main %}
-<table>
-    <thead>
-        <tr>
-            <th>Remove</th>
-            <th>City</th>
-            <th>Country</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for location in locations %}
-        <tr>
-            <td><div id="{{ location.location_id}}" class="remove-from-comparison-button">X</div></td>
-            <td>{{ location.city }}</td>
-            <td>
-                <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
-                {{ location.country }}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="comparison-page-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Color</th>
+                <th>City</th>
+                <th>Country</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for location in locations %}
+            <tr>
+                <td><div id="{{ location.location_id}}" class="comparison-location-color"></div></td>
+                <td>{{ location.city }}</td>
+                <td>
+                    <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                    {{ location.country }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="myDiv" id="myDiv"></div>
+
+    <div id="comparison-chart"></div>
+
+    <div class="comparison-chart-container">
+    </div>
+
+</div>
 {% endblock %}
 
 {% block javascripts %}
+<!-- Comparison chart -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script>
-    // Update selectedCompareLocations with the locations from the query string
-    let urlParams = new URLSearchParams(window.location.search);
-    let locationsParam = urlParams.getAll('locations');
-    selectedCompareLocations = locationsParam.map(location => parseInt(location));
+    // Parse the JSON data
+    var data = JSON.parse('{{ data|safe }}');
 
-    // Update the compare count element
-    compareCountElement.textContent = selectedCompareLocations.length;
-
-    // Hide or show the compare count element
-    if (selectedCompareLocations.length === 0) {
-        compareCountElement.style.visibility = 'hidden';
-    } else {
-        compareCountElement.style.visibility = 'visible';
+    // Function to generate a color
+    function getColor(index, total) {
+        var hue = index / total * 360;
+        return 'hsl(' + hue + ', 100%, 50%)';
     }
 
-    // Remove-button event listener
-    document.querySelectorAll('.remove-from-comparison-button').forEach(function(button) {
-        button.addEventListener('click', function() {
-            let locationId = parseInt(this.id);
+    // Create the layout
+    var layout = {
+        autosize: true,
+        height: 2000,
+        width: 800,
+        grid: {rows: data.length, columns: 1, pattern: 'independent'},
+    };
 
-            // Remove the location from the comparison list
-            selectedCompareLocations = selectedCompareLocations.filter(id => id !== locationId);
+    var traces = [];
 
-            // Update the count
-            compareCountElement.textContent = selectedCompareLocations.length;
+    // Iterate over the categories
+    data.forEach(function(category, i) {
 
-            // Hide or show the compare count element
-            if (selectedCompareLocations.length === 0) {
-                compareCountElement.style.visibility = 'hidden';
-            } else {
-                compareCountElement.style.visibility = 'visible';
-            }
+        // Iterate over the locations to create the traces
+        category.locations.forEach(function(location, j) {
 
-            // Update the href of the 'Compare' link
-            let compareLink = document.querySelector('#compare-link');
-            let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
-            compareLink.href = url;
+            // Create arrays to hold the scores and dimension names
+            var scores = [];
+            var dimensionNames = [];
+            location.dimensions.forEach(function(dimension) {
+                scores.push(dimension.score);
+                dimensionNames.push(dimension.dimension_name);
+            });
 
-            console.log(url);
+            // Create the trace
+            var trace = {
+                x: scores,
+                y: dimensionNames,
+                mode: 'markers+lines',
+                name: location.city + ' (' + location.country + ')',
+                marker: {
+                    color: getColor(j, category.locations.length),
+                },
+                type: 'scatter',
+                xaxis: 'x' + (i + 1), 
+                yaxis: 'y' + (i + 1), 
+                legendgroup: location.city,
+                showlegend: i === 0
+            };
 
-            // Remove the row from the table
-            this.parentElement.parentElement.remove();
+            // Add the trace to the array
+            traces.push(trace);
         });
+
+        // Define the axes
+        layout['yaxis' + (i + 1)] = {
+            type: 'category',
+        };
+        layout['xaxis' + (i + 1)] = {
+            range: [0, 1]
+        };
+
     });
+
+    console.log(layout)
+
+    // Create the plot
+    Plotly.newPlot('comparison-chart', traces, layout);
+
 </script>
 {% endblock %}
 

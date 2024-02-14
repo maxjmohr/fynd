@@ -296,7 +296,7 @@ class CompareView(View):
         ]
 
         # Get locations
-        locations = read_frame(
+        locations = (
             CoreLocations.objects
             .filter(location_id__in=location_ids)
             .values('location_id', 'city', 'country', 'country_code')
@@ -311,13 +311,61 @@ class CompareView(View):
             location_id=location_ids,
             retrieve_text=False
         )
+        scores = (
+            scores
+            .filter(['location_id', 'dimension_id', 'score', 'raw_value'])
+            .assign(dimension_id=clean_id(scores.dimension_id))
+            .set_index(['location_id', 'dimension_id'])
+        )
 
-        context = {
-            'locations': locations.to_dict('records'),
-            'scores': scores.to_dict('records'),
-        }
+        # Get categories with related dimensions (in correct order)
+        categories_with_dimensions = (
+            CoreCategories.objects
+            .filter(~Q(category_id=0))
+            .order_by('display_order')
+            .prefetch_related(Prefetch('coredimensions_set', queryset=CoreDimensions.objects.order_by('dimension_id')))
+        )
 
-        return context
+        def format_raw_value(location: int, dimension: int) -> str:
+            """Format raw value."""
+            raw_value = scores.loc[(location['location_id'], dimension.dimension_id), 'raw_value']
+            if pd.isna(raw_value):
+                return ''
+            return f' ({raw_value:.{dimension.raw_value_decimals}f}{dimension.raw_value_unit})'
+        
+        # Convert to json structure
+        data = json.dumps([
+            {
+                'category_id': category.category_id,
+                'category_name': category.category_name,
+                'category_description': category.description,
+                'axis_title': category.axis_title,
+                'axis_label_low': category.axis_label_low,
+                'axis_label_high': category.axis_label_high,
+                'locations': [
+                    {
+                        'location_id': location.get('location_id'),
+                        'city': location.get('city'),
+                        'country': location.get('country'),
+                        'dimensions': [
+                            {
+                                'dimension_id': dimension.dimension_id,
+                                'dimension_name': dimension.dimension_name,
+                                'dimension_description': dimension.description,
+                                'dimension_icon_url': dimension.icon_url,
+                                'score': scores.loc[(location['location_id'], dimension.dimension_id), 'score'].item(),
+                                'raw_value_formatted': format_raw_value(location, dimension),
+                            }
+                            for dimension in category.coredimensions_set.all()
+                        ]
+                    }
+                    for location in locations
+                ],
+            }
+            for category in categories_with_dimensions
+        ])
+
+        return {'locations': list(locations), 'data': data}
 
 
 class AboutView(TemplateView):
