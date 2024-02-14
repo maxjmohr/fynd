@@ -1,0 +1,197 @@
+;country;iso3;aa_code
+0;Afghanistan;AFG;204692
+1;Ägypten;EGY;212622
+2;Albanien;ALB;216248
+3;Algerien;DZA;219044
+4;Andorra;AND;224898
+5;Angola;AGO;208118
+6;Antigua und Barbuda;ATG;227042
+7;Äquatorialguinea;GNQ;226768
+8;Argentinien;ARG;201326
+9;Armenien;ARM;201872
+10;Aserbaidschan;AZE;201888
+11;Äthiopien;ETH;209504
+12;Australien;AUS;213920
+13;Bahamas;BHS;220268
+14;Bahrain;BHR;204112
+15;Bangladesch;BGD;206292
+16;Barbados;BRB;226424
+17;Belarus;BLR;201904
+18;Belgien;BEL;200382
+19;Belize;BLZ;220284
+20;Benin;BEN;208984
+21;Bhutan;BTN;226702
+22;Bolivien;BOL;213428
+23;Bosnien und Herzegowina;BIH;207694
+24;Botsuana;BWA;219522
+25;Brasilien;BRA;201092
+26;Brunei Darussalam;BRN;224526
+27;Bulgarien;BGR;211834
+28;Burkina Faso;BFA;212336
+29;Burundi;BDI;222614
+30;Cabo Verde;CPV;208824
+31;Chile;CHL;201230
+32;China;CHN;200466
+33;Cookinseln;COK;226552
+34;Costa Rica;CRI;224816
+35;Côte d'Ivoire;CIV;209460
+36;Dänemark;DNK;211724
+38;Dominica;DMA;220300
+39;Dominikanische Republik;DOM;206146
+40;Dschibuti;DJI;212168
+41;Ecuador;ECU;223232
+42;El Salvador;SLV;221864
+43;Eritrea;ERI;226176
+44;Estland;EST;200754
+45;Eswatini;SWZ;226240
+46;Fidschi;FJI;226626
+47;Finnland;FIN;211624
+48;Frankreich;FRA;209524
+49;Gabun;GAB;226324
+50;Gambia;GMB;213624
+51;Georgien;GEO;201918
+52;Ghana;GHA;203372
+53;Grenada;GRD;220316
+54;Griechenland;GRC;211534
+55;Guatemala;GTM;221882
+56;Guinea;GIN;206098
+57;Guinea-Bissau;GNB;220332
+58;Guyana;GUY;220348
+59;Haiti;HTI;205048
+60;Heiliger Stuhl;VAT;226808
+61;Honduras;HND;221078
+62;Indien;IND;205998
+63;Indonesien;IDN;212396
+64;Irak;IRQ;202738
+65;Iran;IRN;202396
+66;Irland;IRL;211460
+67;Island;ISL;223400
+68;Israel;ISR;203814
+69;Italien;ITA;211322
+70;Jamaika;JAM;226490
+71;Japan;JPN;213032
+72;Jemen;YEM;202260
+73;Jordanien;JOR;218008
+74;Kambodscha;KHM;220008
+75;Kamerun;CMR;208874
+76;Kanada;CAN;204874
+77;Kasachstan;KAZ;206342
+78;Katar;QAT;202280
+79;Kenia;KEN;208058
+80;Kirgisistan;KGZ;206738
+81;Kiribati;KIR;220364
+82;Kolumbien;COL;201516
+83;Komoren;COM;226660
+84;Republik Kongo;COG;208542
+85;Demokratische Republik Kongo;COD;203202
+86;Demokratische Volksrepublik Korea;PRK;216104
+87;Republik Korea;KOR;216132
+88;Kosovo;XXK;207442
+89;Kroatien;HRV;210072
+90;Kuba;CUB;212208
+91;Kuwait;KWT;204130
+92;Laos;LAO;201048
+93;Lesotho;LSO;226974
+94;Lettland;LVA;200674
+95;Libanon;LBN;204048
+96;Liberia;LBR;222378
+97;Libyen;LBY;219624
+98;Liechtenstein;LIE;222960
+99;Litauen;LTU;200620
+100;Luxemburg;LUX;211256
+101;Madagaskar;MDG;207960
+102;Malawi;MWI;208508
+103;Malaysia;MYS;223616
+104;Malediven;MDV;220382
+105;Mali;MLI;208258
+106;Malta;MLT;211188
+107;Marokko;MAR;224080
+108;Marshallinseln;MHL;220400
+109;Mauretanien;MRT;219190
+110;Mauritius;MUS;206994
+111;Mexiko;MEX;213648
+112;Mikronesien;FSM;220678
+113;Moldau;MDA;201932
+114;Monaco;MCO;226868
+115;Mongolei;MNG;222842
+116;Montenegro;MNE;216330
+117;Mosambik;MOZ;221782
+118;Myanmar;MMR;212100
+119;Namibia;NAM;208314
+120;Nauru;NRU;220416
+121;Nepal;NPL;221216
+122;Neuseeland;NZL;220146
+123;Nicaragua;NIC;223316
+124;Niederlande;NLD;211084
+125;Niger;NER;226384
+126;Nigeria;NGA;205788
+128;Nordmazedonien;MKD;207612
+129;Norwegen;NOR;205878
+130;Oman;OMN;204160
+131;Österreich;AUT;210962
+132;Pakistan;PAK;204974
+133;Palau;PLW;220958
+134;Panama;PAN;206378
+135;Papua-Neuguinea;PNG;220698
+136;Paraguay;PRY;224964
+137;Peru;PER;211938
+138;Philippinen;PHL;212492
+139;Polen;POL;199124
+140;Portugal;PRT;210900
+141;Ruanda;RWA;212026
+142;Rumänien;ROU;210822
+143;Russische Föderation;RUS;201536
+144;Salomonen;SLB;220650
+145;Sambia;ZMB;208606
+146;Samoa;WSM;213758
+147;San Marino;SMR;227014
+148;São Tomé und Príncipe;STP;220434
+149;Saudi-Arabien;SAU;202298
+150;Schweden;SWE;210708
+151;Schweiz;CHE;206208
+152;Senegal;SEN;208190
+153;Serbien ;SRB;207502
+154;Seychellen;SYC;226912
+155;Sierra Leone;SLE;203500
+156;Simbabwe;ZWE;208948
+157;Singapur;SGP;225412
+158;Slowakei;SVK;206360
+159;Slowenien;SVN;210644
+160;Somalia;SOM;203132
+161;Spanien;ESP;210534
+162;Sri Lanka;LKA;212254
+163;St. Kitts und Nevis;KNA;226596
+164;St. Lucia;LCA;226750
+165;St. Vincent und die Grenadinen;VCT;226268
+166;Südafrika;ZAF;208400
+167;Sudan;SDN;203266
+168;Südsudan;SSD;244250
+169;Suriname;SUR;220450
+170;Syrien;SYR;204278
+171;Tadschikistan;TJK;206756
+172;Tansania;TZA;208662
+173;Thailand;THA;201558
+174;Timor-Leste;TLS;221388
+175;Togo;TGO;213850
+176;Tonga;TON;213790
+177;Trinidad und Tobago;TTO;220466
+178;Tschad;TCD;225774
+179;Tschechien;CZE;210456
+180;Tunesien;TUN;219024
+181;Türkei;TUR;201962
+182;Turkmenistan;TKM;206774
+183;Tuvalu;TUV;220666
+184;Uganda;UGA;208752
+185;Ukraine;UKR;201946
+186;Ungarn;HUN;210332
+187;Uruguay;URY;201138
+188;Usbekistan;UZB;206790
+189;Vanuatu;VUT;220498
+190;Vatikanstadt;VAT;226808
+191;Venezuela;VEN;224982
+192;Vereinigte Arabische Emirate;ARE;202332
+193;Vereinigte Staaten;USA;201382
+194;Vereinigtes Königreich;GBR;206408
+195;Vietnam;VNM;217274
+196;Zentralafrikanische Republik;CAF;226450
+197;Zypern;CYP;210258

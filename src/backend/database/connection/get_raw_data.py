@@ -5,8 +5,9 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
-#from data.safety import create_country_safety_df
-#from data.safety import create_city_safety_df
+from data.safety_pipeline import create_country_safety_df
+from data.safety_pipeline import create_city_safety_df
+from data.health import get_health_info
 from data.geography import get_land_coverage
 from data.places import get_places
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
@@ -790,6 +791,24 @@ def fill_raw_geography_coverage(locations: pd.DataFrame, table_name: str, db: Da
 
     return end_datetime
 
+####----| HEALTH |----####
+# creates dataframe ready to be inserted into the raw_health_country table
+def fill_raw_health(locations: pd.DataFrame, table_name: str, db: Database):
+
+    # Run update on country information
+    get_health_info()
+
+    # Read in the csv file
+    health_country_df = pd.read_csv("../../../res/master_data/health_info.csv")
+
+    # If information could be found, insert it into the database
+    if len(health_country_df) > 0:
+        db.insert_data(health_country_df, table_name, if_exists="replace")
+
+    # Get current time for logging and return it
+    end_datetime = datetime.datetime.now()
+
+    return end_datetime
 
 
 ####----| STEP 4: EXECUTE STEPS 1, 2 AND 3 |----####     
@@ -805,7 +824,8 @@ table_fill_function_dict = {
     #"raw_geography_coverage": [fill_raw_geography_coverage, 7],
     #"raw_accommodation_costs" : [fill_raw_accommodation_costs, 8],
     #"raw_reachability_air" : [fill_raw_reachability_air_par, 9],
-    #"raw_reachability_land" : [fill_raw_reachability_land_par, 10]
+    #"raw_reachability_land" : [fill_raw_reachability_land_par, 10],
+    #"raw_health" : [fill_raw_health, 11]
     }
 
 # List that consists of names of log tables that need to be created 
@@ -822,12 +842,14 @@ table_process_id_dict = {
     7: ["fill_raw_geography", "Inserts geography data for given locations.", 30],
     8: ["fill_raw_accommodation", "Inserts accommodation data for given locations.", 30],
     9: ["fill_raw_reachability_air", "Inserts reachability data for given locations.", 30],
-    10: ["fill_raw_reachability_land", "Inserts reachability data for given locations.", 30]
+    10: ["fill_raw_reachability_land", "Inserts reachability data for given locations.", 30],
+    11: ["fill_raw_health", "Inserts health data and travel information for all countries", 30]
 }
 
 # Connect to database
 db = Database()
 db.connect()
+#print(db.fetch_data("raw_safety_country"))
 
 # Create tables
 #create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
