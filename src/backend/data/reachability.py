@@ -12,7 +12,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 from database.db_helpers import Database
-from urllib3.exceptions import MaxRetryError
 import numpy as np
 import json
 
@@ -24,7 +23,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import NoSuchElementException
 from dateutil import parser
 
-with open("./res/auth/here_key.txt", "r") as f:
+with open("./res/api_keys/here_key.txt", "r") as f:
     key = f.read()
 
 # set key to environment variable
