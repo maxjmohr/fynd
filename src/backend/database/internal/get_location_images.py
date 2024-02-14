@@ -103,20 +103,7 @@ location_images_df = pd.DataFrame.from_dict(dict_list)
 location_images_df.to_csv("res/master_data/location_images.csv") """
 
 # Load CSV into database
-""" locations_images_df = pd.read_csv("res/master_data/locations_images.csv", sep=";")
-locations_images_df.drop("Unnamed: 0", axis=1)
+locations_images_df = pd.read_csv("res/master_data/locations_images.csv", sep=";")
+#locations_images_df.drop("Unnamed: 0", axis=1)
 column_order = ["location_id", "img_url", "source"]
 locations_images_df = locations_images_df.reindex(columns=column_order)
-"""
-# Connect to database
-#db = Database()
-db = Database()
-
-db.connect()
-df = db.fetch_data("raw_health")
-print(df)
-#db.create_db_object("core_locations_images", drop_if_exists=True)
-#db.insert_data(locations_images_df, "core_locations_images", if_exists="append", updated_at=True)
-
-# Disconnect from database
-db.disconnect()

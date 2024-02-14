@@ -2,7 +2,8 @@ CREATE TABLE core_locations_images (
     location_id         INTEGER PRIMARY KEY NOT NULL,
     img_url             VARCHAR(1024),
     source              TEXT,
-    updated_at          TIMESTAMP
+    updated_at          TIMESTAMP,
+    FOREIGN KEY (location_id) REFERENCES core_locations(location_id)
 );
 
 COMMENT ON TABLE core_locations_images IS 'Table stores image links and their sources for all locations.';

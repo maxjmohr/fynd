@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, noodp, noarchive, noimageindex" />
+    <title>{% block title %}{% endblock %}</title>
+
+    <!-- leaflet css -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+    <!-- Info icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <!-- jQuery UI CSS -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+
+    <!-- favicon -->
+    <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.png' %}" >
+
+</head>
+<body class="{{ request.path|slugify }}">
+
+    <div class="page">
+
+        <!--- Header -->
+        <div class="header-container" id="headerContainer">
+            <div class="header-content-container content-container">
+                {% block header %}
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <a class="navbar-brand" href="/">
+                        <img src="{% static 'images/logo.svg' %}" class="logo" alt="fynd-logo">
+                    </a>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item {% if request.path == '/discover' %}active-link{% endif %}">
+                                <a class="nav-link has-tooltip" href="/discover">
+                                    Discover
+                                    <span class="tooltip-text nav-link-tooltip-text">Discover new places</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {% if request.path == '/search' %}active-link{% endif %}">
+                                <a class="nav-link has-tooltip" href="/search">
+                                    Search
+                                    <span class="tooltip-text nav-link-tooltip-text">Search for a destination</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {% if request.path == '/compare' %}active-link{% endif %}">
+                                <a class="nav-link has-tooltip" id="compare-link" href="/compare">
+                                    Compare
+                                    <div id="compare-count">0</div>
+                                    <span class="tooltip-text nav-link-tooltip-text">Compare different destinations</span>
+                                </a>
+                            </li>
+                            <li class="nav-item {% if request.path == '/about' %}active-link{% endif %}">
+                                <a class="nav-link has-tooltip" href="/about">
+                                    About
+                                    <span class="tooltip-text nav-link-tooltip-text">Learn more about the project</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                {% endblock %}
+            </div>
+        </div>
+
+        <!--- Main part -->
+        <div class="main-container content-container" id="mainContent">
+            {% block main %}{% endblock %}
+        </div>
+
+        <!--- Footer -->
+        <div class="footer-container">
+            <div class="footer-content-container content-container">
+                A very nice product by Max Mohr, Lukas Schick, Felix Koehn and Jakob Zgonc. Unfortunately, no money to reserve any rights.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Django-Select2 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+
+    <!-- Daterangepicker -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+    <script type="text/javascript">
+    $(function() {
+        var start_date = $('input[name="start_date"]');
+        var end_date = $('input[name="end_date"]');
+
+        var date_range_picker = $('#date_range').daterangepicker({
+            autoUpdateInput: false,
+            minDate: moment(),
+            maxDate: moment().add(1, 'years'),
+            locale: {
+                cancelLabel: 'Clear',
+                format: 'DD/MM/YYYY'
+            }
+        });
+
+        if (start_date.val() && end_date.val()) {
+            var startDate = moment(start_date.val(), 'YYYY-MM-DD');
+            var endDate = moment(end_date.val(), 'YYYY-MM-DD');
+
+            date_range_picker.data('daterangepicker').setStartDate(startDate);
+            date_range_picker.data('daterangepicker').setEndDate(endDate);
+            date_range_picker.val(startDate.format('DD/MM/YYYY') + ' - ' + endDate.format('DD/MM/YYYY'));
+        }
+
+        date_range_picker.on('apply.daterangepicker', function(ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+            start_date.val(picker.startDate.format('YYYY-MM-DD'));
+            end_date.val(picker.endDate.format('YYYY-MM-DD'));
+        });
+
+        date_range_picker.on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+            start_date.val('');
+            end_date.val('');
+        });
+    });
+    </script>
+
+    <!-- Bootstrap Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const navItems = document.querySelectorAll('.nav-item a');
+            const currentPath = window.location.pathname.replace(/\/$/, '');
+
+            navItems.forEach((navItem) => {
+                if (navItem.getAttribute('href').replace(/\/$/, '') === currentPath) {
+                    navItem.classList.add('active-link');
+                }
+            });
+        });
+    </script>
+    
+    <!-- jQuery UI -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+    <!-- jQuery UI autocomplete for start location -->
+    <script>
+        $(document).ready(function() {
+            $('#id_start_location').autocomplete({
+                source: function(request, response) {
+                    $.get('https://nominatim.openstreetmap.org/search', {
+                        q: request.term,
+                        format: 'json'
+                    }, function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.display_name,
+                                value: item.display_name,
+                                lat: item.lat,
+                                lon: item.lon
+                            };
+                        }));
+                    });
+                },
+                select: function(event, ui) {
+                    $('#id_start_location_lat').val(ui.item.lat);
+                    $('#id_start_location_lon').val(ui.item.lon);
+                },
+                minLength: 2
+            });
+        });
+    </script>
+
+    <!-- Info icon help text -->
+    <script>
+        var currentHelpBox = null;
+
+        function showHelpText(event, id) {
+            event.stopPropagation();
+            var helpTextBox = document.getElementById(id);
+            if (currentHelpBox && currentHelpBox !== helpTextBox) {
+                currentHelpBox.style.display = "none";
+            }
+            if (helpTextBox.style.display === "none") {
+                helpTextBox.style.display = "block";
+                currentHelpBox = helpTextBox;
+            } else {
+                helpTextBox.style.display = "none";
+                currentHelpBox = null;
+            }
+        }
+
+        // Close the help box when clicking anywhere else on the page
+        window.onclick = function(event) {
+            if (currentHelpBox) {
+                currentHelpBox.style.display = "none";
+                currentHelpBox = null;
+            }
+        }
+    </script>
+
+    <!-- Slider widget with histogram -->
+    <script src="https://d3js.org/d3.v5.min.js"></script> <!-- D3.js also for other plotting -->
+    <script>
+        function histRangeSlider(containerId, minFieldId, maxFieldId, data, format, suffix) {
+
+            // Define the svg variable at the top of the function
+            var svg;
+
+            // Function to update the colors of the bars
+            function updateBarColors(min, max) {
+                svg.selectAll(".bar rect")
+                    .attr("fill", function(d, i) {
+                        var binLimit = data.binLimits[i];
+                        return (binLimit >= min && binLimit <= max) ? "steelblue" : "#ccc";
+                    });
+            }
+
+            // Create the divs for the histogram, the slider, and the min/max labels
+            var container = $("#" + containerId);
+            var histogramId = containerId + "_histogram";
+            var sliderId = containerId + "_slider";
+            var minLabelId = containerId + "_min_label";
+            var maxLabelId = containerId + "_max_label";
+            container.append('<div id="' + histogramId + '" style="margin-bottom: 2px;"></div>');
+            container.append('<div id="' + sliderId + '" style="margin-bottom: 10px;"></div>');
+            container.append(
+                '<div style="display: flex; justify-content: space-between;">' +
+                    '<div class="form-input-label" id="' + minLabelId + '"></div>' +
+                    '<div class="form-input-label" id="' + maxLabelId + '"></div>' +
+                '</div>'
+            );
+
+            // Extract the min and max values from the data
+            var minValue = Math.min(...data.binLimits);
+            var maxValue = Math.max(...data.binLimits);
+
+            // Create a new format function that adds the suffix
+            var formatWithSuffix = function(value) {
+                return format(value) + suffix;
+            };
+
+            // Check if there are any values from the GET request
+            var getMinValue = $("#"+minFieldId).val();
+            var getMaxValue = $("#"+maxFieldId).val();
+
+            // If values exist in the GET request, use them. 
+            // Otherwise, use min and max values from the data.
+            sliderMinValue = getMinValue ? getMinValue : minValue;
+            sliderMaxValue = getMaxValue ? getMaxValue : maxValue;
+
+            // Initialize the min/max labels
+            $("#" + minLabelId).text(formatWithSuffix(sliderMinValue));
+            $("#" + maxLabelId).text(formatWithSuffix(sliderMaxValue));
+
+            // Create the slider
+            $("#" + sliderId).slider({
+                range: true,
+                min: minValue,
+                max: maxValue,
+                values: [sliderMinValue, sliderMaxValue],
+                slide: function(event, ui) {
+                    $("#" + minFieldId).val(ui.values[0] != minValue ? ui.values[0] : '');
+                    $("#" + maxFieldId).val(ui.values[1] != maxValue ? ui.values[1] : '');
+                    $("#" + minLabelId).text(formatWithSuffix(ui.values[0]));
+                    $("#" + maxLabelId).text(formatWithSuffix(ui.values[1]));
+
+                    // Update the colors of the bars
+                    updateBarColors(ui.values[0], ui.values[1]);
+                }
+            });
+
+            // Calculate the maximum height
+            var maxHeight = Math.max(...data.heights);
+
+            // Define the overall height of the histogram
+            var histogramHeight = 30;
+
+            // Create the histogram
+            svg = d3.select("#" + histogramId).append("svg")
+                .attr("viewBox", `0 0 ${data.heights.length * 10} ${histogramHeight}`)
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .classed("range-slider-histogram-content", true);
+
+            var barWidth = 10;
+
+            var bar = svg.selectAll(".bar")
+                .data(data.heights)
+                .enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function(d, i) {
+                    return "translate(" + i * barWidth + "," + (histogramHeight - d * histogramHeight / maxHeight) + ")"; // Scale the y position
+                });
+
+            // Update the width and height of each bar
+            bar.append("rect")
+                .attr("x", 1)
+                .attr("width", barWidth - 1)
+                .attr("height", function(d) { return d * histogramHeight / maxHeight; }) // Scale the height
+                .attr("fill", "steelblue"); // Set the initial color here
+
+            // Update the colors of the bars initially
+            updateBarColors(sliderMinValue, sliderMaxValue);
+
+        }
+    </script>
+
+    <!-- Simple range slider (e.g. for temperature filter) -->
+    <script>
+        function rangeSlider(containerId, minFieldId, maxFieldId, minValue, maxValue, format, suffix) {
+            // Create the div for the slider
+            var container = $("#" + containerId);
+            var sliderId = containerId + "_slider";
+            var minLabelId = containerId + "_min_label";
+            var maxLabelId = containerId + "_max_label";
+            container.append('<div id="' + sliderId + '" style="margin-bottom: 10px;"></div>');
+            container.append(
+                '<div style="display: flex; justify-content: space-between;">' +
+                    '<div class="form-input-label" id="' + minLabelId + '"></div>' +
+                    '<div class="form-input-label" id="' + maxLabelId + '"></div>' +
+                '</div>'
+            );
+
+            // Create a new format function that adds the suffix
+            var formatWithSuffix = function(value) {
+                return format(value) + suffix;
+            };
+
+            // Check if there are any values from the GET request
+            var getMinValue = $("#"+minFieldId).val();
+            var getMaxValue = $("#"+maxFieldId).val();
+
+            // If values exist in the GET request, use them. 
+            // Otherwise, use min and max values from the data.
+            sliderMinValue = getMinValue ? getMinValue : minValue;
+            sliderMaxValue = getMaxValue ? getMaxValue : maxValue;
+
+            // Initialize the min/max labels
+            $("#" + minLabelId).text(formatWithSuffix(sliderMinValue));
+            $("#" + maxLabelId).text(formatWithSuffix(sliderMaxValue));
+
+            // Create the slider
+            $("#" + sliderId).slider({
+                range: true,
+                min: minValue,
+                max: maxValue,
+                values: [sliderMinValue, sliderMaxValue],
+                slide: function(event, ui) {
+                    $("#" + minFieldId).val(ui.values[0] != minValue ? ui.values[0] : '');
+                    $("#" + maxFieldId).val(ui.values[1] != maxValue ? ui.values[1] : '');
+                    $("#" + minLabelId).text(formatWithSuffix(ui.values[0]));
+                    $("#" + maxLabelId).text(formatWithSuffix(ui.values[1]));
+                }
+            });
+        }
+    </script>
+
+    <!-- Simple slider for importance -->
+    <script>
+        function importanceSlider(containerId, fieldId) {
+            // Create the div for the slider
+            var container = $("#" + containerId);
+            var sliderId = containerId + "_slider";
+            container.append('<div id="' + sliderId + '"></div>');
+
+            // Check if there is any value from the GET request
+            var getValue = $("#"+fieldId).val();
+
+            // If a value exists in the GET request, use it. Otherwise, use 0.5
+            sliderValue = getValue ? getValue : 0.5;
+
+            // Set initial value for the distance form field
+            $("#" + fieldId).val(sliderValue);
+
+            // Create the slider
+            var slider = $("#" + sliderId).slider({
+                min: 0,
+                max: 1,
+                step: 0.000001,
+                value: sliderValue,
+                slide: function(event, ui) {
+                    $("#" + fieldId).val(ui.value);
+                }
+            });
+
+            // Add double click event listener to the slider handle
+            slider.find(".ui-slider-handle").dblclick(function() {
+                slider.slider("value", 0.5);
+                $("#" + fieldId).val(0.5);
+            });
+        }
+    </script>
+
+    <!-- Select2 Location(s) choice -->
+    <script>
+        function initializeSelect2(elementId, preselectedValues, placeholderText = "Select destination(s)...") {
+            var grouped_locations = JSON.parse('{{ grouped_locations|escapejs }}');
+            var data = [];
+            $.each(grouped_locations, function(index, group) {
+                // Add the country as a normal option
+                data.push({
+                    id: group.id,
+                    text: group.text,
+                    isCountry: group.isCountry  // Add a flag to distinguish countries from locations
+                });
+                // Add the locations
+                $.each(group.children, function(index, location) {
+                    data.push({
+                        id: location.id,
+                        text: location.text,
+                        parent: group.text  // Add a reference to the parent country
+                    });
+                });
+            });
+
+
+            $(document).ready(function() {
+                var selectElement = $('#' + elementId);
+                selectElement.select2({
+                    data: data,
+                    placeholder: placeholderText,
+                    allowClear: true,
+                    minimumInputLength: 1,
+                    templateResult: function(data) {
+                        if (data.isCountry) {
+                            return $('<strong>').text(data.text);
+                        }
+                        return $('<span style="padding-left: 20px;">').text(data.text);
+                    },
+                    matcher: function(params, data) {
+                        // If there are no search terms, return all data
+                        if ($.trim(params.term) === '') {
+                            return data;
+                        }
+
+                        // If the data object is a country
+                        if (data.isCountry) {
+                            // Check if any of the country's locations match the search term
+                            var matchingLocation = grouped_locations.find(function(group) {
+                                return group.id === data.id && group.children.some(function(location) {
+                                    return location.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1;
+                                });
+                            });
+                            // If a location matches the search term, return the country data object
+                            if (matchingLocation) {
+                                return data;
+                            }
+                        }
+
+                        // If the text property of data object matches the search term
+                        if (data.text.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                            return data;
+                        }
+
+                        // If the parent property of data object matches the search term
+                        if (data.parent && data.parent.toLowerCase().indexOf(params.term.toLowerCase()) > -1) {
+                            return data;
+                        }
+
+                        // Return null if the data object does not match the search term
+                        return null;
+                    }
+                });
+                selectElement.val(preselectedValues).trigger('change');  // Preselect values
+            });
+        }
+    </script>
+
+    <!-- Comparison -->
+    <script>
+
+        function updateTooltipPosition(icon, tooltipText) {
+            let iconRect = icon.getBoundingClientRect();
+            let scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            tooltipText.style.left = (iconRect.left + scrollLeft + iconRect.width / 2 - tooltipText.offsetWidth / 2) + 'px';
+            tooltipText.style.top = (iconRect.top + scrollTop + iconRect.height) + 'px';
+        }
+
+        let selectedCompareLocations = JSON.parse(localStorage.getItem('selectedCompareLocations')) || [];
+
+        // Update the counter
+        let compareCountElement = document.querySelector('#compare-count');
+        compareCountElement.textContent = selectedCompareLocations.length;
+        if (selectedCompareLocations.length === 0) {
+            compareCountElement.style.visibility = 'hidden';  // Hide the element
+        } else {
+            compareCountElement.style.visibility = 'visible';  // Show the element
+        }
+
+        document.querySelectorAll('.add-to-comparison-icon').forEach(icon => {
+            let img = icon.querySelector('img');
+            let locationId = icon.dataset.locationId;
+
+            // Create the tooltip element
+            let tooltipText = document.createElement('span');
+            tooltipText.classList.add('comparison-icon-tooltip-text');
+            tooltipText.classList.add('tooltip-text');
+            tooltipText.style.position = 'absolute';
+            tooltipText.style.visibility = 'hidden';
+
+            // Append the tooltip element to the body of the document
+            document.body.appendChild(tooltipText);
+
+            // If the location is selected, update the icon and add the 'selected' class
+            if (selectedCompareLocations.includes(locationId)) {
+                icon.classList.add('selected');
+                img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+                tooltipText.textContent = "Remove from comparison";
+            } else {
+                tooltipText.textContent = "Add to comparison";
+            }
+            
+            // Icon event listener
+            icon.addEventListener('click', function() {
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                    img.src = "{% static 'images/comparison_icon.svg' %}";
+                    selectedCompareLocations = selectedCompareLocations.filter(id => id !== locationId);
+                    tooltipText.textContent = "Add to comparison";
+                } else {
+                    if (selectedCompareLocations.length >= 5) {
+                        alert('You can only select up to 5 destinations for comparison.');
+                        return;
+                    }
+
+                    this.classList.add('selected');
+                    img.src = "{% static 'images/comparison_icon_selected.svg' %}";
+                    selectedCompareLocations.push(locationId);
+                    tooltipText.textContent = "Remove from comparison";
+                }
+
+                localStorage.setItem('selectedCompareLocations', JSON.stringify(selectedCompareLocations));
+                compareCountElement.textContent = selectedCompareLocations.length;
+
+                // Hide or show the compare count element
+                if (selectedCompareLocations.length === 0) {
+                    compareCountElement.style.visibility = 'hidden';
+                } else {
+                    compareCountElement.style.visibility = 'visible';
+                }
+
+                // Update the href of the 'Compare' link
+                let compareLink = document.querySelector('#compare-link');
+                let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
+                compareLink.href = url;
+
+                // Update the position of the tooltip
+                updateTooltipPosition(this, tooltipText);
+
+            });
+
+            // Tooltip event listeners
+            icon.addEventListener('mouseover', function() {
+                // Update the position of the tooltip
+                updateTooltipPosition(this, tooltipText);
+                tooltipText.style.visibility = 'visible';
+                tooltipText.style.opacity = '1';
+            });
+
+            icon.addEventListener('mouseout', function() {
+                // Hide the tooltip
+                tooltipText.style.visibility = 'hidden';
+                tooltipText.style.opacity = '0';
+            });
+        });
+
+        document.querySelector('#compare-link').addEventListener('click', function(e) {
+            if (selectedCompareLocations.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one destination to compare.');
+            }
+        });
+    </script>
+
+    {% block javascripts %}{% endblock %}
+
+</body>
+</html>

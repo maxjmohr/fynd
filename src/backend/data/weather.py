@@ -233,7 +233,7 @@ class SingletonCurrFutWeather(OpenMeteoWeather):
 			OpenMeteoWeather.__init__(cls._instance, params, time)
 		return cls._instance
 	
-"""
+
 weather_params = {
 	# Parameters for all APIs
 	"daily": ["weather_code", "temperature_2m_max", "temperature_2m_min",
@@ -244,10 +244,10 @@ weather_params = {
 	"start_date": "2018-01-02",
 	"end_date": "2023-01-01",
 	# Parameters for historical API
-	"start_date": "2022-10-02",
-	"end_date": "2022-10-30"
+	"start_date": "2022-11-02",
+	"end_date": "2022-11-31"
 	}
-"""
+
 
 """
 data = OpenMeteoWeather(weather_params, "historical").get_data(0, 34.5260109, 69.1776838)
@@ -258,4 +258,11 @@ print(data)
 cfw = CurrentFutureWeather(params=weather_params, time="current_future")
 print(cfw.call_count)
 print(cfw.call_day)
+"""
+
+"""
+hw = SingletonHistWeather(params=weather_params, time="historical")
+print(hw.call_count)
+print(hw.call_day)
+hw.get_data(290826849, 8.1028532, -63.5469562)
 """

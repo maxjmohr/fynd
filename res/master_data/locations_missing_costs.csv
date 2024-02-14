@@ -1,0 +1,566 @@
+location_id,city,country
+220169217,Kabul,Afghanistan
+220158566,Balkh,Afghanistan
+223148463,Bamian,Afghanistan
+220234811,Ghazni,Afghanistan
+65211506,Luanda,Angola
+225649333,Ulaanbaatar,Mongolia
+228179624,Herat,Afghanistan
+219894888,Jalalabad,Afghanistan
+244798301,Kandahar,Afghanistan
+219957273,Kunduz,Afghanistan
+104188068,Andorra la Vella,Andorra
+368061727,Sant Julia de Loria,Andorra
+103684466,Escaldes-Engordany,Andorra
+104028282,Encamp,Andorra
+104118732,La Massana,Andorra
+103683136,Ordino,Andorra
+105013521,Canillo,Andorra
+65444985,Benguela,Angola
+65459770,Cabinda,Angola
+65567538,Huambo,Angola
+65342974,Lobito,Angola
+225106041,Choibalsan,Mongolia
+65323569,M'banza Congo,Angola
+65493152,Lubango,Angola
+65204864,Malanje,Angola
+1498349,City of Hamilton,Bermuda
+1501669,Town of St. George,Bermuda
+70712950,Manama,Bahrain
+70580137,Hamad Town,Bahrain
+70489324,Isa Town,Bahrain
+70977514,Muharraq,Bahrain
+70696461,Riffa,Bahrain
+70721699,Sitra,Bahrain
+296248860,Belmopan,Belize
+296597637,Belize City,Belize
+295498587,Corozal Town,Belize
+255647083,Seria,Brunei
+295429042,Crooked Tree,Belize
+375274346,Dangriga Town,Belize
+296057837,Hopkins,Belize
+296298847,Orange Walk Town,Belize
+375076003,Punta Gorda Town,Belize
+66526560,Porto-Novo,Benin
+256141366,Tutong,Brunei
+66709903,Abomey,Benin
+67617565,Cotonou,Benin
+66514666,Grand-Popo,Benin
+67242556,Malanville,Benin
+67116430,Natitingou,Benin
+66576475,Whydah,Benin
+69276509,Parakou,Benin
+240659863,Thimphu,Bhutan
+241641728,Jakar,Bhutan
+239875211,Mongar,Bhutan
+240031760,Paro,Bhutan
+296883204,San Pedro de Macorís,Dominican Republic
+298052530,Samana,Dominican Republic
+297139268,Santiago de los Caballeros,Dominican Republic
+239680747,Punakha,Bhutan
+240202418,Phuntsholing,Bhutan
+239398726,Samdrup Jongkhar,Bhutan
+239820781,Trashigang,Bhutan
+61495410,Gaborone,Botswana
+60611891,Francistown,Botswana
+60536473,Ghanzi,Botswana
+60603000,Gweta,Botswana
+269213903,Egilsstaðir,Iceland
+279350236,Hafnarfjordur,Iceland
+61711499,Kanye,Botswana
+60441021,Kasane,Botswana
+60697389,Maun,Botswana
+60607489,Nata,Botswana
+256138902,Bandar Seri Begawan,Brunei
+255587085,Bangar,Brunei
+256328520,Kuala Belait,Brunei
+256094187,Muara Town,Brunei
+292358296,Ouagadougou,Burkina Faso
+290318731,Banfora,Burkina Faso
+293208342,Bobo-Dioulasso,Burkina Faso
+288075020,Dédougou,Burkina Faso
+289969888,Gaoua,Burkina Faso
+289195980,Koudougou,Burkina Faso
+370731228,Ouahigouya,Burkina Faso
+370731195,Fada N'Gourma,Burkina Faso
+88501989,Cetinje,Montenegro
+64745693,Gitega,Burundi
+64670016,Bujumbura,Burundi
+64617486,Bururi,Burundi
+64752878,Cibitoke,Burundi
+64780837,Kabezi,Burundi
+64737672,Muyinga,Burundi
+64651326,Ngozi,Burundi
+253579608,Phnom Penh,Cambodia
+254006896,Banlung,Cambodia
+253678308,Battambang,Cambodia
+255333847,Kampot,Cambodia
+251776603,Koh Kong,Cambodia
+254008885,Kratié,Cambodia
+253065185,Siem Reap,Cambodia
+65680307,Yaoundé,Cameroon
+65614145,Bafoussam,Cameroon
+65978228,Bamenda,Cameroon
+65563573,Buea,Cameroon
+65888061,Douala,Cameroon
+67894554,Garoua,Cameroon
+66022386,Limbe,Cameroon
+67842573,Communauté urbaine de Ngaoundéré,Cameroon
+290473966,Praia,Cape Verde
+288237468,Mindelo,Cape Verde
+291752611,Ribeira Grande de Santiago (Cidade Velha),Cape Verde
+289017574,Espargos,Cape Verde
+291183002,Assomada (Santa Catarina),Cape Verde
+288455512,Santa Maria,Cape Verde
+290539331,São Filipe,Cape Verde
+291535323,Brava,Cape Verde
+295939021,George Town,Cayman Islands
+69338686,Bangui,Central African Republic
+68091771,Bambari,Central African Republic
+68132258,Bangassou,Central African Republic
+67755989,Birao,Central African Republic
+66006871,Bouar,Central African Republic
+68406858,Bria,Central African Republic
+68083898,Mbaïki,Central African Republic
+68539138,N'Djamena,Chad
+69068006,Moundou,Chad
+68120164,Abéché,Chad
+76633674,Faya-Largeau,Chad
+63032832,Moroni,Comoros
+64257825,Domoni,Comoros
+63017768,Fomboni,Comoros
+63108210,Nioumachoua,Comoros
+299280487,Havana,Cuba
+297613018,Baracoa,Cuba
+297750166,Camagueey,Cuba
+297327308,Cienfuegos,Cuba
+295334594,Matanzas,Cuba
+296639692,Pinar del Rio,Cuba
+295809029,Santa Clara,Cuba
+297558101,Santiago de Cuba,Cuba
+70524843,Djibouti,Djibouti
+69375785,Galafi,Djibouti
+69454994,Obock,Djibouti
+69340387,Tadjoura,Djibouti
+69371022,Moucha Island,Djibouti
+290182623,Roseau,Dominica
+290533510,Portsmouth,Dominica
+290764937,Calibishie,Dominica
+290507316,Saint Joseph,Dominica
+300409061,Santo Domingo,Dominican Republic
+300459323,Higueey,Dominican Republic
+296495712,Juan Dolio,Dominican Republic
+295934748,Puerto Plata,Dominican Republic
+298007270,Punta Cana,Dominican Republic
+56646766,Dili,East Timor
+56716328,Baucau,East Timor
+56447639,Ermera,East Timor
+56504235,Gleno,East Timor
+225616207,Sinuiju,North Korea
+57247386,Liquiçá,East Timor
+56538441,Maliana,East Timor
+56973701,Suai,East Timor
+68196197,Malabo,Equatorial Guinea
+65830761,Bata,Equatorial Guinea
+65583262,Ciudad de la Paz,Equatorial Guinea
+269079034,Klaksvik,Faroe Islands
+267312772,Hoyvík,Faroe Islands
+267161963,Tvøroyri,Faroe Islands
+267235769,Vágur,Faroe Islands
+268195895,Runavík,Faroe Islands
+267461823,Fuglafjørður,Faroe Islands
+267507224,Kirkjubøur,Faroe Islands
+65646582,Acalayong,Equatorial Guinea
+65573756,Ebebiyín,Equatorial Guinea
+65941170,Evinayong,Equatorial Guinea
+65699316,Luba,Equatorial Guinea
+69991094,Asmara,Eritrea
+69714244,Keren,Eritrea
+69632722,Massawa,Eritrea
+70564294,Teseney,Eritrea
+69677874,Senafe,Eritrea
+69268362,Assab,Eritrea
+69944490,Nakfa,Eritrea
+69405445,Addis Ababa,Ethiopia
+69351193,Adama,Ethiopia
+69769864,Axum,Ethiopia
+70401131,Bahir Dar Special Zone,Ethiopia
+69459288,Dire Dawa,Ethiopia
+69617671,Gonder,Ethiopia
+69446285,Harar,Ethiopia
+221071142,Bishkek City,Kyrgyzstan
+69716224,Lalibela,Ethiopia
+49084891,Stanley,Falkland Islands
+49518677,Goose Green,Falkland Islands
+49117169,Port Howard,Falkland Islands
+50125751,North Arm,Falkland Islands
+268438630,Tórshavn,Faroe Islands
+65474688,Libreville,Gabon
+65557195,Franceville,Gabon
+65531015,Gamba,Gabon
+65551144,Mayumba,Gabon
+300258197,Puerto San José,Guatemala
+300072372,Municipio de Quetzaltenango,Guatemala
+288832728,Conakry,Guinea
+65603059,Port-Gentil,Gabon
+289735786,Accra,Ghana
+290372056,Cape Coast,Ghana
+290156288,Koforidua,Ghana
+298781616,Kumasi,Ghana
+289254244,Obuasi,Ghana
+291148563,Sekondi-Takoradi,Ghana
+289328967,Sunyani,Ghana
+267344753,Reykjavik,Iceland
+268057787,Akureyri,Iceland
+289364941,Tamale,Ghana
+268030500,Nuuk,Greenland
+267699179,Ittoqqortoormiit,Greenland
+267045754,Kangerlussuaq,Greenland
+267942395,Kulusuk,Greenland
+266669897,Thule,Greenland
+269777937,Sisimiut,Greenland
+266954587,Tasiilaq,Greenland
+267381539,Upernavik,Greenland
+308676081,Guatemala City,Guatemala
+299721267,Antigua Guatemala,Guatemala
+296581710,Flores,Guatemala
+297900985,Melchor de Mencos,Guatemala
+301979397,Panajachel,Guatemala
+299593307,Puerto Barrios,Guatemala
+290574178,Beyla,Guinea
+289164063,Boké,Guinea
+289545856,Dalaba,Guinea
+290384233,Faranah,Guinea
+289453231,Forécariah,Guinea
+289337101,Kankan,Guinea
+289196908,Kindia,Guinea
+289466367,Bissau,Guinea-Bissau
+289255439,Bafatá,Guinea-Bissau
+290948138,Bolama,Guinea-Bissau
+298454194,Sector de Buba,Guinea-Bissau
+289075279,Bubaque,Guinea-Bissau
+290332404,Cacheu,Guinea-Bissau
+290404903,Sector de Catió,Guinea-Bissau
+289036309,Farim,Guinea-Bissau
+291582922,City of Georgetown,Guyana
+290313804,Bartica,Guyana
+290431207,Mabaruma - Kumaka - Hosororo,Guyana
+290646478,New Amsterdam,Guyana
+290593439,Lethem,Guyana
+290945495,Linden,Guyana
+290517746,Mora - Parika,Guyana
+290941973,Paramakatoi,Guyana
+297308827,Port-au-Prince,Haiti
+297269270,Cap-Haitien,Haiti
+296648026,Gonaïves,Haiti
+295434844,Jacmel,Haiti
+296302128,Commune de Jérémie,Haiti
+296548071,Les Cayes,Haiti
+295782736,Pétion-Ville,Haiti
+296074055,Port-de-Paix,Haiti
+300739943,Tegucigalpa,Honduras
+300231069,La Ceiba,Honduras
+300093419,El Progreso,Honduras
+300070553,Comayagua,Honduras
+299186991,Gracias,Honduras
+300867928,Puerto Cortés,Honduras
+301055269,San Pedro Sula,Honduras
+299846802,Santa Rosa de Copán,Honduras
+267897726,Hoefn,Iceland
+267560392,Ísafjoerður,Iceland
+278850122,Selfoss,Iceland
+223323754,Arslanbob,Kyrgyzstan
+221330574,Balykchy,Kyrgyzstan
+94161331,Ruggell,Liechtenstein
+227721495,P'yŏngyang,North Korea
+265162554,Chŏngjin,North Korea
+226950908,Hamhung,North Korea
+227045166,Kaechon,North Korea
+227801943,Kaesong,North Korea
+227644197,Nampo,North Korea
+264848735,Rason,North Korea
+221336654,Jalal-Abad,Kyrgyzstan
+220393616,Karakol,Kyrgyzstan
+222242568,Kochkor,Kyrgyzstan
+221551123,Naryn,Kyrgyzstan
+221250686,Osh City,Kyrgyzstan
+239354420,Vientiane Capital,Laos
+238004958,Houayxay,Laos
+238026461,Luang Namtha,Laos
+239310495,Luang Prabang,Laos
+238287816,Muang Xay,Laos
+237423401,Pakbeng,Laos
+254123919,Pakse,Laos
+237449037,Savannakhet,Laos
+218748619,Beirut,Lebanon
+371561646,Tripoli,Lebanon
+226161290,Sidon,Lebanon
+371523172,Tyre,Lebanon
+371523497,Jbeil,Lebanon
+218537812,Jounieh,Lebanon
+218882924,Jezzine,Lebanon
+218157090,Zahle,Lebanon
+61728224,Maseru,Lesotho
+61726671,Hlotse,Lesotho
+61768952,Mafeteng,Lesotho
+61586547,Mohale's Hoek,Lesotho
+61691586,Mokhotlong,Lesotho
+61806101,Qacha's Nek,Lesotho
+61753604,Moyeni (Quthing),Lesotho
+62784564,Teyateyaneng,Lesotho
+290402049,Monrovia,Liberia
+291157390,Robertsport,Liberia
+291379449,Greenville,Liberia
+289961647,Harper,Liberia
+290235628,Paynesville,Liberia
+93454036,Vaduz,Liechtenstein
+93627246,Balzers,Liechtenstein
+94787562,Malbun,Liechtenstein
+93774315,Schaan,Liechtenstein
+94787426,Triesen,Liechtenstein
+93981488,Triesenberg,Liechtenstein
+93445264,Bendern,Liechtenstein
+62712762,Antananarivo,Madagascar
+62408145,Ambalavao,Madagascar
+62607333,Ambositra,Madagascar
+62377725,Antsirabe,Madagascar
+62788928,Fianarantsoa,Madagascar
+62348636,Morondava,Madagascar
+62115432,Tolanaro,Madagascar
+62927765,Lilongwe,Malawi
+62753315,Blantyre,Malawi
+63004483,Mzuzu,Malawi
+63059478,Karonga,Malawi
+62715744,Mangochi,Malawi
+62969704,Nkhotakota,Malawi
+62716323,Zomba,Malawi
+250120499,Malé,Maldives
+59798258,Fuvahmulah,Maldives
+366338678,Kulhudhuffushi,Maldives
+250711721,Thoddoo,Maldives
+290655765,Bamako,Mali
+288697751,Gao,Mali
+290644453,Kayes,Mali
+77849802,Kidal,Mali
+291509405,Mopti,Mali
+289517402,Ségou,Mali
+289447288,Sikasso,Mali
+288825737,Timbuktu,Mali
+257822185,Majuro,Marshall Islands
+257820519,Kwajalein Island,Marshall Islands
+257831641,Ebeye,Marshall Islands
+288152132,Nouakchott,Mauritania
+289186448,Atar,Mauritania
+287925727,Chinguetti,Mauritania
+288365900,Nouadhibou,Mauritania
+289501455,Tichit,Mauritania
+85933659,Orhei,Moldova
+256129390,Kolonia,Federated States of Micronesia
+84970360,Chișinău,Moldova
+87466881,Bălți,Moldova
+202822907,Soroca,Moldova
+84836506,Ungheni,Moldova
+84540748,Comrat,Moldova
+84643199,Cahul,Moldova
+223901898,Erdenet,Mongolia
+223974531,Khovd,Mongolia
+225792132,Kharkhorin,Mongolia
+223551309,Murun,Mongolia
+223748947,Ölgii,Mongolia
+81421443,Podgorica,Montenegro
+81511909,Bar,Montenegro
+81516036,Budva,Montenegro
+81467705,Kotor,Montenegro
+81457735,Nikšić,Montenegro
+81340272,Tivat,Montenegro
+82468524,Žabljak,Montenegro
+62083870,Maputo,Mozambique
+62518185,Beira,Mozambique
+63209241,Mozambique Island,Mozambique
+62371902,Inhambane,Mozambique
+63066591,Nampula,Mozambique
+63808058,Pemba,Mozambique
+238813737,Nay Pyi Taw,Myanmar
+253052622,Kawthaung,Myanmar
+238767269,Mandalay,Myanmar
+237883423,Mawlamyine,Myanmar
+239094262,Pyinoolwin Township,Myanmar
+240002394,Taunggyi,Myanmar
+249335543,Twantay,Myanmar
+60574032,Windhoek,Namibia
+60609573,Gobabis,Namibia
+60419098,Katima Mulilo,Namibia
+61966774,Keetmanshoop,Namibia
+60350888,Luederitz,Namibia
+61438367,Mariental,Namibia
+60442540,Opuwo,Namibia
+60436713,Rundu,Namibia
+67538500,Ayorou,Niger
+298483830,Managua,Nicaragua
+298287324,Leon (Municipality),Nicaragua
+298771233,Granada,Nicaragua
+298957452,Masaya,Nicaragua
+300800997,Esteli,Nicaragua
+299510815,Matagalpa,Nicaragua
+299469698,Jinotega,Nicaragua
+300490878,Bluefields,Nicaragua
+67142537,Niamey,Niger
+76648786,Agadez,Niger
+67381535,Diffa,Niger
+67306235,Dosso,Niger
+67253315,Maradi,Niger
+68397412,Tahoua,Niger
+67393854,Zinder,Niger
+256782292,Melekeok,Palau
+255793144,Koror,Palau
+37782685,Asuncion,Paraguay
+37666210,Areguá,Paraguay
+38335522,Ciudad del Este,Paraguay
+43513806,Concepción,Paraguay
+37963414,Encarnacion,Paraguay
+43298254,Filadelfia,Paraguay
+37717658,Pilar,Paraguay
+37628180,Villeta,Paraguay
+64434349,Kigali,Rwanda
+64471733,Gicumbi,Rwanda
+65499673,Rusizi,Rwanda
+64685241,Rubavu,Rwanda
+65026077,Huye,Rwanda
+65699710,Kabuga,Rwanda
+64788559,Kibeho,Rwanda
+64636207,Kibungo,Rwanda
+291050450,Castries,Saint Lucia
+290568517,Vieux Fort,Saint Lucia
+290718538,Soufrière,Saint Lucia
+291413949,Gros Islet,Saint Lucia
+32804863,Apia,Samoa
+65783411,São Tomé,São Tomé and Príncipe
+66769789,Santo António,São Tomé and Príncipe
+54322266,Fongafale,Tuvalu
+68434355,Kampala,Uganda
+290218550,Dakar,Senegal
+289912302,Saint-Louis,Senegal
+291413485,Thiès,Senegal
+290048617,Kaolack,Senegal
+290654999,Ziguinchor,Senegal
+288703497,Tambacounda,Senegal
+290639509,Touba,Senegal
+63155940,Victoria,Seychelles
+63384883,Beau Vallon,Seychelles
+290477228,Freetown,Sierra Leone
+289768541,Bo,Sierra Leone
+290115867,Bonthe,Sierra Leone
+290613441,Kenema,Sierra Leone
+290697320,Koidu,Sierra Leone
+289115284,Makeni,Sierra Leone
+289469590,Magburaka,Sierra Leone
+293070939,Banana islands,Sierra Leone
+69120162,Garoowe,Somalia
+69229788,Bosaso,Somalia
+69038563,Mogadishu,Somalia
+63395643,Kismayo,Somalia
+69116484,Las Khorey,Somalia
+69084840,Taleh,Somalia
+69259963,Hargeisa,Somalia
+68075556,Aweil,South Sudan
+68092505,Bentiu,South Sudan
+68073279,Malakal,South Sudan
+71345701,Nimule,South Sudan
+68530521,Rumbek,South Sudan
+68089106,Wau,South Sudan
+68069922,Yambio,South Sudan
+70117570,Khartoum,Sudan
+67967048,Abyei,Sudan
+68182099,Al-Ubayyid,Sudan
+69685202,Al-Qadarif,Sudan
+69874446,Kassala,Sudan
+68010826,Nyala,Sudan
+70107097,Port Sudan,Sudan
+70227625,Atbarah,Sudan
+289981671,Paramaribo,Suriname
+289981799,Albina,Suriname
+291320140,Apoera,Suriname
+290458726,Domburg,Suriname
+289988890,Groningen,Suriname
+290464857,Lelydorp,Suriname
+289897328,Moengo,Suriname
+290124679,Nieuw-Amsterdam,Suriname
+61337510,Mbabane,Eswatini
+61126156,Lobamba,Eswatini
+61171260,Manzini,Eswatini
+61179769,Big Bend,Eswatini
+61118827,Nhlangano,Eswatini
+60922618,Siteki,Eswatini
+218084196,Damascus,Syria
+217015661,Aleppo,Syria
+218851368,Deir Ez Zor,Syria
+216877830,Hama,Syria
+217490444,Homs,Syria
+217975829,Latakia,Syria
+216938459,Tartus,Syria
+217525002,Raqqa,Syria
+219936337,Dushanbe,Tajikistan
+220339199,Bokhtar,Tajikistan
+221495237,Isfara,Tajikistan
+221770858,Istaravshan,Tajikistan
+220351799,Khorugh,Tajikistan
+221313476,Khujand,Tajikistan
+221608031,Konibodom,Tajikistan
+373267839,Kulob,Tajikistan
+63467499,Dodoma,Tanzania
+63883909,Arusha,Tanzania
+63296772,Dar es Salaam,Tanzania
+64849511,Kigoma,Tanzania
+62891070,Mbeya,Tanzania
+63612096,Morogoro,Tanzania
+63987676,Moshi,Tanzania
+62985288,Mtwara,Tanzania
+366260186,Lomé,Togo
+67292439,Aného,Togo
+66567159,Atakpamé,Togo
+66702053,Badou,Togo
+67154965,Dapaong,Togo
+67076605,Kara,Togo
+66310555,Kpalimé,Togo
+66990820,Sokodé,Togo
+228117999,Ashgabat City,Turkmenistan
+220160821,Balkanabat City,Turkmenistan
+210859576,Dashoguz City,Turkmenistan
+221335488,Mary City,Turkmenistan
+220690213,Turkmenabat City,Turkmenistan
+219494198,Turkmenbashy City,Turkmenistan
+69120767,Arua,Uganda
+69534551,Entebbe City,Uganda
+68783999,Jinja,Uganda
+68606592,Fort Portal City,Uganda
+69177372,Gulu,Uganda
+64481652,Mbarara City,Uganda
+68442066,Kibaale,Uganda
+54884016,Port Vila,Vanuatu
+54118218,Luganville,Vanuatu
+55227713,Epi Island,Vanuatu
+54175264,Espiritu Santo,Vanuatu
+54398022,Malekula,Vanuatu
+68997493,Sana'a,Yemen
+69456158,Aden City,Yemen
+69205788,Hodeidah,Yemen
+69011860,Mukalla,Yemen
+69428704,Dhamar,Yemen
+69454009,Ibb,Yemen
+69284910,Kawkaban,Yemen
+65273931,Lusaka,Zambia
+65205149,Chingola,Zambia
+62810631,Chipata,Zambia
+370852267,Kabwe,Zambia
+370851507,Kasama,Zambia
+65145777,Kitwe,Zambia
+60440354,Livingstone,Zambia
+65079849,Ndola,Zambia
+60714539,Harare,Zimbabwe
+60444538,Bulawayo,Zimbabwe
+62547394,Chimanimani,Zimbabwe
+60838497,Gweru,Zimbabwe
+60455817,Kariba,Zimbabwe
+63005092,Masvingo,Zimbabwe
+62492917,Mutare,Zimbabwe
+237864199,Bago,Myanmar
