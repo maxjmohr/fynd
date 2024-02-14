@@ -75,7 +75,8 @@ Compare destinations
             xanchor: 'center',
             yanchor: 'top',
             orientation: 'h',
-        } 
+        },
+        hovermode: 'closest'
     };
 
     var traces = [];
@@ -104,9 +105,11 @@ Compare destinations
             // Create arrays to hold the scores and dimension names
             var scores = [];
             var dimensionNames = [];
+            var rawValues = [];
             location.dimensions.forEach(function(dimension) {
                 scores.push(dimension.score);
                 dimensionNames.push(dimension.dimension_name);
+                rawValues.push(dimension.raw_value_formatted);
             });
 
             // Create the trace
@@ -122,7 +125,9 @@ Compare destinations
                 xaxis: 'x' + (i + 1), 
                 yaxis: 'y' + (i + 1), 
                 legendgroup: location.city,
-                showlegend: i === 0
+                showlegend: i === 0,
+                text: rawValues,
+                hovertemplate: '<b>%{y}</b>: %{x:.2f}%{text}'
             };
 
             // Add the trace to the array
