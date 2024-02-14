@@ -143,7 +143,8 @@ def generate_periods(start_date, end_date, duration):
     periods = []
     for i, start in enumerate(start_dates):
         end = start + timedelta(days=duration-1)
-        periods.append((start, end))
+        if end < end_date:
+            periods.append((start, end))
 
     return periods
 
