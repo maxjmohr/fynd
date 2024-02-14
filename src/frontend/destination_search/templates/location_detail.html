@@ -460,11 +460,12 @@
     // Get the CSRF token
     var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Get the similarity_locations from the Django context
-    var similarityLocations = JSON.parse('{{ similarity_locations|safe }}');
+    // Only make the API call if neccessary
+    var includeSimilarity = {{ include_similarity|yesno:"true,false" }};
+    if (includeSimilarity) {
 
-    // Only make the API call if similarity_locations.previous_locations has length > 0
-    if (similarityLocations.previous_locations.length > 0) {
+        // Get the data from the Django context
+        var similarityData = JSON.parse('{{ similarity_data|safe }}');
 
         // Make the API call
         fetch('/api/openai', {
@@ -473,7 +474,7 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify(similarityLocations)
+            body: JSON.stringify(similarityData)
         })
         .then(response => response.json())
         .then(data => {

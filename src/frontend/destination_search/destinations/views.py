@@ -20,6 +20,7 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
+from .create_similarity_text_prompt import create_similarity_text_prompt
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -787,9 +788,15 @@ class LocationDetailView(DetailView):
         # Location ids for similarity tab (current+previous)
         previous_locations = self.request.GET.getlist('previous_locations', [])
         if len(previous_locations) > 0:
-            context['similarity_locations'] = json.dumps({   
-                'location_id': location.location_id,
-                'previous_locations': self.request.GET.getlist('previous_locations', [])
+            context['similarity_data'] = json.dumps({
+                'locations': {   
+                    'location_id': location.location_id,
+                    'previous_locations': self.request.GET.getlist('previous_locations', [])
+                },
+                'start_date': self.request.GET.get('start_date'),
+                'end_date': self.request.GET.get('end_date'),
+                'start_location_lat': self.request.GET.get('start_location_lat'),
+                'start_location_lon': self.request.GET.get('start_location_lon'),
             })
             context['include_similarity'] = True
         else:
@@ -816,17 +823,94 @@ def openai_proxy(request):
     # Set up client
     client = OpenAI()
 
-    # Get location and previous locations from request
+    # Get data from request
     data = json.loads(request.body)
-    location_ids = 'Istanbul' #data.get('location_id', [])
+    locations = data.get('locations')
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
 
-    messages = [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": f"Tell me about locations {location_ids}. Use multiple paragraphs."}
-    ]
+    # Prepare data for prompt function input ----------------------------------
+
+    # Get all locations + additional data linke city and country
+    location_id = locations.get('location_id')
+    previous_locations, previous_countries = clean_previous_locations(
+        locations.get('previous_locations', [])
+    )
+    previous_countries_ids_flat = [id for country_ids in previous_countries.values() for id in country_ids]
+    all_location_ids = (
+        [location_id]
+        + previous_locations
+        + previous_countries_ids_flat
+    )
+
+    all_locations = read_frame(
+        CoreLocations.objects
+        .filter(location_id__in=all_location_ids)
+        .values('location_id', 'city', 'country')
+    )
+
+    # Get scores
+    scores, reference_start_location = get_scores(
+        start_date=start_date,
+        end_date=end_date,
+        start_location_lat=data.get('start_location_lat'),
+        start_location_lon=data.get('start_location_lon'),
+        location_id=all_location_ids,
+        retrieve_text=False
+    )
+    # Merge with location data
+    scores = (
+        scores
+        .drop(columns='raw_value')
+        .merge(all_locations, on='location_id', how='left')
+        .set_index('location_id')
+    )
+
+    # Assign location type (for previous_countries also compute average scores)
+    scores_target_location = scores.loc[location_id, :].assign(location_type = 'Target Location')
+    scores_previous_locations = scores.loc[previous_locations, :].assign(location_type = 'Previous Location(s)')
+    scores_previous_countries = (
+        scores
+        .loc[previous_countries_ids_flat,:]
+        .groupby(['category_id', 'dimension_id', 'country'])
+        .agg({'score': 'mean'})
+        .assign(location_type = 'Previous Location(s)')
+        .reset_index()
+    )
+
+    # Concatenate
+    promp_input_data = pd.concat([
+        scores_target_location,
+        scores_previous_locations,
+        scores_previous_countries
+    ], ignore_index=True)
+
+    # Get dimensions with categories
+    dimensions_with_categories = read_frame(
+        CoreDimensions.objects
+        .select_related('category')
+        .values('dimension_id', 'dimension_name', 'category_id__category_name')
+    ).rename(columns={'category_id__category_name': 'category_name'})
+
+    # Join
+    promp_input_data = (
+        promp_input_data.astype({'dimension_id': int})
+        .merge(dimensions_with_categories, on='dimension_id', how='left')
+        .assign(location=lambda x: np.where(x['city'].isna(),  x['country'], x['city'] + ' (' + x['country'] + ')'))
+        .drop(columns=['category_id', 'dimension_id', 'city', 'country'])
+    )
+
+    # Create prompt and get completion ----------------------------------------
+    messages, warning = create_similarity_text_prompt(
+        data=promp_input_data,
+        start_date=start_date,
+        end_date=end_date,
+        ref_start_location_city=reference_start_location['city'],
+        ref_start_location_country=reference_start_location['country']
+    )
 
     completion = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model='gpt-3.5-turbo',
         messages=messages,
         #temperature=,
         #frequency_penalty=,
