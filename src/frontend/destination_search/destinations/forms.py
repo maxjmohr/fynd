@@ -133,6 +133,7 @@ class FiltersForm(forms.Form):
         modes_of_transport = (
             CoreDimensions.objects
             .filter(category_id=6)
+            .order_by('dimension_id')
             .values('dimension_id', 'dimension_name', 'icon_url')
         )
         # Clean up and store to access from template

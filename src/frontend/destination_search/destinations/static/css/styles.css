@@ -1188,6 +1188,26 @@ body {
     font-weight: bold;
 }
 
+.loading-spinner {
+    height: 100%;
+    width: 100%;
+    padding: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-spinner img {
+    width: 50px;
+    height: 50px;
+}
+
+.similarity-warning-text {
+    font-size: 0.8em;
+    color: var(--normalgrey);
+    font-style: italic;
+}
+
 /* Comparison page ----------------------------------------------------------*/
 .remove-from-comparison-button {
     height: 20px;

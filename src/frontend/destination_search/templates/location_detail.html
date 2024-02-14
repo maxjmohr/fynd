@@ -33,7 +33,7 @@
                 <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
             </button>
             {% endfor %}
-            {% if previous_locations %}
+            {% if include_similarity %}
                 <button class="tablinks has-tooltip" onclick="openCategory(event, 'Similarity')">
                     Similarity
                     <span class="tooltip-text category-description-tooltip-text">
@@ -160,19 +160,14 @@
     </div>
     {% endfor %}
 
-    {% if previous_locations %}
+    {% if include_similarity %}
         <div id="Similarity" class="tabcontent">
             <div class="category-content-container">
-                In this tab, we highlight main similarities and differences between this destination and previous destinations.
-                Your previous locations are:
-                <ul>
-                    {% for location in previous_locations %}
-                        <li>{{ location }}</li>
-                    {% endfor %}
-                    {% for country in previous_countries %}
-                        <li>{{ country }}</li>
-                    {% endfor %}
-                    </ul>
+                <div class="category-content-title">Comparison of {{ location.city }} with your previous destinations</div>
+                <form method="post">{% csrf_token %}</form>
+                <div id="similarity-tab-loading-spinner" class="loading-spinner"><img src="{% static 'images/loading.gif' %}" alt="Loading..."></div>
+                <div id="similarity-warning-output"></div>
+                <div id="similarity-text-output"></div>
             </div>
         </div>
     {% endif %}
@@ -461,6 +456,58 @@
 
     // Run the function when a scroll event is detected
     window.addEventListener('scroll', stickyLocationHeader);
+</script>
+
+<!-- Similarity text API call -->
+<script>
+    // Get the CSRF token
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Only make the API call if necessary
+    var includeSimilarity = {{ include_similarity|yesno:"true,false" }};
+    if (includeSimilarity) {
+
+        // Get the data from the Django context
+        var similarityData = JSON.parse('{{ similarity_data|safe }}');
+
+        // Get the loading spinner and show
+        var loadingSpinner = document.getElementById('similarity-tab-loading-spinner');
+        loadingSpinner.style.display = 'flex';
+
+        // Make the API call
+        fetch('/api/openai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(similarityData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide the loading spinner
+            loadingSpinner.style.display = 'none';
+
+            // Convert line breaks into HTML paragraphs and append to output div
+            var paragraphs = data.text.split('\n\n').map(function(line) {
+                return '<p>' + line + '</p>';
+            }).join('');
+            const outputDiv = document.getElementById('similarity-text-output');
+            outputDiv.innerHTML += paragraphs;
+
+            // Show warning if not None
+            if (data.warning) {
+                const warningDiv = document.getElementById('similarity-warning-output');
+                warningDiv.innerHTML = '<p class="similarity-warning-text">' + data.warning + '</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+
+            // Hide the loading spinner
+            loadingSpinner.style.display = 'none';
+        });
+    }
 </script>
 
 {% endblock %}
