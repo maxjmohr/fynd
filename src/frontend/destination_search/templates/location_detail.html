@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+{{ location.city }}
+{% endblock %}
+
+{% block main %}
+<div class="details-page-container">
+    <div class="details-page-header">
+        <div class="details-page-image-and-title-container">
+            <div class="location-image-container">
+                <img class="location-image" src="{{ image }}" alt="{{ location.city }} image" width="100%" height="100%">
+            </div>
+            <div class="diag1"></div><div class="diag2"></div><div class="rect1"></div><div class="rect2"></div>
+            <div class="title-container">
+                <div class="location-name">{{ location.city }}</div>
+                <div class="location-country">
+                    {{ location.country }}
+                    <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                </div>
+            </div>
+            <div class="add-to-comparison-icon-container add-to-comparison-icon-detailpage">
+                <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
+                    <img src="{% static 'images/comparison_icon.svg' %}" alt="Select for comparison">
+                </div>
+            </div>
+        </div>
+        <div class="tabs">
+            {% for category in data %}
+            <button id="{{category.category_name}}-tab-button" class="tablinks has-tooltip" onclick="openCategory(event, '{{category.category_name}}')">
+                {{ category.category_name }}
+                <span class="tooltip-text category-description-tooltip-text">{{ category.category_description }}</span>
+            </button>
+            {% endfor %}
+            {% if include_similarity %}
+                <button class="tablinks has-tooltip" onclick="openCategory(event, 'Similarity')">
+                    Similarity
+                    <span class="tooltip-text category-description-tooltip-text">
+                        This tab highlights main similarities and differences between this destination and your previous destinations.
+                    </span>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% for category in data %}
+    <div id="{{category.category_name}}" class="tabcontent">
+
+        <div class="categeory-first-row">
+
+            <!-- Scores -->
+            {% if category.category_id != 0 %}
+            <div class="category-content-container">
+                <div class="dimensions-figure-wrapper">
+                    <div class="dimensions-figure">
+                        <div class="dimension-container category-axis-container">
+                            <div class="dimension-name"><div class="dimension-name-text category-axis-title">{{ category.axis_title }}</div></div>
+                            <div class="dimension-score-container">
+                                <div class="category-axis">
+                                    <div class="category-axis-label">{{ category.axis_label_low }}</div>
+                                    <div class="category-axis-line"></div>
+                                    <div class="category-axis-label">{{ category.axis_label_high }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% for dimension in category.dimensions %}
+                        <div class="dimension-container">
+                            <div class="dimension-name has-tooltip">
+                                <div class="dimension-name-text">{{ dimension.dimension_name }}</div>
+                                <img src="{{ dimension.dimension_icon_url }}" alt="{{ dimension.dimension_name }} icon" class="dimension-icon">
+                                <span class="tooltip-text dimension-description-tooltip-text">{{ dimension.dimension_description }}</span>
+                            </div>
+                            <div class="dimension-score-container">
+                                <div class="dimension-score-slider">
+                                    <div class="dimension-score-slider-range">
+                                        {% if dimension.score %}
+                                            <div class="dimension-score-knob has-tooltip" style="left: calc({{ dimension.score }} * 100%)">
+                                                <span class="tooltip-text score-tooltip-text">
+                                                    {{ dimension.score|floatformat:2 }}
+                                                    <span class="raw-value-tooltip-text">{{ dimension.raw_value_formatted }}</span>
+                                                </span>
+                                            </div>
+                                        {% else %}
+                                            <div class="dimension-score-no-knob has-tooltip">
+                                                <span class="tooltip-text missing-score-tooltip-text">Not available</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Texts -->
+            <div class="category-content-container">
+                <div class="text-container">
+                   {% if category.text_general %}<p>{{ category.text_general }}</p>{% endif %}
+                   {% if category.text_anomaly %}<p>{{ category.text_anomaly }}</p>{% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Further data -->
+        {% if category.category_id == 5 %}
+        <div class="category-content-container map-container">
+            <div id="mapid"></div>
+        </div>
+
+        {% elif category.category_id == 2 %}
+        <div class="category-content-container weather-diagram-container">
+            <div class="category-content-title weather-diagram-title">Climate diagram</div>
+            <div class="weather-diagram-years">Average from {{ weather_data_years.year_min }}-{{ weather_data_years.year_max }}</div>
+            <svg id="temperature-diagram" width="500" height="200"></svg>
+            <svg id="precipitation-diagram" width="500" height="200"></svg>
+        </div>
+
+        {% elif category.category_id == 1 and travel_warning %}
+        <div class="category-content-container">
+            <div class="category-content-title">Travel warning</div>
+            <p>{{ travel_warning.warning_text }} <a href="{{ travel_warning.link }}">their website</a>.</p>
+        </div>
+
+        {% elif category.category_id == 4 and money_text %}
+        <div class="category-content-container">
+            <div class="category-content-title">Money</div>
+            <p>{{ money_text }}</p>
+        </div>
+
+        {% elif category.category_id == 6 %}
+        <div class="category-content-container">
+            <div class="category-content-title">Reference start location</div>
+            <p>
+                {% if start_location %}
+                    You inputted {{ start_location}} as your start location.
+                    We used our closest reference start location {{ reference_start_location.city }}, {{ reference_start_location.country }} to compute the reachability.
+                {% else %}
+                    We used {{ reference_start_location.city }}, {{ reference_start_location.country }} as start location to compute the reachability.
+                {% endif %}
+                For flights, we consider {{ reference_start_airport.airport_name }} ({{ reference_start_airport.iata_code }}) as origin airport.
+            </p>
+        </div>
+
+        {% elif category.category_id == 3 and top_attractions %}
+        <div class="category-content-container">
+            <div class="category-content-title">Top attractions</div>
+            <ul>
+            {% for attraction in top_attractions %}
+                <li>{{ attraction }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+
+    {% if include_similarity %}
+        <div id="Similarity" class="tabcontent">
+            <div class="category-content-container">
+                <div class="category-content-title">Comparison of {{ location.city }} with your previous destinations</div>
+                <form method="post">{% csrf_token %}</form>
+                <div id="similarity-tab-loading-spinner" class="loading-spinner"><img src="{% static 'images/loading.gif' %}" alt="Loading..."></div>
+                <div id="similarity-warning-output"></div>
+                <div id="similarity-text-output"></div>
+            </div>
+        </div>
+    {% endif %}
+    
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+
+<!-- Leaflet map -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Tabs / scrolling / map -->
+<script>
+
+    // Tabs & map -------------------------------------------------------------
+    var map;
+
+    // Open the category tab that was clicked
+    function openCategory(evt, categoryName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(categoryName).classList.add("active");
+        if (evt && evt.currentTarget) {
+            evt.currentTarget.classList.add("active");
+        }
+
+        // If the map tab is opened, invalidate the map size
+        if (categoryName === 'Geography' && !map) {
+            map = L.map('mapid').setView([{{ location.lat }}, {{ location.lon }}], 13);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+            var geojson = JSON.parse('{{ location.geojson|escapejs }}');
+            var geojsonLayer = L.geoJSON(geojson).addTo(map);
+
+            // Adjust the view to fit the bounds of the GeoJSON layer
+            map.fitBounds(geojsonLayer.getBounds());
+        }
+    }
+
+    // Adjust background elements based on location name ----------------------
+
+    // Moving fill area on image when scrolling
+    var diag1 = document.querySelector('.diag1');
+    var diag2 = document.querySelector('.diag2');
+    var rect1 = document.querySelector('.rect1');
+    var rect2 = document.querySelector('.rect2');
+
+    // Store the initial right and width values
+    var initialRightDiag1 = parseFloat(getComputedStyle(diag1).right) || 0;
+    var initialRightDiag2 = parseFloat(getComputedStyle(diag2).right) || 0;
+    var initialWidthRect1 = parseFloat(getComputedStyle(rect1).width) || 0;
+    var initialWidthRect2 = parseFloat(getComputedStyle(rect2).width) || 0;
+
+    var titleContainer = document.querySelector('.title-container');
+    var titleContainerWidth = parseFloat(getComputedStyle(titleContainer).width) || 0;
+
+    // Set new widths/rights
+    var diff = 30
+    var minPosition2 = 160
+    position2 = Math.max(titleContainerWidth-30, minPosition2)
+    position1 = position2 + diff
+
+    diag1.style.right = position1 + 'px';
+    diag2.style.right = position2 + 'px';
+    rect1.style.width = position1 + 'px';
+    rect2.style.width = position2 + 'px';
+
+    // Scrolling --------------------------------------------------------------
+
+    // Get the parent element and its width
+    var parent = document.querySelector('.details-page-header');
+    var parentWidth = parseFloat(getComputedStyle(parent).width) || 0;
+
+    // Set the number of pixels to scroll
+    var scrollPixels = 120;
+
+    // Calculate the number of pixels to move for each scroll pixel
+    var movePixels = parentWidth / scrollPixels;
+
+    // Add the scroll event listener
+    window.addEventListener('scroll', function() {
+        // Calculate the scroll position as a percentage of the scrollPixels
+        var scrollPercent = Math.min(window.scrollY / scrollPixels, 1) * 100;
+
+        // Calculate the new position
+        var newPosition1 = position1 + scrollPercent * movePixels;
+        newPosition1 = Math.max(newPosition1, position1);
+
+        // Adjust the right and width properties
+        diag1.style.right = newPosition1 + 'px';
+        rect1.style.width = newPosition1 + 'px';
+    });
+
+    // ONLOAD -----------------------------------------------------------------
+    window.onload = function() {
+        // Click on general tab by default
+        var generalTabButton = document.getElementById('General-tab-button');
+        if (generalTabButton) {
+            generalTabButton.click();
+        };
+
+        // Position tooltips for category descriptions
+        var tooltips = document.querySelectorAll('.category-description-tooltip-text');;
+        tooltips.forEach(function(tooltip) {
+            var parent = tooltip.parentElement;
+            var container = parent.parentElement
+            parent.addEventListener('mouseenter', function() {
+                var parentRect = parent.getBoundingClientRect();
+                var containerRect = container.getBoundingClientRect();
+                var tooltipRect = tooltip.getBoundingClientRect();
+                var left = parentRect.left + parentRect.width / 2 - tooltipRect.width / 2;
+                if (left < containerRect.left) {
+                    left = containerRect.left;
+                } else if (left + tooltipRect.width > containerRect.right) {
+                    left = containerRect.right - tooltipRect.width;
+                }
+                tooltip.style.left = (left - tooltip.offsetParent.getBoundingClientRect().left) + 'px';
+                tooltip.style.transform = 'none';
+            });
+        });
+
+    };
+
+</script>
+
+<!-- Weather diagram-->
+<script>
+    var data = {{ weather_data|safe }};
+
+    // Select the SVG element
+    var svgTemp = d3.select("#temperature-diagram");
+    var svgPrec = d3.select("#precipitation-diagram");
+
+    // Define the dimensions of the chart
+    var margin = {top: 20, right: 20, bottom: 30, left: 60},
+        width = +svgTemp.attr("width") - margin.left - margin.right,
+        height = +svgTemp.attr("height") - margin.top - margin.bottom;
+
+    // Create scales
+    var x = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+    var yTemp = d3.scaleLinear().rangeRound([height, 0]);
+    var yPrec = d3.scaleLinear().rangeRound([height, 0]);
+
+    // Append a group element to the SVG, and apply a transform to account for the margins
+    var gTemp = svgTemp.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var gPrec = svgPrec.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // Set the domains of the scales
+    x.domain(data.map(function(d) { return d.month; }));
+    yTemp.domain([d3.min(data, function(d) { return d.temperature_min; }), d3.max(data, function(d) { return d.temperature_max; })]);
+    yPrec.domain([0, d3.max(data, function(d) { return d.precipitation_sum; })]);
+
+    // Create a tooltip
+    var tooltip = d3.select(".weather-diagram-container").append("div")
+        .attr("class", "weather-diagram-tooltip")
+        .style("opacity", 0);
+
+    // Add the range bars for temperature
+    gTemp.selectAll(".range-bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "range-bar temperature-bar")
+        .attr("x", function(d) { return x(d.month); })
+        .attr("y", function(d) { return yTemp(d.temperature_max); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return yTemp(d.temperature_min) - yTemp(d.temperature_max); })
+        .attr("rx", 6)
+        .attr("ry", 6)
+        .on("mouseover", function(d) {
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html("Max: " + d.temperature_max.toFixed(1) + "°C" + "<br>Min: " + d.temperature_min.toFixed(1) + "°C")
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
+    // Add the bars for precipitation
+    gPrec.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar precipitation-bar")
+        .attr("x", function(d) { return x(d.month); })
+        .attr("y", function(d) { return yPrec(d.precipitation_sum); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - yPrec(d.precipitation_sum); })
+        .attr("rx", 6)
+        .attr("ry", 6)
+        .on("mouseover", function(d) {
+            tooltip.transition()
+                .duration(200)
+                .style("opacity", .9);
+            tooltip.html(d.precipitation_sum.toFixed(1) + "mm")
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        })
+        .on("mouseout", function(d) {
+            tooltip.transition()
+                .duration(500)
+                .style("opacity", 0);
+        });
+
+    // Add the X Axis
+    var xAxis = gPrec.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    xAxis.selectAll("text")
+        .attr("class", "weather-diagram-axis-label");
+
+    // Add the Y Axes
+    var yAxisTemp = gTemp.append("g").call(d3.axisLeft(yTemp).ticks(5));
+    var yAxisPrec = gPrec.append("g").call(d3.axisLeft(yPrec).ticks(5));
+
+    yAxisTemp.selectAll("text")
+        .attr("class", "weather-diagram-axis-label");
+    yAxisPrec.selectAll("text")
+        .attr("class", "weather-diagram-axis-label");
+
+    // Add y-axis titles
+    yAxisTemp.append("text")
+        .attr("class", "weather-diagram-axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left)
+        .attr("x", -height / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Temperature (°C)");
+
+    yAxisPrec.append("text")
+        .attr("class", "weather-diagram-axis-title")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left)
+        .attr("x", -height / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Precipitation (mm)");
+
+</script>
+
+<!-- Sticky header when scrolling -->
+<script>
+    // Calculate initial positions of elements
+    var pageHeader = document.getElementById('headerContainer');
+    var locationHeader = document.querySelector('.details-page-header');
+    var locationTitle = document.querySelector('.title-container');
+    var locationImage = document.querySelector('.location-image-container');
+    var initialPageHeaderBottom = pageHeader.getBoundingClientRect().bottom + window.pageYOffset;
+    var initialLocationTitleTop = locationTitle.getBoundingClientRect().top + window.pageYOffset;
+    var initialLocationImageHeight = locationImage.getBoundingClientRect().height;
+    var initialLocationTitleHeight = locationTitle.getBoundingClientRect().height;
+
+    function stickyLocationHeader() {
+        if (window.pageYOffset >= initialLocationTitleTop - initialPageHeaderBottom - 20) {
+            locationHeader.style.position = 'sticky';
+            locationHeader.style.top = initialPageHeaderBottom - initialLocationImageHeight + initialLocationTitleHeight + 20 + 'px';
+        }
+        else {
+            locationHeader.style.position = 'relative';
+            locationHeader.style.top = 'auto';
+        }
+    };
+
+    // Run the function when the page is loaded
+    stickyLocationHeader();
+
+    // Run the function when a scroll event is detected
+    window.addEventListener('scroll', stickyLocationHeader);
+</script>
+
+<!-- Similarity text API call -->
+<script>
+    // Get the CSRF token
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Only make the API call if necessary
+    var includeSimilarity = {{ include_similarity|yesno:"true,false" }};
+    if (includeSimilarity) {
+
+        // Get the data from the Django context
+        var similarityData = JSON.parse('{{ similarity_data|safe }}');
+
+        // Get the loading spinner and show
+        var loadingSpinner = document.getElementById('similarity-tab-loading-spinner');
+        loadingSpinner.style.display = 'flex';
+
+        // Make the API call
+        fetch('/api/openai', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(similarityData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide the loading spinner
+            loadingSpinner.style.display = 'none';
+
+            // Convert line breaks into HTML paragraphs and append to output div
+            var paragraphs = data.text.split('\n\n').map(function(line) {
+                return '<p>' + line + '</p>';
+            }).join('');
+            const outputDiv = document.getElementById('similarity-text-output');
+            outputDiv.innerHTML += paragraphs;
+
+            // Show warning if not None
+            if (data.warning) {
+                const warningDiv = document.getElementById('similarity-warning-output');
+                warningDiv.innerHTML = '<p class="similarity-warning-text">' + data.warning + '</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+
+            // Hide the loading spinner
+            loadingSpinner.style.display = 'none';
+        });
+    }
+</script>
+
+{% endblock %}

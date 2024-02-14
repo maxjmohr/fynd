@@ -4,3 +4,7 @@
 *_apikey.txt
 api_key_fsq.txt
 __pycache__/
+*.pyc
+*.env
+**/staticfiles/*
+**/location_images/*

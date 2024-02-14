@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+fynd
+{% endblock %}
+
+{% block main %}
+
+<div class="home-overview-container">
+    <div class="home-intro-text">
+        <div class="home-welcome">Welcome to <img src="{% static 'images/logo.svg' %}" style="height: 1em;" alt="fynd"></div>
+        Choose an option below to get started<br>and
+        <span class="colored-letter">f</span><span class="f-space"></span>ind 
+        <span class="colored-letter">y</span>our 
+        <span class="colored-letter">n</span>ext 
+        <span class="colored-letter">d</span>estination for a city trip.
+    </div>
+
+    <div class="box-container">
+        <a href="/discover" class="box">
+            <h2>Discover</h2>
+            <div class="box-text">
+                <p>Find new places to explore.</p>
+                <p>You have no idea where you should go on your next trip? No problem! Just use our <i>discover</i> tool to get a list of destinations most relevant to your characteristics. Maybe you discover destinations you might not have considered?</p>
+            </div>
+        </a>
+
+        <a href="/search" class="box">
+            <h2>Search</h2>
+            <div class="box-text">
+                <p>Search for a specific destination.</p>
+                <p>You want to get some information on a destination you already have in mind? With the <i>search</i> you can find a destination in our database and elaborate our data in detail.</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+{% endblock %}
