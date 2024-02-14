@@ -146,19 +146,19 @@ def generate_safety_report(aa_id):
 
 def create_country_safety_df():
 
-    #read in crime rate per country from csv file and clean data
+    # read in crime rate per country from csv file and clean data
     crime_countries = pd.read_csv("../../../res/master_data/crime-rate-by-country-2023.csv")
     crime_countries_clean = crime_countries[["country", "cca3", "cca2",
                                             "crimeRateByCountry_crimeIndex"]].sort_values(by="crimeRateByCountry_crimeIndex")
 
-    #get political stability, rule of law and personal freedom data from world bank API
+    # get political stability, rule of law and personal freedom data from world bank API
     political_stability = requests.get("http://api.worldbank.org/v2/country/all/indicator/PV.EST?date=2022&per_page=500&format=json")
 
     rule_of_law = requests.get("http://api.worldbank.org/v2/country/all/indicator/RL.EST?date=2022&per_page=500&format=json")
 
     voice_and_accountability = requests.get("http://api.worldbank.org/v2/country/all/indicator/VA.EST?date=2022&per_page=500&format=json")
 
-    #combine data into one dataframe
+    # combine data into one dataframe
     safety_df = pd.DataFrame(columns=["ISO2", "ISO3", "CountryName", "PoliticalStability"])
 
     for i in range(len(political_stability.json()[1])):
@@ -187,55 +187,65 @@ def create_country_safety_df():
 
     safety_df = safety_df[safety_df['PoliticalStability'].notna()]
 
-    #read in global peace index excel report, filter columns
-    global_peace_index = pd.read_excel("../../../res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
-    global_peace_index = global_peace_index.rename(columns={global_peace_index.columns[17]: 'peace_index'})
-    global_peace_index = global_peace_index[["Country", "iso3c", "peace_index"]]
-    #read in global peace index excel report, filter columns
+    # read in global peace index excel report, filter columns
     global_peace_index = pd.read_excel("../../../res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
     global_peace_index = global_peace_index.rename(columns={global_peace_index.columns[17]: 'peace_index'})
     global_peace_index = global_peace_index[["Country", "iso3c", "peace_index"]]
 
-    #read in global terrorism index excel report, filter columns
-    global_terrorism_index = pd.read_excel("../../../res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
-    global_terrorism_index = global_terrorism_index.rename(columns={global_terrorism_index.columns[4]: 'terrorism_index'})
-    global_terrorism_index = global_terrorism_index[["Country", "iso3c", "terrorism_index"]]
-    #read in global terrorism index excel report, filter columns
+    # read in global peace index excel report, filter columns
+    global_peace_index = pd.read_excel("../../../res/master_data/global_peace_index.xlsx", sheet_name=1, skiprows=3)
+    global_peace_index = global_peace_index.rename(columns={global_peace_index.columns[17]: 'peace_index'})
+    global_peace_index = global_peace_index[["Country", "iso3c", "peace_index"]]
+
+    # read in global terrorism index excel report, filter columns
     global_terrorism_index = pd.read_excel("../../../res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
     global_terrorism_index = global_terrorism_index.rename(columns={global_terrorism_index.columns[4]: 'terrorism_index'})
     global_terrorism_index = global_terrorism_index[["Country", "iso3c", "terrorism_index"]]
 
-    #read in ecological threat excel report, filter columns
-    ecological_threat_report = pd.read_excel("../../../res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
-    ecological_threat_report = ecological_threat_report.rename(columns={ecological_threat_report.columns[2]: 'ecological_threat'})
-    ecological_threat_report = ecological_threat_report[["Country", "ecological_threat"]]
-    #read in ecological threat excel report, filter columns
+    # read in global terrorism index excel report, filter columns
+    global_terrorism_index = pd.read_excel("../../../res/master_data/global_terrorism_index.xlsx", sheet_name=3, skiprows=5)
+    global_terrorism_index = global_terrorism_index.rename(columns={global_terrorism_index.columns[4]: 'terrorism_index'})
+    global_terrorism_index = global_terrorism_index[["Country", "iso3c", "terrorism_index"]]
+
+    # read in ecological threat excel report, filter columns
     ecological_threat_report = pd.read_excel("../../../res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
     ecological_threat_report = ecological_threat_report.rename(columns={ecological_threat_report.columns[2]: 'ecological_threat'})
     ecological_threat_report = ecological_threat_report[["Country", "ecological_threat"]]
 
-    #find out which countries have differing names in global peace index and ecological theat report, iso3 code is not 
-    #available for ecological threat report
-    no_overlap = ~global_peace_index["Country"].isin(ecological_threat_report["Country"])
-    no_overlap = no_overlap.tolist()
+    # read in ecological threat excel report, filter columns
+    ecological_threat_report = pd.read_excel("../../../res/master_data/ecological_threat_report.xlsx", sheet_name=1, skiprows=4)
+    ecological_threat_report = ecological_threat_report.rename(columns={ecological_threat_report.columns[2]: 'ecological_threat'})
+    ecological_threat_report = ecological_threat_report[["Country", "ecological_threat"]]
+
+    # find out which countries have differing names in global peace index and ecological theat report, iso3 code is not 
+    # available for ecological threat report
+    #no_overlap = ~global_peace_index["Country"].isin(ecological_threat_report["Country"])
+    #no_overlap = no_overlap.tolist()
     #print(global_peace_index.iloc[no_overlap])
 
-    #create dict of differing country names
+    # create dict of differing country names
     country_name_dict = {"Côte d'Ivoire": "Cote d' Ivoire", "Czechia": "Czech Republic", "Gambia": "The Gambia", 
                            "Kyrgyzstan": "Kyrgyz Republic", "United States": "United States of America"}
 
-    #replace country names
+    # replace country names
     ecological_threat_report = ecological_threat_report.replace(country_name_dict)
 
-    #merge dataframes
+    # merge dataframes
     economics_and_peace_df = pd.merge(global_peace_index, global_terrorism_index[["iso3c","terrorism_index"]], on="iso3c")
-    #use left join to keep Turkey, which is not present in ecological threat report
+    # use left join to keep Turkey, which is not present in ecological threat report
     economics_and_peace_df = pd.merge(economics_and_peace_df, ecological_threat_report, on="Country", how="left")
-    safety_df = pd.merge(safety_df, economics_and_peace_df[["iso3c", "peace_index", "terrorism_index", "ecological_threat"]], 
-                        left_on="ISO3", right_on="iso3c")
-    safety_df = safety_df.drop("iso3c", axis=1)
+    economics_and_peace_df.rename(columns={'Country':'country_2'}, inplace=True)
 
-    #express all metrics on a scale of 0 to 10
+    # merge dataframes, use outer join to ensure countries for which not all scores are available will be included
+    safety_df = pd.merge(safety_df, economics_and_peace_df[["iso3c", "peace_index", "terrorism_index", "ecological_threat", "country_2"]], 
+                        left_on="ISO3", right_on="iso3c", how='outer')
+    
+    # unify duplicate columns by copying values and deleting superfluous columns
+    safety_df.loc[safety_df['ISO3'].isnull(),'ISO3'] = safety_df.loc[safety_df['ISO3'].isnull(),'iso3c'].values
+    safety_df.loc[safety_df['CountryName'].isnull(),'CountryName'] = safety_df.loc[safety_df['CountryName'].isnull(),'country_2'].values
+    safety_df = safety_df.drop(["iso3c", "country_2"], axis=1)
+
+    # express all metrics on a scale of 0 to 10
     scaler = MinMaxScaler((0,10))
     safety_df[['PoliticalStability', 'RuleofLaw', 'PersonalFreedom',
                 'crimeRateByCountry_crimeIndex', 'peace_index',
@@ -244,7 +254,7 @@ def create_country_safety_df():
                                'PersonalFreedom', 'crimeRateByCountry_crimeIndex', 'peace_index',
                                'terrorism_index', 'ecological_threat']])
 
-    #make sure 10 is always best possible score, 0 worst possible
+    # make sure 10 is always best possible score, 0 worst possible
     safety_df[['crimeRateByCountry_crimeIndex', 'peace_index', 
                'terrorism_index', 'ecological_threat']] = 10 - safety_df[['crimeRateByCountry_crimeIndex', 
                                                                           'peace_index', 'terrorism_index', 

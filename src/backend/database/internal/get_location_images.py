@@ -107,12 +107,3 @@ locations_images_df = pd.read_csv("res/master_data/locations_images.csv", sep=";
 #locations_images_df.drop("Unnamed: 0", axis=1)
 column_order = ["location_id", "img_url", "source"]
 locations_images_df = locations_images_df.reindex(columns=column_order)
-
-# Connect to database
-db = Database()
-db.connect()
-db.create_db_object("core_locations_images", drop_if_exists=True)
-db.insert_data(locations_images_df, "core_locations_images", if_exists="append", updated_at=True)
-
-# Disconnect from database
-db.disconnect()

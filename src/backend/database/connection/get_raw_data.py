@@ -5,11 +5,9 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
-from data.safety_pipeline import create_country_safety_df
-from data.safety_pipeline import create_city_safety_df
-from data.health import get_health_info
-from data.geography import get_land_coverage
-from data.places import get_places
+from data.safety import create_country_safety_df
+from data.safety import create_city_safety_df
+from data.health import get_health_info, get_legatum_health_score
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from data.accomodations import generate_periods, process_period
 from data.reachability import (process_location_land_reachability, 
@@ -852,7 +850,7 @@ db.connect()
 #print(db.fetch_data("raw_safety_country"))
 
 # Create tables
-#create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=False)
+create_raw_db_tables(db=db, table_names=table_fill_function_dict.keys(), drop_if_exists=True)
 # Fill tables
 fill_raw_db_tables(db=db, table_names=table_fill_function_dict.keys())
 

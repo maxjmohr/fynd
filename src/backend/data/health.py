@@ -7,6 +7,7 @@ from textwrap import wrap
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver import ActionChains
 from selenium.webdriver.firefox.options import Options
 import time
 
@@ -171,6 +172,7 @@ def get_health_info():
     # Save the final result in a csv
     health_df.to_csv("../../../res/master_data/health_info.csv")
 
+
 # Function to get travel info about Germany, since the German foreign office doesn't have info on the country itself
 def get_germany_info():
     # Get travel adivsory from US foreign office
@@ -191,5 +193,69 @@ def get_germany_info():
     german_health_info = "COVID-19 Vaccines: " + german_health_info
 
     german_dict = {"General Information:" : german_health_info}
+
+    return german_dict
+
+# Function which generates a dataframe containing country names and their health score according to the Legatum Prosperity Index and returns them
+def get_legatum_health_score():
+    # set up selenium driver
+    options = Options()
+    options.headless = True
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    driver = webdriver.Firefox(options=options)
+    driver.get("https://www.prosperity.com/rankings")
+
+    # move slider to "score" instead of "rank"
+    score_slider = driver.find_element(By.XPATH, '//*[@id="rank_score_btn-thumb-0"]')
+    move = ActionChains(driver)
+    move.click_and_hold(score_slider).move_by_offset(100, 0).release().perform()
+    time.sleep(3)
+
+    # copy table data
+    legatum_raw_table = driver.find_element(By.XPATH, '//*[@id="treeview-1032"]')
+
+    # split resulting text so that every table element is its own list element
+    legatum_raw_scores = legatum_raw_table.text.split(sep="\n")
+
+    # shut down driver
+    driver.close()
+    driver.quit()
+
+    # get elements at 2nd and 12th position of each table row, which correspond to the country name and health score
+    countries = []
+    health_scores = []
+    for i in range(len(legatum_raw_scores)):
+        if i % 14 == 1:
+            countries.append(legatum_raw_scores[i])
+        if i % 14 == 11:
+            health_scores.append(legatum_raw_scores[i])
+
+    # create dataframe and return it
+    health_score_df = pd.DataFrame({"country_name" : countries,
+                                    "health_score": health_scores})
+    
+    return health_score_df
+
+# Function to get travel info about Germany, since the German foreign office doesn't have info on the country itself
+def get_germany_info_safety():
+    # Get travel adivsory from US foreign office
+    travel_warning = requests.get("https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages/Germany.html")
+    t_text = travel_warning.text
+
+    # Clean text
+    clean_str = str(cleanhtml(t_text))
+
+    # Find sections about terrorism and crime information
+    safety_info = re.findall("Safety and Security(.*)Local Laws & Special Circumstances", clean_str, re.DOTALL)[0]
+    terrorism_info = re.findall("Terrorism:(.*)For more information, see our  Terrorism  page.", safety_info, re.DOTALL)[0]
+    crime_info = re.findall("Crime:(.*)Victims of Crime", safety_info, re.DOTALL)[0]
+
+    # Remove unnecessary characters
+    to_be_replaced = ["\u202f", "&nbsp;", "\r", "\n"]
+    for str_rep in to_be_replaced:
+        terrorism_info = terrorism_info.replace(str_rep, "")
+        crime_info = crime_info.replace(str_rep, "")
+
+    german_dict = {"terrorism" : terrorism_info, "crime" : crime_info}
 
     return german_dict
