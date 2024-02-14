@@ -5,7 +5,6 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from database.db_helpers import Database
-
 from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
@@ -85,7 +84,10 @@ class CostScores:
                     data.loc[data["start_date"] == start_date, ["comp_median"]]
                 )"""
 
-        return data[["location_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+         # Add ref_start_location_id
+        data["ref_start_location_id"] = -1
+
+        return data[["location_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
     
 
     def travel_cost_scores(self) -> pd.DataFrame:
@@ -181,7 +183,10 @@ class CostScores:
         results["start_date"] = "2024-01-01"
         results["end_date"] = "2099-12-31"
 
-        return results[["location_id", "city", "country", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        # Add ref_start_location_id
+        results["ref_start_location_id"] = -1
+
+        return results[["location_id", "city", "country", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
 
     def get(self, dimension:str) -> pd.DataFrame:
@@ -216,7 +221,7 @@ data = CostScores(db).get(dimension="accommodation")
 data.to_csv("cost_scores_median_log.csv", index=False)
 
 # Display the result
-print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))
+print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value", "ref_start_location_id"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """

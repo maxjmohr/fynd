@@ -54,10 +54,13 @@ class GeographyScores:
         data["start_date"] = datetime(2023, 1, 1).date()
         data["end_date"] = datetime(2099, 12, 31).date()
 
-        # Add raw_value_formatted
-        data["raw_value_formatted"] = None
+        # Add raw_value
+        data["raw_value"] = None
 
-        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value_formatted"]]
+        # Add ref_start_location_id
+        data["ref_start_location_id"] = -1
+
+        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
 """
 # Connect to the database
@@ -67,7 +70,7 @@ db.connect()
 data = GeographyScores(db).get_coverage_scores()
 
 # Display the result
-print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score"]].sort_values(by="score", ascending=False).head(50))
+print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """

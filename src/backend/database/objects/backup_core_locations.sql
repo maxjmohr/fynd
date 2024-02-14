@@ -1,0 +1,1 @@
+CREATE TABLE backup_core_locations as (SELECT * FROM core_locations);

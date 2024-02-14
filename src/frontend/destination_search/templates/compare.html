@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}
+Compare destinations
+{% endblock %}
+
+{% block main %}
+<table>
+    <thead>
+        <tr>
+            <th>Remove</th>
+            <th>City</th>
+            <th>Country</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for location in locations %}
+        <tr>
+            <td><div id="{{ location.location_id}}" class="remove-from-comparison-button">X</div></td>
+            <td>{{ location.city }}</td>
+            <td>
+                <img src="https://flagsapi.com/{{ location.country_code }}/flat/24.png" alt="{{ location.country }} flag">
+                {{ location.country }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+    // Update selectedCompareLocations with the locations from the query string
+    let urlParams = new URLSearchParams(window.location.search);
+    let locationsParam = urlParams.getAll('locations');
+    selectedCompareLocations = locationsParam.map(location => parseInt(location));
+
+    // Update the compare count element
+    compareCountElement.textContent = selectedCompareLocations.length;
+
+    // Hide or show the compare count element
+    if (selectedCompareLocations.length === 0) {
+        compareCountElement.style.visibility = 'hidden';
+    } else {
+        compareCountElement.style.visibility = 'visible';
+    }
+
+    // Remove-button event listener
+    document.querySelectorAll('.remove-from-comparison-button').forEach(function(button) {
+        button.addEventListener('click', function() {
+            let locationId = parseInt(this.id);
+
+            // Remove the location from the comparison list
+            selectedCompareLocations = selectedCompareLocations.filter(id => id !== locationId);
+
+            // Update the count
+            compareCountElement.textContent = selectedCompareLocations.length;
+
+            // Hide or show the compare count element
+            if (selectedCompareLocations.length === 0) {
+                compareCountElement.style.visibility = 'hidden';
+            } else {
+                compareCountElement.style.visibility = 'visible';
+            }
+
+            // Update the href of the 'Compare' link
+            let compareLink = document.querySelector('#compare-link');
+            let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
+            compareLink.href = url;
+
+            console.log(url);
+
+            // Remove the row from the table
+            this.parentElement.parentElement.remove();
+        });
+    });
+</script>
+{% endblock %}
+

@@ -121,7 +121,10 @@ class CultureScores:
         # Add raw_value
         data["raw_value"] = None
 
-        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        # Add ref_start_location_id
+        data["ref_start_location_id"] = -1
+
+        return data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
 """
 # Connect to the database
@@ -131,7 +134,7 @@ db.connect()
 data = CultureScores(db).get()
 
 # Display the result
-print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))
+print(data[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """

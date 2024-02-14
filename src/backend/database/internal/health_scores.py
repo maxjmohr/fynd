@@ -48,7 +48,10 @@ class HealthScores:
         # Add empty column for raw_value
         data["raw_value"] = None
 
-        return data[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score", "raw_value"]]
+        # Add ref_start_location_id
+        data["ref_start_location_id"] = -1
+
+        return data[["country_name", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
 
 """
 # Connect to the database
@@ -58,7 +61,7 @@ db.connect()
 data = HealthScores(db).get()
 
 # Display the result
-print(data[["country_name", "category_id", "dimension_id", "start_date", "end_date", "score"]].sort_values(by="score", ascending=False).head(50))
+print(data[["country_name", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score"]].sort_values(by="score", ascending=False).head(50))
 
 db.disconnect()
 """

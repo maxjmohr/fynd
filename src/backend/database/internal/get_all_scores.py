@@ -83,8 +83,8 @@ class FillScores:
         '''
         # Get the scores
         return CostScores(self.db).get(dimension="accommodation")
-    
 
+    
     def travel_cost_scores(self) -> pd.DataFrame:
         ''' Fill in the travel cost scores
         Input:  - self.db: Database object
@@ -240,7 +240,6 @@ class FillScores:
         Fill in the reachability scores
         """
         return ReachabilityScores(self.db).get()
-    
 
     @staticmethod
     def compute_distances(scores:pd.DataFrame, retrospective_update:bool=False) -> pd.DataFrame:
@@ -403,7 +402,7 @@ db = Database()
 db.connect()
 which_scores = {
     #'accommodation_cost': FillScores(db).accommodation_cost_scores,
-    'travel_cost': FillScores(db).travel_cost_scores,
+    #'travel_cost': FillScores(db).travel_cost_scores,
     #'cost_of_living': FillScores(db).cost_of_living_scores
     #'safety': FillScores(db).safety_scores
     #'culture': FillScores(db).culture_scores,
