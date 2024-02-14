@@ -4,3 +4,4 @@
 *_apikey.txt
 api_key_fsq.txt
 __pycache__/
+res/api_keys/db_key_postgres.txt

@@ -172,6 +172,7 @@ def get_health_info():
     # Save the final result in a csv
     health_df.to_csv("../../../res/master_data/health_info.csv")
 
+
 # Function to get travel info about Germany, since the German foreign office doesn't have info on the country itself
 def get_germany_info():
     # Get travel adivsory from US foreign office
@@ -234,3 +235,27 @@ def get_legatum_health_score():
                                     "health_score": health_scores})
     
     return health_score_df
+
+# Function to get travel info about Germany, since the German foreign office doesn't have info on the country itself
+def get_germany_info_safety():
+    # Get travel adivsory from US foreign office
+    travel_warning = requests.get("https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages/Germany.html")
+    t_text = travel_warning.text
+
+    # Clean text
+    clean_str = str(cleanhtml(t_text))
+
+    # Find sections about terrorism and crime information
+    safety_info = re.findall("Safety and Security(.*)Local Laws & Special Circumstances", clean_str, re.DOTALL)[0]
+    terrorism_info = re.findall("Terrorism:(.*)For more information, see our  Terrorism  page.", safety_info, re.DOTALL)[0]
+    crime_info = re.findall("Crime:(.*)Victims of Crime", safety_info, re.DOTALL)[0]
+
+    # Remove unnecessary characters
+    to_be_replaced = ["\u202f", "&nbsp;", "\r", "\n"]
+    for str_rep in to_be_replaced:
+        terrorism_info = terrorism_info.replace(str_rep, "")
+        crime_info = crime_info.replace(str_rep, "")
+
+    german_dict = {"terrorism" : terrorism_info, "crime" : crime_info}
+
+    return german_dict
