@@ -11,8 +11,9 @@ from database.internal.geography_scores import GeographyScores
 from database.internal.health_scores import HealthScores
 from database.internal.safety_scores import SafetyScores
 from database.internal.weather_scores import WeatherScores
+from database.internal.reachability_scores import ReachabilityScores
 from datetime import datetime
-from faker import Faker
+#from faker import Faker
 import numpy as np
 import pandas as pd
 
@@ -82,6 +83,16 @@ class FillScores:
         '''
         # Get the scores
         return CostScores(self.db).get(dimension="accommodation")
+
+    
+    def travel_cost_scores(self) -> pd.DataFrame:
+        ''' Fill in the travel cost scores
+        Input:  - self.db: Database object
+                - self.locations: master data
+        Output: location scores
+        '''
+        # Get the scores
+        return CostScores(self.db).get(dimension="travel_cost")
 
 
     def cost_of_living_scores(self) -> pd.DataFrame:
@@ -220,7 +231,15 @@ class FillScores:
 
         # Reorder
         return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
+    
 
+###----| Reachability |----###
+    
+    def get_reachability_scores(self) -> pd.DataFrame:
+        """
+        Fill in the reachability scores
+        """
+        return ReachabilityScores(self.db).get()
 
     @staticmethod
     def compute_distances(scores:pd.DataFrame, retrospective_update:bool=False) -> pd.DataFrame:
@@ -383,12 +402,14 @@ db = Database()
 db.connect()
 which_scores = {
     #'accommodation_cost': FillScores(db).accommodation_cost_scores,
-    'cost_of_living': FillScores(db).cost_of_living_scores
+    #'travel_cost': FillScores(db).travel_cost_scores,
+    #'cost_of_living': FillScores(db).cost_of_living_scores
     #'safety': FillScores(db).safety_scores
     #'culture': FillScores(db).culture_scores,
-    #'weather': FillScores(db).weather_scores
-    #'geography_coverage': FillScores(db).geography_coverage_scores
-    #'health': FillScores(db).health_scores
+    #'weather': FillScores(db).weather_scores,
+    #'geography_coverage': FillScores(db).geography_coverage_scores,
+    #'health': FillScores(db).health_scores,
+    #'reachability': FillScores(db).get_reachability_scores,
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()

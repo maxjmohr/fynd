@@ -5,10 +5,45 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from database.db_helpers import Database
-
+from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+
+# helper function to create non-overlapping start and end dates
+def map_dates(dates):
+
+    dates.sort()
+
+    # Convert dates to datetime
+    dates = pd.to_datetime(dates)
+    
+    # Calculate midpoints
+    midpoints = dates[:-1] + (dates[1:] - dates[:-1]) / 2
+    
+    # Initialize start date as today
+    start_date = pd.to_datetime(datetime.today().strftime('%Y-%m-%d'))
+    
+    # Initialize dictionary
+    date_dict = {}
+    
+    # Iterate over midpoints
+    for i in range(len(midpoints)):
+        # Calculate end date as day before next start date
+        end_date = midpoints[i] - pd.Timedelta(days=1)
+        
+        # Add to dictionary
+        date_dict[dates[i].strftime('%Y-%m-%d')] = [start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d')]
+        
+        # Update start date
+        start_date = midpoints[i]
+    
+    # Add last date
+    end_date = dates[-1] + (dates[-1] - midpoints[-1])
+    date_dict[dates[-1].strftime('%Y-%m-%d')] = (start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+    
+    return date_dict
+
 
 class CostScores:
     "Class for calculating cost scores"
@@ -49,10 +84,41 @@ class CostScores:
                     data.loc[data["start_date"] == start_date, ["comp_median"]]
                 )"""
 
-        # Add ref_start_location_id
+         # Add ref_start_location_id
         data["ref_start_location_id"] = -1
 
         return data[["location_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
+    
+
+    def travel_cost_scores(self) -> pd.DataFrame:
+        """
+        Creates travel cost scores for all (location, reference location, period) combinations from raw data using MinMaxScaler
+        """
+        
+        db = self.db
+
+        data = db.fetch_data("raw_reachability_air")
+        start_refs = db.fetch_data(total_object = "core_ref_start_locations")
+        core_locs = db.fetch_data(total_object = "core_locations")
+
+        # create start and end date columns using map_dates function
+        dates_map = map_dates(data['dep_date'].unique())
+        start_end = data['dep_date'].apply(lambda x: dates_map[x])
+        data[['start_date', 'end_date']] = pd.DataFrame(start_end.tolist(), index=data.index)
+
+        # Get dimension_id for accommodation
+        data["dimension_id"] = 41
+        data['raw_value'] = data['avg_price'].replace(0, np.nan)
+        data["score"] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-np.log(data[["avg_price"]]))
+
+        start_refs['mapped_start_airport'] = start_refs['mapped_start_airport'].str.strip()
+        data = data.merge(start_refs[['location_id', "mapped_start_airport"]], left_on="orig_iata", right_on="mapped_start_airport")
+        data = data.rename(columns={"location_id": "ref_start_location_id"})
+
+        # merge on core_locs to create combinations of destination, period, and start location
+        score_data = data.merge(core_locs[['location_id', 'airport_1']], left_on="dest_iata", right_on="airport_1")
+
+        return score_data[["location_id", "dimension_id", "start_date", "end_date", "score", "raw_value", "ref_start_location_id"]]
 
 
     def numbeo_scores(self):
@@ -134,6 +200,8 @@ class CostScores:
             data = self.accommodation_scores()
         elif dimension == "cost_of_living":
             data = self.numbeo_scores()
+        elif dimension == "travel_cost":
+            data = self.travel_cost_scores()
 
         # Add category_id
         data["category_id"] = 4

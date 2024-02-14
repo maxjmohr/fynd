@@ -180,6 +180,8 @@ class Database:
 
         print('\033[1m\033[92mSuccessfully dropped object {}.\033[0m'.format(object))
 
+
+
 """
 db = Database()
 db.connect()
