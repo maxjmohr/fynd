@@ -1,5 +1,5 @@
-<div style="text-align:center">
-    <img src="res/images/logo.svg" alt="fynd" width="300">
+<div align="center">
+    <img src="res/images/logo.svg" alt="logo" width="300">
 </div>
 
 #
