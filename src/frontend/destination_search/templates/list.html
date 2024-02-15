@@ -270,7 +270,7 @@ Results
             <div class="previous-location-list-item-container">
                 <div class="location-list-item-image-container same-width-as-height">
                     <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
-                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image" onerror="this.onerror=null; this.src='{% static '' %}images/location_images/thumbnails/default.png';">
                     </a>
                     <div class="add-to-comparison-icon-container">
                         <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
@@ -318,7 +318,7 @@ Results
 
                 <div class="location-list-item-image-container same-height-as-width">
                     <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
-                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image" onerror="this.onerror=null; this.src='{% static '' %}images/location_images/thumbnails/default.png';">
                     </a>
                     <div class="add-to-comparison-icon-container">
                         <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
