@@ -128,7 +128,7 @@ airports = db.fetch_data(total_object="core_airports")
 master_data = get_master_data(cities, airports, shape="polygon")
 
 # Insert into database
-db.insert_data(master_data, table=TARGET_TABLE, if_exists="replace", updated_at=True)
+db.insert_data(master_data, table="core_locations", if_exists="replace", updated_at=True)
 db.disconnect()
 ```
 
