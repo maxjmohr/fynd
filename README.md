@@ -190,11 +190,9 @@ python src/backend/database/internal/get_all_scores.py
 
 ### Generate new general and anomaly texts
 
-To generate new general and anomaly texts for given locations and categories, use `src/backend/database/connection/get_texts_general_anomaly.py`. The script is designed to generate general and anomaly texts for given locations and categories and store them in the database. Specify the categories you want to generate texts for in the script and delete the existing texts you want to replace:
+To generate new general and anomaly texts for given locations and categories, use `src/backend/database/connection/get_texts_general_anomaly.py`. The script is designed to generate general and anomaly texts for given locations and categories and store them in the database. Specify the categories you want to generate texts for in the script:
 
 ```python
-from src.backend.database.db_helpers import Database
-
 # Activate the desired categories
 filter_cats = [
     #0, # General
@@ -206,6 +204,15 @@ filter_cats = [
     #6, # Reachability
     #7 # Health
 ]
+```
+
+Separately delete the existing texts you want to replace:
+
+```python
+from src.backend.database.db_helpers import Database
+
+# Activate the desired categories
+filter_cats = # Same as above
 
 # Locations to generate new texts for
 location_ids = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -220,6 +227,7 @@ DELETE
 FROM core_texts
 WHERE category_id in ({', '.join([str(cat) for cat in filter_cats])})
 AND location_id in ({', '.join([str(loc) for loc in location_ids])})
+;
 """
 db.execute_sql(sql=sql)
 
