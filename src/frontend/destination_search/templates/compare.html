@@ -63,8 +63,20 @@ Compare destinations
 
     var traces = [];
 
+    // Define the gap between the subplots
+    var gapStart = 0.7;
+    var gapEnd = 3;
+    var locationsStart = 1;
+    var locationsEnd = 5;
+
+    // Interpolate the gap value based on the number of locations
+    var totalLocations = data[0].locations.length;
+    var gap = gapStart + (gapEnd - gapStart) * ((totalLocations - locationsStart) / (locationsEnd - locationsStart));
+
+    // Make sure the gap is within the defined range
+    gap = Math.max(gapStart, Math.min(gapEnd, gap));
+
     // Calculate the total number of dimensions
-    gap = 3;
     var totalDimensions = 0;
     data.forEach(function(category) {
         category.locations.forEach(function(location) {
