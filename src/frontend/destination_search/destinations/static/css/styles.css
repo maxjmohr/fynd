@@ -797,6 +797,14 @@ body {
     margin-right: 15px;
 }
 
+/* About page ---------------------------------------------------------------*/
+.about-page-container {
+    width: 80%;
+    max-width: 1000px;
+    margin: max(min(100px, 20vh), 10px) 0;
+    color: var(--darkgrey);
+}
+
 /* Details page -------------------------------------------------------------*/
 
 .details-page-container {
