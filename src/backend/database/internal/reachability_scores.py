@@ -84,7 +84,7 @@ class ReachabilityScores:
 
             land_reach['location_id'] = land_reach['loc_id']
             land_reach['raw_value'] = land_reach[k].replace(0, np.nan)
-            land_reach['raw_value'] = land_reach['raw_value'] / 3600 # convert seconds to hours
+            land_reach['raw_value'] = land_reach['raw_value'] / 60 # convert minutes to hours
             land_reach['dim_score'] = MinMaxScaler(feature_range=(0, 1)).fit_transform(-land_reach[[k]])
             land_reach['dimension_id'], land_reach['category_id'] = v, CATEGORY_ID   
             land_reach["start_date"], land_reach["end_date"] = "2024-01-01", "2099-12-31"
