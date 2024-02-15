@@ -832,13 +832,46 @@ class LocationDetailView(DetailView):
         if len(top_attractions) > 0:
             context['top_attractions'] = top_attractions
 
-        # Get reference start location airport
-        reference_start_airport = (
-            CoreAirports.objects
-            .values('iata_code', 'airport_name', 'city')
-            .filter(iata_code=reference_start_location['mapped_start_airport'].strip()) #FIXME no FK + strip needed
+        # Get reference start location and destination airport
+        def get_airport(iata_code: str) -> dict:
+            """Get airport data."""
+            airport = (
+                CoreAirports
+                .objects
+                .values('iata_code', 'airport_name', 'city', 'lat', 'lon')
+                .filter(iata_code=iata_code)
+                .first()
+            )
+            for col in ['lat', 'lon']:
+                airport[col] = float(airport[col])
+            return airport
+        
+        reference_start_airport = get_airport(
+            iata_code=reference_start_location['mapped_start_airport'].strip() #FIXME no FK + strip needed
+        )
+        destination_airport = get_airport(iata_code=location.airport_1)
+
+        # Get geojson for routes (reachabilty map)
+        reachability_map_data = (
+            RawReachabilityLand.objects
+            .filter(
+                Q(location_id=location.location_id)
+                & Q(ref_start_location_id=reference_start_location['location_id'])
+            )
+            .values('car_geojson', 'pt_geojson')
             .first()
         )
+        reachability_map_data = {
+            key: json.loads(value) for key, value in reachability_map_data.items()
+            if value is not None
+        }
+        reachability_map_data.update({
+            'reference_start_location': reference_start_location,
+            'reference_start_airport': reference_start_airport,
+            'destination_airport': destination_airport,
+            'destination': {'lat': location.lat, 'lon': location.lon, 'city': location.city, 'country': location.country}
+        })
+        context['reachability_map_data'] = json.dumps(reachability_map_data)
 
         # Location ids for similarity tab (current+previous)
         previous_locations = self.request.GET.getlist('previous_locations', [])

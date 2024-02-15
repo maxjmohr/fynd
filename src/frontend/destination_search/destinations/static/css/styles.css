@@ -1143,6 +1143,12 @@ body {
     border-radius: 10px;
 }
 
+#routesid {
+    height: 400px;
+    z-index: 1;
+    border-radius: 10px;
+}
+
 .weather-diagram-container {
     width: fit-content;
 }
