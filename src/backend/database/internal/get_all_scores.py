@@ -171,6 +171,7 @@ class FillScores:
 
 
 ###----| Culture |----###
+
     def culture_scores(self) -> pd.DataFrame:
         ''' Fill in the culture scores
         Input:  - self.db: Database object
@@ -231,16 +232,18 @@ class FillScores:
 
         # Reorder
         return location_scores[["location_id", "category_id", "dimension_id", "start_date", "end_date", "ref_start_location_id", "score", "raw_value"]]
-    
+
 
 ###----| Reachability |----###
-    
+
     def get_reachability_scores(self) -> pd.DataFrame:
         """
         Fill in the reachability scores
         """
         return ReachabilityScores(self.db).get()
 
+
+###----| Compute distances |----###
     @staticmethod
     def compute_distances(scores:pd.DataFrame, retrospective_update:bool=False) -> pd.DataFrame:
         ''' Compute the distance to the bottom 10 and top 10 quantile and to the median for each score
@@ -288,7 +291,10 @@ class FillScores:
                     cat_dim_df.loc[idx, "distance_to_bound"] = None
 
                 # Compute distance_to_median for all
-                cat_dim_df.loc[idx, "distance_to_median"] = (row["score"] - median) / std
+                if std != 0:
+                    cat_dim_df.loc[idx, "distance_to_median"] = (row["score"] - median) / std
+                else:
+                    cat_dim_df.loc[idx, "distance_to_median"] = 0
 
             # Add filtered dataframe with quantiles to list
             df_list.append(cat_dim_df)
@@ -409,7 +415,7 @@ which_scores = {
     #'weather': FillScores(db).weather_scores,
     #'geography_coverage': FillScores(db).geography_coverage_scores,
     #'health': FillScores(db).health_scores,
-    #'reachability': FillScores(db).get_reachability_scores,
+    'reachability': FillScores(db).get_reachability_scores,
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()
