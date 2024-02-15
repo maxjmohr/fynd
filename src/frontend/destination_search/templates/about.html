@@ -1,10 +1,50 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
 About
 {% endblock %}
 
 {% block main %}
+<div class="about-page-container">
+    <div class="about-page-content">
+        <div class="segment-title">Who are we?</div>
+        <p>
+            We are a team of four graduate students that built this application as a course project.
+            We do not use this application commercially.
+            We want to excuse any missing legal aspects such as the terms of service or cookie policy.
+        </p>
 
-<img src="https://i.makeagif.com/media/3-13-2021/p4_GNu.gif" alt="Gif Image">
+        <div class="segment-title">How does <img src="{% static 'images/logo.svg' %}" style="height: 1.2em;" alt="fynd"> work?</div>
+        <p>
+            The heart of fynd is our database.
+            We collect the data for our categories from a wide range of sources, making use of APIs and web scraping.
+            We capture cultural diversity through the number of dining options, touristic sights as well as leisure activities.
+            For the cost category, we combine flight prices, hotel prices and cost of living.
+            Reachability measures the time it takes to get to the destination.
+            We estimate routes for automobile, public transport and flights.
+            We further collect historical weather and geographical data.
+            Safety and health data from governmental authorities and NGOs complete our set of categories.
+        </p>
+        <p>
+            Based on the data, we calculate granular scores.
+            Some of the scores are time- and origin-dependent.
+            We then use these scores to generate textual summaries.
+            This provides you with more in-depth information in which regard a city stands out from the rest.
+        </p>
+        <p>
+            Using our standardized scores, we compare each city with your previous destinations to assign a relevance.
+            This yields the best matching cities for you.
+            Your preference settings adjust the relevance even further.
+        </p>
+        <p>
+            All this data is unified and nicely displayed to make your experience as smooth as possible.
+        </p>
+
+        <div class="segment-title">References</div>
+        <p>
+            All destination images are sourced from Wikipedia with a Creative Commons license.
+        </p>
+    </div>
+</div>
 {% endblock %}
