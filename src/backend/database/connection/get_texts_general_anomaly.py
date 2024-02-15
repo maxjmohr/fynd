@@ -270,7 +270,7 @@ BE CAREFUL: distance here refers to the distance to the bounds of the scores, no
 Do not include numerical values but describe how the travel durations might differ per season and mode of transport to other destinations.
 Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).
 Afterwards, only generate 1 sentence at maximum per anomaly containing:
-A) The time period (month(s)) where the anomaly is present.
+A) The month(s) where the anomaly is present. If the period is until the year 2099, write "all year round".
 B) If the travel duration was very long or very short.
 NEGATIVE VALUES = VERY LONG TRAVEL DURATION.
 POSITIVE VALUES = VERY SHORT TRAVEL DURATION.
