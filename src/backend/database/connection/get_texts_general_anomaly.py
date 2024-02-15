@@ -164,8 +164,8 @@ The following table shows the distances to the {distance_metric}s for the corres
 
         message = {"role": "user"}
 
-        # For weather and reachability
-        if 2 in data["category_id"].unique() or 6 in data["category_id"].unique():
+        # For weather
+        if 2 in data["category_id"].unique():
 
             message["content"] = f"""Use a maximum of one paragraph to generally describe the characteristics of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
 Use easy and understandable language and short sentences.
@@ -173,6 +173,23 @@ Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'y
 Especially compare {data['location_city'].iloc[0]} to other destinations in the category '{data['category_name'].iloc[0]}'.
 Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
 {self.content_seasonal_distances(data, "distance_to_median")} 
+"""
+
+        # For reachability
+        elif 6 in data["category_id"].unique():
+
+            message["content"] = f"""Use a maximum of one paragraph to generally describe the characteristics of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
+Use easy and understandable language and short sentences.
+Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
+Especially compare {data['location_city'].iloc[0]} to other destinations in the category '{data['category_name'].iloc[0]}'.
+Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
+{self.content_seasonal_distances(data, "distance_to_median")} 
+BE CAREFUL: distance here refers to the distance to the median of the scores, not the travel distance.
+A negative distance means the destination is below the median, so it takes LONGER to reach the destination (slower than median).
+A positive distance means the destination is above the median, so it takes SHORTER to reach the destination (faster than median).
+Do not include numerical values but describe how the travel durations might differ per season and mode of transport to other destinations (distance to median).
+If the distance is negative, describe that the travel is long (the smaller the negative value the actually longer it takes) and the month(s) where this is the case.
+If the distance is positive, describe that the travel is short (the larger the positive value the actually shorter it takes) and the month(s) where this is the case.
 """
 
         # For costs, especially for travel/accommodation costs
@@ -183,10 +200,10 @@ Use easy and understandable language and short sentences.
 Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
 Especially compare {data['location_city'].iloc[0]} to other destinations in the category '{data['category_name'].iloc[0]}'.
 Never generate a text containing the numeric values but rather use the distances to generate a qualitative description of the destination.
-The following dimensions are part of 'Cost of Living'.
-{self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_median")}
-The following dimensions are part of 'Travel Costs' and Accommodation Costs'.
-{self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_median")}
+{"The following dimensions are part of 'Cost of Living'."if not data[~data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+{self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_median") if not data[~data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+{"The following dimensions are part of 'Travel Costs' and Accommodation Costs'." if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+{self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_median") if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 """
 
         else:
@@ -225,8 +242,8 @@ Never generate a text containing the numeric values but rather use the distances
         # For testing: Drop null values in column distance_to_bound
         data = data[data["distance_to_bound"].notnull()]
 
-        # For weather and reachability
-        if 2 in data["category_id"].unique() or 6 in data["category_id"].unique():
+        # For weather
+        if 2 in data["category_id"].unique():
 
             message["content"] = f"""Use a maximum of five sentences in the paragraph to highlight the anomalies of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
 Use easy and understandable language and short sentences.
@@ -238,6 +255,26 @@ Never describe the actual distance to a bound and never describe the bound but r
 All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
 Don't describe positive or negative anomalies but rather "increased/decreased" or "stronger/weaker" or others.
 Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).\n
+"""
+
+        # For reachability
+        elif 6 in data["category_id"].unique():
+
+            message["content"] = f"""Use a maximum of five sentences in the paragraph to highlight the anomalies of the travel destination {data['location_city'].iloc[0]} ({data['location_country'].iloc[0]}) for the dimensions of the category '{data['category_name'].iloc[0]}'.
+Use easy and understandable language and short sentences.
+Instead of addressing 'travelers' i.e. '... safe for travelers', use 'you' or 'your' to personally address the reader.
+Especially compare {data['location_city'].iloc[0]} to other destinations in the category '{data['category_name'].iloc[0]}'.
+{self.content_seasonal_distances(data, "distance_to_bound")}
+All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
+BE CAREFUL: distance here refers to the distance to the bounds of the scores, not the travel distance.
+Do not include numerical values but describe how the travel durations might differ per season and mode of transport to other destinations.
+Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).
+Afterwards, only generate 1 sentence at maximum per anomaly containing:
+A) The time period (month(s)) where the anomaly is present.
+B) If the travel duration was very long or very short.
+NEGATIVE VALUES = VERY LONG TRAVEL DURATION.
+POSITIVE VALUES = VERY SHORT TRAVEL DURATION.
+DO NOT REPEAT YOURSELF.\n
 """
 
         # For costs, especially for travel/accommodation costs
@@ -346,6 +383,7 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
             SELECT
                 s.location_id,
                 s.category_id,
+                s.dimension_id,
                 s.ref_start_location_id
             FROM
                 core_scores s
@@ -354,6 +392,7 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
             GROUP BY
                 s.location_id,
                 s.category_id,
+                s.dimension_id,
                 s.ref_start_location_id
         ),
 
@@ -377,15 +416,15 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
                 s.ref_start_location_id
             FROM
                 grouped_scores s
+                LEFT JOIN loaded_texts t    ON s.location_id = t.location_id
+                                            AND s.category_id = t.category_id
+                                            AND (CASE WHEN s.dimension_id = 41 THEN -1 ELSE s.ref_start_location_id END) = t.ref_start_location_id
             WHERE
-                (s.location_id, s.category_id, s.ref_start_location_id) NOT IN (
-                    SELECT
-                        t.location_id,
-                        t.category_id,
-                        t.ref_start_location_id
-                    FROM
-                        loaded_texts t
-                )
+                t.location_id IS NULL
+            GROUP BY
+                s.location_id,
+                s.category_id,
+                s.ref_start_location_id
         ),
 
         not_loaded_scores_with_info AS (
@@ -400,8 +439,8 @@ def prepare_text_generation(db:Database, filter_cats:list, testing:bool) -> pd.D
                 s.start_date,
                 s.end_date,
                 s.ref_start_location_id,
-                r.city,
-                r.country,
+                r.city as start_location_city,
+                r.country as start_location_country,
                 CAST(s.score AS DOUBLE PRECISION)               AS score,
                 CAST(s.raw_value AS DOUBLE PRECISION)           AS raw_value,
                 CAST(s.distance_to_median AS DOUBLE PRECISION)  AS distance_to_median,
@@ -529,13 +568,13 @@ if __name__ == "__main__":
     # Get data
     filter_cats = [
         #0, # General
-        1, # Safety
-        2, # Weather
-        3, # Culture
+        #1, # Safety
+        #2, # Weather
+        #3, # Culture
         #4, # Cost
-        5, # Geography
-        #6, # Reachability
-        7 # Health
+        #5, # Geography
+        6, # Reachability
+        #7 # Health
     ]
     data = prepare_text_generation(db, filter_cats, testing=False)
 
@@ -548,6 +587,7 @@ if __name__ == "__main__":
     # Iterate over groups
     for (loc, cat, ref_start_loc), group_df in grouped_data:
 
+        db.connect()
         prompt_engine.prompt(group_df)
 
     # Disconnect from database
