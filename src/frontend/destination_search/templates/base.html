@@ -505,6 +505,16 @@
             compareCountElement.style.visibility = 'visible';  // Show the element
         }
 
+        // Function to update the href of the 'Compare' link
+        function updateCompareLink() {
+            let compareLink = document.querySelector('#compare-link');
+            let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
+            compareLink.href = url;
+        }
+
+        // Call the function when the page loads
+        updateCompareLink();
+
         document.querySelectorAll('.add-to-comparison-icon').forEach(icon => {
             let img = icon.querySelector('img');
             let locationId = icon.dataset.locationId;
@@ -558,9 +568,7 @@
                 }
 
                 // Update the href of the 'Compare' link
-                let compareLink = document.querySelector('#compare-link');
-                let url = '/compare?locations=' + selectedCompareLocations.join('&locations=') + '&{{ comparison_params|safe  }}';
-                compareLink.href = url;
+                updateCompareLink();
 
                 // Update the position of the tooltip
                 updateTooltipPosition(this, tooltipText);
