@@ -42,11 +42,11 @@ def create_similarity_text_prompt(
     previous destinations.
     """
 
-    # If more than 3 previous destinations, take average (as max_tokens would be exceeded in prompt for gpt 3.5 turbo)
-    if data["location"].nunique() > 4:  # 4 because the target location is also included
+    # If more than 2 previous destinations, take average (as max_tokens would be exceeded in prompt for gpt 3.5 turbo)
+    if data["location"].nunique() > 3:  # one more because the target location is also included
 
         # Warning sentence
-        warning = f"The number of previous destinations is {data['location'].nunique() - 1} which exceeds 3. Therefore, the scores of your previous destinations are averaged and then compared to {data[data['location_type'] == 'Target Location']['location'].values[0]}."
+        warning = f"The number of previous destinations is {data['location'].nunique() - 1} which exceeds 2. Therefore, the scores of your previous destinations are averaged and then compared to {data[data['location_type'] == 'Target Location']['location'].values[0]}."
 
         # Average the scores of the previous locations
         previous_locs_avg = data[data["location_type"] != "Target Location"] \

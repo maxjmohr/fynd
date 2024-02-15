@@ -264,13 +264,13 @@ Results
 <div class="results-container">
 
     <!-- Previous locations-->
-    <div class="destination-type-title">Your previous destinations</div>
+    <div class="segment-title">Your previous destinations</div>
     <div class="previous-location-list-container">
         {% for location in previous_locations_list %}
             <div class="previous-location-list-item-container">
                 <div class="location-list-item-image-container same-width-as-height">
                     <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
-                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image" onerror="this.onerror=null; this.src='{% static '' %}images/location_images/thumbnails/default.png';">
                     </a>
                     <div class="add-to-comparison-icon-container">
                         <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
@@ -294,7 +294,7 @@ Results
         {% endfor %}
     </div>
 
-    <div class="destination-type-title">New destinations</div>
+    <div class="segment-title">New destinations</div>
 
     <!--- Sort-by dropdown -->
     <div class="sort-container">
@@ -318,7 +318,7 @@ Results
 
                 <div class="location-list-item-image-container same-height-as-width">
                     <a href="{% url 'location_detail' location_id=location.location_id %}?{{ query_parameters }}">
-                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image">
+                        <img src="{% static '' %}images/location_images/thumbnails/{{ location.location_id }}.jpg" alt="{{ location.city }} image" onerror="this.onerror=null; this.src='{% static '' %}images/location_images/thumbnails/default.png';">
                     </a>
                     <div class="add-to-comparison-icon-container">
                         <div class="add-to-comparison-icon" data-location-id="{{ location.location_id }}">
