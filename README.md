@@ -96,14 +96,12 @@ The codebase is divided into two main directories: `src` and `res`. The `src` di
  ┃ ┃ ┗ 📜frontend_requirements.txt
 ```
 
-## Exemplary usage
+## Exemplary automated use cases
 
-Hereinafter, we provide some use cases of working with the fynd codebase. The following examples are not exhaustive and are meant to provide a starting point for working with the codebase.
+Hereinafter, we provide some use cases of working with the fynd codebase. The following examples are not exhaustive and are meant to provide a starting point for working with the codebase. Upon request, we can provide access keys and other necessary data to run the code.
 
 > [!NOTE]
-> The code snippets provided are exemplary and may not work out of the box. They are meant to provide a conceptual starting point for working with the codebase.
-
-### Start local server
+> The code snippets provided are exemplary and may not work out of the box. Reasons can vary from missing API keys to  The examples are meant to provide a conceptual starting point for working with the codebase.
 
 ### Add new location master data
 
