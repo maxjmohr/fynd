@@ -145,6 +145,9 @@
                 For flights, we consider {{ reference_start_airport.airport_name }} ({{ reference_start_airport.iata_code }}) as origin airport.
             </p>
         </div>
+        <div class="category-content-container map-container">
+            <div id="routesid"></div>
+        </div>
 
         {% elif category.category_id == 3 and top_attractions %}
         <div class="category-content-container">
@@ -180,12 +183,13 @@
 
 <!-- Leaflet map -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-<!-- Tabs / scrolling / map -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+<!-- Tabs / scrolling / maps -->
 <script>
 
-    // Tabs & map -------------------------------------------------------------
+    // Tabs & maps ------------------------------------------------------------
     var map;
+    var routes;
 
     // Open the category tab that was clicked
     function openCategory(evt, categoryName) {
@@ -218,7 +222,105 @@
             // Adjust the view to fit the bounds of the GeoJSON layer
             map.fitBounds(geojsonLayer.getBounds());
         }
-    }
+
+        // If the reachability tab is opened, invalidate the map size
+        if (categoryName === 'Reachability' && !routes) {
+
+            // Get data
+            var routeData = JSON.parse('{{ reachability_map_data|safe }}');
+
+            // Initialize the map
+            var routes = L.map('routesid').setView([routeData.reference_start_location.lat, routeData.reference_start_location.lon], 13);
+
+            // Add a tile layer to the map (you can choose other providers)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(routes);
+
+            // Add the car and public transport routes with custom colors and popups
+            L.geoJSON(routeData.car_geojson, {
+                style: function() {
+                    return {color: '#E8000B'};
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup('Car route'); 
+                }
+            }).addTo(routes);
+
+            L.geoJSON(routeData.pt_geojson, {
+                style: function() {
+                    return {color: '#023EFF'};
+                },
+                onEachFeature: function(feature, layer) {
+                    layer.bindPopup('Public transport route');
+                }
+            }).addTo(routes);
+
+            // Create a blue marker with a home icon for the start location
+            var homeMarker = L.AwesomeMarkers.icon({
+                icon: 'home',
+                markerColor: 'blue',
+                prefix: 'fa'
+            });
+
+            // Create a blue marker with an umbrella icon for the destination
+            var holidayMarker = L.AwesomeMarkers.icon({
+                icon: 'compass',
+                markerColor: 'blue',
+                prefix: 'fa'
+            });
+
+            // Add pins for the start and destination locations with the custom markers
+            L.marker([routeData.reference_start_location.lat, routeData.reference_start_location.lon], {icon: homeMarker}).addTo(routes)
+                .bindPopup('Reference start location: ' + routeData.reference_start_location.city);
+            L.marker([routeData.destination.lat, routeData.destination.lon], {icon: holidayMarker}).addTo(routes)
+                .bindPopup('Destination: ' + routeData.destination.city + ' (' + routeData.destination.country + ')');
+
+            // Create an orange marker
+            var orangeMarker = L.AwesomeMarkers.icon({
+                icon: 'plane',
+                markerColor: 'orange',
+                prefix: 'fa'
+            });
+
+            // Add pins for the start and destination airports
+            L.marker([routeData.reference_start_airport.lat, routeData.reference_start_airport.lon], {icon: orangeMarker}).addTo(routes)
+                .bindPopup('Start airport: ' + routeData.reference_start_airport.airport_name);
+            L.marker([routeData.destination_airport.lat, routeData.destination_airport.lon], {icon: orangeMarker}).addTo(routes)
+                .bindPopup('Destination airport: ' + routeData.destination_airport.airport_name);
+
+            // Add a dashed polyline between the start and destination airports
+            var latlngs = [
+                [routeData.reference_start_airport.lat, routeData.reference_start_airport.lon],
+                [routeData.destination_airport.lat, routeData.destination_airport.lon]
+            ];
+            var polyline = L.polyline(latlngs, {color: '#FF7C00', dashArray: '10, 10'}).addTo(routes);
+
+            // Adjust the view to fit all coordinates, to do so:
+            // Add all coordinates to an array
+            var allCoordinates = [
+                [routeData.reference_start_location.lat, routeData.reference_start_location.lon],
+                [routeData.destination.lat, routeData.destination.lon],
+                [routeData.reference_start_airport.lat, routeData.reference_start_airport.lon],
+                [routeData.destination_airport.lat, routeData.destination_airport.lon]
+            ];
+
+            // Add the car and public transport routes coordinates
+            if (routeData.car_geojson && routeData.car_geojson.features && routeData.car_geojson.features.length > 0) {
+                routeData.car_geojson.features[0].geometry.coordinates.forEach(function(coord) {
+                    allCoordinates.push([coord[1], coord[0]]);
+                });
+            }
+            if (routeData.pt_geojson && routeData.pt_geojson.features && routeData.pt_geojson.features.length > 0) {
+                routeData.pt_geojson.features[0].geometry.coordinates.forEach(function(coord) {
+                    allCoordinates.push([coord[1], coord[0]]);
+                });
+            }
+
+            // Fit the map to the bounds of the coordinates
+            routes.fitBounds(allCoordinates);
+        }
+    };
 
     // Adjust background elements based on location name ----------------------
 

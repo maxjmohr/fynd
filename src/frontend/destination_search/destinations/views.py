@@ -296,7 +296,7 @@ class CompareView(View):
         ]
 
         # Get locations
-        locations = read_frame(
+        locations = (
             CoreLocations.objects
             .filter(location_id__in=location_ids)
             .values('location_id', 'city', 'country', 'country_code')
@@ -311,13 +311,68 @@ class CompareView(View):
             location_id=location_ids,
             retrieve_text=False
         )
+        scores = (
+            scores
+            .filter(['location_id', 'dimension_id', 'score', 'raw_value'])
+            .assign(dimension_id=clean_id(scores.dimension_id))
+            .set_index(['location_id', 'dimension_id'])
+        )
 
-        context = {
-            'locations': locations.to_dict('records'),
-            'scores': scores.to_dict('records'),
-        }
+        # Get categories with related dimensions (in correct order)
+        categories_with_dimensions = (
+            CoreCategories.objects
+            .filter(~Q(category_id=0))
+            .order_by('-display_order')
+            .prefetch_related(Prefetch('coredimensions_set', queryset=CoreDimensions.objects.order_by('-dimension_id')))
+        )
 
-        return context
+        def get_value(location_id: int, dimension_id: int, col: str):
+            """Get row from scores."""
+            try:
+                return scores.loc[(location_id, dimension_id), col].item()
+            except:
+                return None
+
+        def format_raw_value(location, dimension) -> str:
+            """Format raw value."""
+            raw_value = get_value(location['location_id'], dimension.dimension_id, 'raw_value')
+            if pd.isna(raw_value):
+                return ''
+            return f' ({raw_value:.{dimension.raw_value_decimals}f}{dimension.raw_value_unit})'
+        
+        # Convert to json structure
+        data = json.dumps([
+            {
+                'category_id': category.category_id,
+                'category_name': category.category_name,
+                'category_description': category.description,
+                'axis_title': category.axis_title,
+                'axis_label_low': category.axis_label_low,
+                'axis_label_high': category.axis_label_high,
+                'locations': [
+                    {
+                        'location_id': location.get('location_id'),
+                        'city': location.get('city'),
+                        'country': location.get('country'),
+                        'dimensions': [
+                            {
+                                'dimension_id': dimension.dimension_id,
+                                'dimension_name': dimension.dimension_name,
+                                'dimension_description': dimension.description,
+                                'dimension_icon_url': dimension.icon_url,
+                                'score': get_value(location.get('location_id'), dimension.dimension_id, 'score'),
+                                'raw_value_formatted': format_raw_value(location, dimension),
+                            }
+                            for dimension in category.coredimensions_set.all()
+                        ]
+                    }
+                    for location in locations
+                ],
+            }
+            for category in categories_with_dimensions
+        ])
+
+        return {'locations': list(locations), 'data': data}
 
 
 class AboutView(TemplateView):
@@ -777,13 +832,46 @@ class LocationDetailView(DetailView):
         if len(top_attractions) > 0:
             context['top_attractions'] = top_attractions
 
-        # Get reference start location airport
-        reference_start_airport = (
-            CoreAirports.objects
-            .values('iata_code', 'airport_name', 'city')
-            .filter(iata_code=reference_start_location['mapped_start_airport'].strip()) #FIXME no FK + strip needed
+        # Get reference start location and destination airport
+        def get_airport(iata_code: str) -> dict:
+            """Get airport data."""
+            airport = (
+                CoreAirports
+                .objects
+                .values('iata_code', 'airport_name', 'city', 'lat', 'lon')
+                .filter(iata_code=iata_code)
+                .first()
+            )
+            for col in ['lat', 'lon']:
+                airport[col] = float(airport[col])
+            return airport
+        
+        reference_start_airport = get_airport(
+            iata_code=reference_start_location['mapped_start_airport'].strip() #FIXME no FK + strip needed
+        )
+        destination_airport = get_airport(iata_code=location.airport_1)
+
+        # Get geojson for routes (reachabilty map)
+        reachability_map_data = (
+            RawReachabilityLand.objects
+            .filter(
+                Q(location_id=location.location_id)
+                & Q(ref_start_location_id=reference_start_location['location_id'])
+            )
+            .values('car_geojson', 'pt_geojson')
             .first()
         )
+        reachability_map_data = {
+            key: json.loads(value) for key, value in reachability_map_data.items()
+            if value is not None
+        }
+        reachability_map_data.update({
+            'reference_start_location': reference_start_location,
+            'reference_start_airport': reference_start_airport,
+            'destination_airport': destination_airport,
+            'destination': {'lat': location.lat, 'lon': location.lon, 'city': location.city, 'country': location.country}
+        })
+        context['reachability_map_data'] = json.dumps(reachability_map_data)
 
         # Location ids for similarity tab (current+previous)
         previous_locations = self.request.GET.getlist('previous_locations', [])

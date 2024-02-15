@@ -197,3 +197,25 @@ class RawCurrencyTexts(models.Model):
     class Meta:
         managed = False
         db_table = 'raw_currency_texts'
+
+
+class RawReachabilityLand(models.Model):
+    location_id = models.OneToOneField(CoreLocations, models.DO_NOTHING, primary_key=True, db_column='loc_id')
+    ref_start_location_id = models.ForeignKey(CoreRefStartLocations, models.DO_NOTHING, db_column='ref_id')
+    arr_city = models.CharField(max_length=255, blank=True, null=True)
+    dep_city = models.CharField(max_length=255, blank=True, null=True)
+    car_distance = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    car_duration = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    car_polyline = models.TextField(blank=True, null=True)
+    car_geojson = models.TextField(blank=True, null=True)
+    pt_distance = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    pt_duration = models.DecimalField(max_digits=15, decimal_places=2, blank=True, null=True)
+    pt_polyline = models.TextField(blank=True, null=True)
+    pt_geojson = models.TextField(blank=True, null=True)
+    pt_total_transfers = models.IntegerField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'raw_reachability_land'
+        unique_together = (('location_id', 'ref_start_location_id'),)
