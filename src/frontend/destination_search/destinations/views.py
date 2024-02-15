@@ -108,8 +108,11 @@ def get_scores(
         ].to_dict()
     else:
         # Use Frankfurt as reference start locations
-        reference_start_location = model_to_dict(
-            CoreRefStartLocations.objects.get(location_id=121553680)
+        reference_start_location = (
+            CoreRefStartLocations.objects
+            .filter(location_id=121553680)
+            .values('location_id', 'city', 'country', 'country_code', 'lat', 'lon', 'mapped_start_airport')
+            .first()
         )
 
     # Get filtered scores -----------------------------------------------------
@@ -871,6 +874,7 @@ class LocationDetailView(DetailView):
             'destination_airport': destination_airport,
             'destination': {'lat': location.lat, 'lon': location.lon, 'city': location.city, 'country': location.country}
         })
+        print(reachability_map_data)
         context['reachability_map_data'] = json.dumps(reachability_map_data)
 
         # Location ids for similarity tab (current+previous)
