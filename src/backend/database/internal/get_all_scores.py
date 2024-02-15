@@ -415,7 +415,7 @@ which_scores = {
     #'weather': FillScores(db).weather_scores,
     #'geography_coverage': FillScores(db).geography_coverage_scores,
     #'health': FillScores(db).health_scores,
-    'reachability': FillScores(db).get_reachability_scores,
+    #'reachability': FillScores(db).get_reachability_scores,
 }
 FillScores(db).fill_scores(which_scores, explicitely_update=True)
 db.disconnect()

@@ -5,9 +5,10 @@ parent_dir = os.path.dirname(os.path.realpath(__file__+"/../../"))
 sys.path.append(parent_dir)
 
 from data.costs import numbeoScraper
+from data.health import get_health_info, get_legatum_health_score
+from  data.places import get_places
 from data.safety import create_country_safety_df
 from data.safety import create_city_safety_df
-from data.health import get_health_info, get_legatum_health_score
 from data.weather import SingletonHistWeather, SingletonCurrFutWeather
 from data.accomodations import generate_periods, process_period
 from data.reachability import (process_location_land_reachability, 
@@ -15,11 +16,11 @@ from data.reachability import (process_location_land_reachability,
                                fill_reachibility_table)
 from database.db_helpers import Database
 import datetime
-from geopy.distance import geodesic
-from multiprocessing import Pool
 from dateutil.relativedelta import relativedelta
 import ee
+from geopy.distance import geodesic
 import json
+from multiprocessing import Pool
 import numpy as np
 import pandas as pd
 import random

@@ -204,6 +204,11 @@ Never generate a text containing the numeric values but rather use the distances
 {self.content_non_seasonal_distances(data[~data['dimension_id'].isin([41, 42])], "distance_to_median") if not data[~data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 {"The following dimensions are part of 'Travel Costs' and Accommodation Costs'." if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 {self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_median") if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
+Try to capture the patterns and use 1 sentence at maximum per pattern containing:
+A) The month(s) where the pattern is present. If the period is until the year 2099, write "all year round".
+B) If the costs were high or low.
+MORE NEGATIVE VALUES = HIGHER COSTS.
+MORE POSITIVE VALUES = LOWER COSTS.
 """
 
         else:
@@ -291,8 +296,13 @@ Never describe the actual distance to a bound and never describe the bound but r
 {"The following dimensions are part of 'Travel Costs' and Accommodation Costs'." if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 {self.content_seasonal_distances(data[data['dimension_id'].isin([41, 42])], "distance_to_bound") if not data[data['dimension_id'].isin([41, 42])].empty and data["category_id"].nunique() == 1 else ""}
 All listed dimensions are the anomalies, NOT THE DISTANCES TO AVERAGE BUT TO THE BOUNDS.
-Don't describe positive or negative anomalies but rather "increased/decreased" or "stronger/weaker" or others.
-Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).\n
+Generate the first sentence as a transition from the general paragraph regarding '{data['category_name'].iloc[0]}' into now the more special anomalies of the same category (such as {phrases_str} and others).
+Afterwards, only generate 1 sentence at maximum per anomaly containing:
+A) The month(s) where the anomaly is present. If the period is until the year 2099, write "all year round".
+B) If the costs were high or low.
+NEGATIVE VALUES = VERY LONG TRAVEL DURATION.
+POSITIVE VALUES = VERY SHORT TRAVEL DURATION.
+DO NOT REPEAT YOURSELF.\n
 """
 
         else:
@@ -573,7 +583,7 @@ if __name__ == "__main__":
         #3, # Culture
         #4, # Cost
         #5, # Geography
-        6, # Reachability
+        #6, # Reachability
         #7 # Health
     ]
     data = prepare_text_generation(db, filter_cats, testing=False)
